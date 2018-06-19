@@ -102,17 +102,19 @@ class bowtie(luigi.Task):
 		return luigi.LocalTarget(os.path.join(os.path.join(*self.fasta_file.split('/')[:-1]), 'index', self.sample + '_raw.sam'))
 
 	def run(self):
-		# try:
-		cwd = os.getcwd()
-		os.chdir(os.path.join(os.path.join(*self.fasta_file.split('/')[:-1]), 'index'))
+		try:
+			cwd = os.getcwd()
+			os.chdir(os.path.join(os.path.join(*self.fasta_file.split('/')[:-1]), 'index'))
 
-		# cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
-		cmd = ['bowtie2', '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
-		command_call(cmd, threads_needed=self.max_threads)
+			# cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
+			cmd = ['bowtie2', '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
+			command_call(cmd, threads_needed=self.max_threads)
 
-		os.chdir(cwd)
-		# except KeyboardInterrupt:
-		# 	sys.exit()
+			os.chdir(cwd)
+		except KeyboardInterrupt:
+			os.chdir(cwd)
+			self.output().remove()
+			sys.exit()
 
 # class move_file(luigi.Task):
 # 	from_file = luigi.Parameter()
@@ -492,9 +494,9 @@ class cases(luigi.Task):
 						sample_dict[sample]['N'] = normal_fastq
 		except:
 			raise ValueError("Error in parsing fastq directory.")
-		print('\n\n\n\n')
-		print(self.sample_dir)
-		print(sample_dict)
+		# print('\n\n\n\n')
+		# print(self.sample_dir)
+		# print(sample_dict)
 		for case in sample_dict:
 			tumor = sample_dict[case]['T']
 			matched_n = sample_dict[case]['N']

@@ -15,6 +15,6 @@ def command_call(cmd, threads_needed=1, sleep_time=1):
 	# while global_max_threads - thread_count < threads_needed:
 	# 	time.sleep(sleep_time)
 	# thread_count += threads_needed
-	print('\n\n\n\n' + ' '.join(cmd) + '\n\n\n\n')
+	# print('\n\n\n\n' + ' '.join(cmd) + '\n\n\n\n')
 	subprocess.call(cmd, stdout=subprocess.PIPE)
 	# thread_count -= threads_needed
