@@ -26,7 +26,10 @@ if __name__ == '__main__':
 		sys.path.append(os.getcwd())
 	if not os.path.exists(os.path.join(os.getcwd(), 'code')):
 		raise ValueError('you must run script from "pipeline" directory, as relative references are used throughout the analysis.')
-	from code import bam_processing
+	
+	sys.path.append('./code')
+	sys.path.append('./packages')
+	import bam_processing
 	# sample_csv = sys.argv[1]
 	# sample_df = pd.read_csv(sample_csv, header=True, index_col='sample_id')
 	# sample_dict = {}

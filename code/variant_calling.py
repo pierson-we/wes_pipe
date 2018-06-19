@@ -5,8 +5,8 @@ import luigi.interface
 import os
 import sys
 import time
-from code import pipeline_utils
-from code import bam_processing
+import pipeline_utils
+import bam_processing
 
 class mutect(luigi.Task):
 	max_threads = luigi.IntParameter()

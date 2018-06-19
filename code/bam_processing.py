@@ -7,8 +7,8 @@ import sys
 import time
 import pandas as pd
 import numpy as np
-from code.pipeline_utils import *
-from code.variant_calling import *
+from pipeline_utils import *
+from variant_calling import *
 
 # ***
 # GATK Resource Bundle Files
