@@ -179,6 +179,7 @@ class add_read_groups(luigi.Task):
 		confirm_path(self.output().path)
 		cmd = ['java', '-jar', self.picard_location, 'AddOrReplaceReadGroups', 'I=%s' % self.input().path, 'O=%s' % self.output().path, 'SORT_ORDER=coordinate', 'RGID=1', 'RGLB=%s' % self.library_prep, 'RGPL=%s' % self.platform, 'RGPU=barcode', 'RGSM=%s' % self.sample]
 		command_call(cmd)
+		self.input().remove()
 
 # # https://broadinstitute.github.io/picard/command-line-overview.html
 # class sort_bam(luigi.Task):
