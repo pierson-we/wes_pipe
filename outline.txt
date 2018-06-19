@@ -1,0 +1,61 @@
+WES Analysis pipeline
+
+fastq file
+	QC fastq file (FastQC: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/, FASTX-Toolkit: http://hannonlab.cshl.edu/fastx_toolkit/commandline.html)
+		Align reads (Bowtie2)
+			Possible additional steps
+				Sort/Index (Picard) (allows indexing of data in bam file. must sort first - don't know what the benefit for variant calling is)
+				*MarkDuplicatesWithMateCigar (Picard)
+				*Indel Realignment - not required if using a haplotype assembly step (i.e.) mutect2(GATK)
+				*Base Quality Score Recalibration (GATK, dbSNP: ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/) https://software.broadinstitute.org/gatk/documentation/tooldocs/3.8-0/org_broadinstitute_gatk_tools_walkers_bqsr_BaseRecalibrator.php#--knownSites
+			Variant Calling
+				SNVs
+					MuTect2 (defaults to using 4 threads for haplotypecaller)
+						make sure germline resource is included.
+					VarDict
+					FreeBayes
+						need to hack a filter to do paired somatic calling (https://github.com/ekg/freebayes/issues/107)
+					VarScan
+						need to convert .bam to pileup format (can pipe this data to VarScan, though) (http://varscan.sourceforge.net/somatic-calling.html)
+				CNVs (Having normal samples will help correct for Exome capture biases)
+					CNVkit
+				InDels
+					VarDict
+					FreeBayes
+					VarScan
+						will need to postprocess varscan output (http://varscan.sourceforge.net/copy-number-calling.html)
+					Scalpel
+				Structural Variants
+					LUMPY
+					DELLY
+					WHAM
+			Variant filtering
+			Variant Recalibration (GATK)
+			Annotate Variants (ANNOVAR)
+			Merge VCFs (picard)
+			
+			
+TODO
+max threads/processes management
+cleaner input/output file param passing
+clean up file hierarchy/names
+error handling (mainly incomplete file deletion)
+intuitive file structure for inputs (i.e. /project/case/normal/normal.fastq)
+utilize luigi.Target tmp file functionality (https://luigi.readthedocs.io/en/stable/api/luigi.local_target.html)
+defaults for threads/base_name/other variables
+verbose mode
+print stdout to log file
+create quality check (against reference genome(s))
+incorporate luigi workers functionality?
+RGID in add read group - implement sample counter, or just use sample id
+minimize saving duplicate files
+add duplicates should be able to convert to bam and sort in one step
+maximize efficiency by limiting as many steps as possible to regions specified in exome .bed file
+make all command calls from separate fxn, incorporate threading
+chromoplexy
+clean up all parameters (cfg vs. passed)
+add /tmp folder option (will delete all intermediate files once analysis is complete)
+add num requested cpus to docker command
+create linux and mac versions
+
+create docker container
