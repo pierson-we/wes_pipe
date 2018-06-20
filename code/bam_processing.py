@@ -33,7 +33,7 @@ class genome_index(luigi.Task):
 			os.mkdir('./index')
 		os.chdir('./index')
 		# cmd = [cwd + self.bowtie_location + 'bowtie2-build', '--threads=%s' % self.max_threads, self.fasta_file, self.base_name]
-		cmd = [self.bowtie_location + 'bowtie2-build', '--threads=%s' % self.max_threads, self.fasta_file, self.base_name]
+		cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2-build'), '--threads=%s' % self.max_threads, self.fasta_file, self.base_name]
 		command_call(cmd, threads_needed=self.max_threads)
 		# subprocess.call([self.bowtie_location + 'bowtie2-build', '--threads=%s' % self.max_threads, self.fasta_file, self.base_name], stdout=subprocess.PIPE)
 		os.chdir(cwd)
@@ -106,7 +106,7 @@ class bowtie(luigi.Task):
 			os.chdir(os.path.join(os.path.join(*self.fasta_file.split('/')[:-1]), 'index'))
 
 			# cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
-			cmd = [self.bowtie_location + 'bowtie2', '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
+			cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
 			command_call(cmd, threads_needed=self.max_threads)
 
 			os.chdir(cwd)
