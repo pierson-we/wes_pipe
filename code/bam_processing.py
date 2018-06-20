@@ -5,8 +5,7 @@ import luigi.interface
 import os
 import sys
 import time
-import pandas as pd
-import numpy as np
+# import numpy as np
 from pipeline_utils import *
 from variant_calling import *
 
