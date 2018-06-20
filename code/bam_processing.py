@@ -248,7 +248,7 @@ class index_bam(luigi.Task):
 	def run(self):
 		confirm_path(self.output()[1].path)
 		# cmd = [os.getcwd() + '/' + self.samtools_location, 'index', '-b', self.input()[0].path]
-		cmd = ['samtools', 'index', '-b', self.input()[0].path]
+		cmd = [self.samtools_location, 'index', '-b', self.input()[0].path]
 		command_call(cmd)
 
 # ~20 mins w/2 cores
