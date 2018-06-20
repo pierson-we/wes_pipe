@@ -1,4 +1,3 @@
-
 import fcntl
 import os
 import time
@@ -7,7 +6,6 @@ import random
 
 global_max_threads = 0
 thread_file = ''
-# thread_count = 0
 
 def confirm_path(file):
 	if not os.path.exists(os.path.dirname(file)):
