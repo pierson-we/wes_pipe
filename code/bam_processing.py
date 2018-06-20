@@ -270,7 +270,7 @@ class realigner_target(luigi.Task):
 		return index_bam(fastq_file=self.fastq_file, project_dir=self.project_dir, sample=self.sample, max_threads=self.max_threads)
 
 	def output(self):
-		return [self.input()[1], luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_forIndelRealigner.intervals'))]
+		return [self.input()[0], luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_forIndelRealigner.intervals'))]
 
 	def run(self):
 		confirm_path(self.output()[1].path)
