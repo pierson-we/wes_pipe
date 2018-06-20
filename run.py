@@ -7,6 +7,7 @@ if __name__ == '__main__':
 	parser.add_argument('-O', action='store', dest='project_dir', default=os.getcwd(), help='Directory in which the program will create an "output" directory containing all output files.')
 	parser.add_argument('-I', action='store', dest='sample_dir', help='Directory containing the input fastq files. Directory contents must be structured as follows:\n[sample_dir]\n\t[sample_name]\n\t\ttumor\n\t\t\t[tumor].fastq.gz\n\t\tnormal\n\t\t\t[normal].fastq.gz')
 	parser.add_argument('--threads', action='store', dest='max_threads', default=4, type=int, help='The maximum number of threads available for use. The program will attempt to distribute available threads amongst samples as efficiently and equally as possible.')
+	parser.add_argument('--samples', action='store', dest='samples', default=1, type=int, help='The number of samples being processed. This is used by the pipeline scheduler (Luigi) to schedule jobs - it will not necessarily determine the number of threads utilized.')
 	parser.add_argument('-m', action='store_false', dest='mutect', default=True, help='This flag suppresses analysis with Mutect2')
 	parser.add_argument('-d', action='store_false', dest='vardict', default=True, help='This flag suppresses analysis with VarDict')
 	parser.add_argument('-f', action='store_false', dest='freebayes', default=True, help='This flag suppresses analysis with FreeBayes')
@@ -49,5 +50,5 @@ if __name__ == '__main__':
 	
 	# project_dir = sys.argv[1]
 	# sample_dir = sys.argv[2]
-	luigi.build([bam_processing.cases(max_threads=args.max_threads, project_dir=args.project_dir, sample_dir=args.sample_dir)], workers=1, local_scheduler=args.local_scheduler)
+	luigi.build([bam_processing.cases(max_threads=args.max_threads, project_dir=args.project_dir, sample_dir=args.sample_dir)], workers=args.samples, local_scheduler=args.local_scheduler)
 	# luigi.build([bowtie(fastq_path=fastq_path, sam_path=sam_path, threads=threads, fasta_path=fasta_path), convert_bam(sam_path=sam_path, bam_path=bam_path)], workers=1, local_scheduler=False)

@@ -41,7 +41,7 @@ class mutect(luigi.Task):
 			cmd = ['java', '-jar', self.gatk4_location, '-T', 'Mutect2', '-R', self.fasta_file, '-I:tumor', self.input()[0].path, '-I:normal', self.input()[1].path, '--dbsnp', self.known_vcf, '-o', self.output().path]
 		else:
 			cmd = [self.gatk4_location, 'Mutect2', '-R', self.fasta_file, '-I', self.input()[0].path, '-tumor', self.case + '_T', '--germline-resource', self.germline_resource, '-O', self.output().path]
-		pipeline_utils.command_call(cmd, threads_needed=4)
+		pipeline_utils.command_call(cmd, [self.output()], threads_needed=4)
 
 class filter_mutect(luigi.Task):
 	max_threads = luigi.IntParameter()
@@ -70,11 +70,11 @@ class filter_mutect(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
 		cmd = [self.gatk4_location, 'FilterMutectCalls', '-V', self.input().path, '-O', self.output().path]
-		pipeline_utils.command_call(cmd)
+		pipeline_utils.command_call(cmd, [self.output()], sleep_time=1.1)
 
 
 class scalpel_discovery(luigi.Task):
-	max_threads = luigi.Parameter()
+	max_threads = luigi.IntParameter()
 	matched_n = luigi.Parameter()
 	project_dir = luigi.Parameter()
 
@@ -102,10 +102,10 @@ class scalpel_discovery(luigi.Task):
 			cmd = ['./scalpel-0.5.4/scalpel-discovery', '--somatic', '--normal', self.input()[1].path, '--tumor', self.input()[0].path, '--bed', self.library_bed, '--ref', self.fasta_file, '--two-pass', '--dir', os.path.join(self.vcf_path, 'scalpel'), '--numprocs', str(self.max_threads)]
 		else:
 			cmd = ['./scalpel-0.5.4/scalpel-discovery', '--single', '--bam', self.input()[0].path, '--bed', self.library_bed, '--ref', self.fasta_file, '--dir', os.path.join(self.vcf_path, 'scalpel'), '--numprocs', str(self.max_threads)]
-		pipeline_utils.command_call(cmd)
+		pipeline_utils.command_call(cmd, [self.output()])
 
 class scalpel_export(luigi.Task):
-	max_threads = luigi.Parameter()
+	max_threads = luigi.IntParameter()
 	matched_n = luigi.Parameter()
 	project_dir = luigi.Parameter()
 
@@ -133,10 +133,10 @@ class scalpel_export(luigi.Task):
 			cmd = ['./scalpel-0.5.4/scalpel-export', '--somatic', '--db', self.input().path[:-4], '--bed', self.library_bed, '--ref', self.fasta_file]
 		else:
 			cmd = ['./scalpel-0.5.4/scalpel-export', '--single', '--db', self.input().path[:-4], '--bed', self.library_bed, '--ref', self.fasta_file]
-		pipeline_utils.command_call(cmd)
+		pipeline_utils.command_call(cmd, [self.output()], sleep_time=1.1)
 
 class freebayes(luigi.Task):
-	max_threads = luigi.Parameter()
+	max_threads = luigi.IntParameter()
 	matched_n = luigi.Parameter()
 	project_dir = luigi.Parameter()
 
@@ -164,7 +164,7 @@ class freebayes(luigi.Task):
 			cmd = ['./scalpel-0.5.4/scalpel-discovery', '--somatic', '--normal', self.input()[1].path, '--tumor', self.input()[0].path, '--bed', self.library_bed, '--ref', self.fasta_file, '--two-pass', '--dir', os.path.join(self.vcf_path, 'scalpel'), '--numprocs', str(self.max_threads)]
 		else:
 			cmd = ['./scalpel-0.5.4/scalpel-discovery', '--single', '--bam', self.input()[0].path, '--bed', self.library_bed, '--ref', self.fasta_file, '--dir', os.path.join(self.vcf_path, 'scalpel'), '--numprocs', str(self.max_threads)]
-		pipeline_utils.command_call(cmd)
+		pipeline_utils.command_call(cmd, [self.output()])
 # 'VarDict': {'tumor_only': 'AF_THR="0.01" \
 # vardict -G %s -f $AF_THR -N %s -b %s -c 1 -S 2 -E 3 -g 4 -x 100 %s | teststrandbias.R | var2vcf_valid.pl -N %s -E -f $AF_THR' % (self.fasta_file, self.case + 'T', tumor_bam, self.library_bed, self.case + 'T'),
 # 			'matched_n': 'AF_THR="0.01" \
