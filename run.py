@@ -1,6 +1,5 @@
 import os
 import sys
-import luigi
 import argparse
 
 if __name__ == '__main__':
@@ -29,6 +28,7 @@ if __name__ == '__main__':
 	
 	sys.path.append('./code')
 	sys.path.append('./packages')
+	import luigi
 	import bam_processing
 	# sample_csv = sys.argv[1]
 	# sample_df = pd.read_csv(sample_csv, header=True, index_col='sample_id')
