@@ -99,9 +99,9 @@ class scalpel_discovery(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
 		if self.matched_n:
-			cmd = ['./scalpel-0.5.4/scalpel-discovery', '--somatic', '--normal', self.input()[1].path, '--tumor', self.input()[0].path, '--bed', self.library_bed, '--ref', self.fasta_file, '--two-pass', '--dir', os.path.join(self.vcf_path, 'scalpel'), '--numprocs', str(self.max_threads)]
+			cmd = ['./packages/scalpel-0.5.4/scalpel-discovery', '--somatic', '--normal', self.input()[1].path, '--tumor', self.input()[0].path, '--bed', self.library_bed, '--ref', self.fasta_file, '--two-pass', '--dir', os.path.join(self.vcf_path, 'scalpel'), '--numprocs', str(self.max_threads)]
 		else:
-			cmd = ['./scalpel-0.5.4/scalpel-discovery', '--single', '--bam', self.input()[0].path, '--bed', self.library_bed, '--ref', self.fasta_file, '--dir', os.path.join(self.vcf_path, 'scalpel'), '--numprocs', str(self.max_threads)]
+			cmd = ['./packages/scalpel-0.5.4/scalpel-discovery', '--single', '--bam', self.input()[0].path, '--bed', self.library_bed, '--ref', self.fasta_file, '--dir', os.path.join(self.vcf_path, 'scalpel'), '--numprocs', str(self.max_threads)]
 		pipeline_utils.command_call(cmd, [self.output()])
 
 class scalpel_export(luigi.Task):
