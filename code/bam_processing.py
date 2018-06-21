@@ -488,6 +488,7 @@ class cases(luigi.Task):
 	project_dir = luigi.Parameter()
 	max_threads = luigi.IntParameter()
 	sample_dir = luigi.Parameter()
+	threads_per_sample = luigi.Parameter()
 
 	def requires(self):
 		# global global_max_threads, thread_count
@@ -510,8 +511,12 @@ class cases(luigi.Task):
 		# print('\n\n\n\n')
 		# print(self.sample_dir)
 		# print(sample_dict)
+		if self.threads_per_sample:
+			sample_threads = self.threads_per_sample
+		else:
+			sample_threads = self.max_threads//len(sample_dict.keys())
 		for case in sample_dict:
 			tumor = sample_dict[case]['T']
 			matched_n = sample_dict[case]['N']
-			yield aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=self.project_dir, max_threads=self.max_threads//len(sample_dict.keys()))
+			yield aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=self.project_dir, max_threads=sample_threads)
 
