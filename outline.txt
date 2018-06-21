@@ -57,5 +57,6 @@ clean up all parameters (cfg vs. passed)
 add /tmp folder option (will delete all intermediate files once analysis is complete)
 add num requested cpus to docker command
 create linux and mac versions
-
-create docker container
+incorporate paired reads
+add scratch path
+create docker containers with and without resource_bundle, for both os x and linux
