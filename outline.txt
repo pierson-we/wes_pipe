@@ -30,6 +30,7 @@ fastq file
 					DELLY
 					WHAM
 			Variant filtering
+				freebayes (https://wabi-wiki.scilifelab.se/display/SHGATG/Somatic+variant+calling+in+cancer)
 			Variant Recalibration (GATK)
 			Annotate Variants (ANNOVAR)
 			Merge VCFs (picard)
@@ -60,3 +61,4 @@ create linux and mac versions
 incorporate paired reads
 add scratch path
 create docker containers with and without resource_bundle, for both os x and linux
+	specify the default run command, and setup parameter passing
