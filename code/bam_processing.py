@@ -272,11 +272,11 @@ class realigner_target(luigi.Task):
 		return index_bam(fastq_file=self.fastq_file, project_dir=self.project_dir, sample=self.sample, max_threads=self.max_threads)
 
 	def output(self):
-		return [self.input()[0], luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_forIndelRealigner.intervals'))]
+		return self.input() + [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_forIndelRealigner.intervals'))]
 
 	def run(self):
-		pipeline_utils.confirm_path(self.output()[1].path)
-		cmd = ['java', '-jar', self.gatk3_location, '-nt', str(self.max_threads), '-T', 'RealignerTargetCreator', '-R', self.fasta_file, '-I', self.input()[0].path, '--known', self.known_vcf, '-o', self.output()[1].path]
+		pipeline_utils.confirm_path(self.output()[2].path)
+		cmd = ['java', '-jar', self.gatk3_location, '-nt', str(self.max_threads), '-T', 'RealignerTargetCreator', '-R', self.fasta_file, '-I', self.input()[0].path, '--known', self.known_vcf, '-o', self.output()[2].path]
 		pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads, sleep_time=0.6)
 		# for input_file in self.input():
 		# 	input_file.remove()
@@ -304,7 +304,7 @@ class indel_realignment(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
-		cmd = ['java', '-jar', self.gatk3_location, '-T', 'IndelRealigner', '-R', self.fasta_file, '-I', self.input()[0].path, '-known', self.known_vcf, '-targetIntervals', self.input()[1].path, '-o', self.output().path]
+		cmd = ['java', '-jar', self.gatk3_location, '-T', 'IndelRealigner', '-R', self.fasta_file, '-I', self.input()[0].path, '-known', self.known_vcf, '-targetIntervals', self.input()[2].path, '-o', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.7)
 		for input_file in self.input():
 			input_file.remove()
@@ -331,8 +331,8 @@ class bqsr(luigi.Task):
 		return self.input() + [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_recalibrated.table'))]
 
 	def run(self):
-		pipeline_utils.confirm_path(self.output()[1].path)
-		cmd = ['java', '-jar', self.gatk3_location, '-T', 'BaseRecalibrator', '-R', self.fasta_file, '-I', self.input().path, '-knownSites', self.known_vcf, '-o',  self.output()[2].path]
+		pipeline_utils.confirm_path(self.output()[2].path)
+		cmd = ['java', '-jar', self.gatk3_location, '-T', 'BaseRecalibrator', '-R', self.fasta_file, '-I', self.input()[0].path, '-knownSites', self.known_vcf, '-o',  self.output()[2].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.8)
 		# self.input().remove()
 
