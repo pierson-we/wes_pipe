@@ -277,7 +277,7 @@ class realigner_target(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[1].path)
 		cmd = ['java', '-jar', self.gatk3_location, '-nt', str(self.max_threads), '-T', 'RealignerTargetCreator', '-R', self.fasta_file, '-I', self.input()[0].path, '--known', self.known_vcf, '-o', self.output()[1].path]
-		pipeline_utils.command_call(cmd, self.output(), threads_needed=2, sleep_time=0.6)
+		pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads, sleep_time=0.6)
 		# for input_file in self.input():
 		# 	input_file.remove()
 
