@@ -252,8 +252,7 @@ class index_bam(luigi.Task):
 		# cmd = [os.getcwd() + '/' + self.samtools_location, 'index', '-b', self.input()[0].path]
 		cmd = [self.samtools_location, 'index', '-b', self.input()[0].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.5)
-		for input_file in self.input():
-			input_file.remove()
+		self.input()[1].remove()
 
 # ~20 mins w/2 cores
 class realigner_target(luigi.Task):
@@ -279,8 +278,8 @@ class realigner_target(luigi.Task):
 		pipeline_utils.confirm_path(self.output()[1].path)
 		cmd = ['java', '-jar', self.gatk3_location, '-nt', str(self.max_threads), '-T', 'RealignerTargetCreator', '-R', self.fasta_file, '-I', self.input()[0].path, '--known', self.known_vcf, '-o', self.output()[1].path]
 		pipeline_utils.command_call(cmd, self.output(), threads_needed=2, sleep_time=0.6)
-		for input_file in self.input():
-			input_file.remove()
+		# for input_file in self.input():
+		# 	input_file.remove()
 
 # https://software.broadinstitute.org/gatk/documentation/tooldocs/3.8-0/org_broadinstitute_gatk_tools_walkers_indels_IndelRealigner.php
 # ~45 mins (no multiprocessing available)
@@ -335,7 +334,7 @@ class bqsr(luigi.Task):
 		pipeline_utils.confirm_path(self.output()[1].path)
 		cmd = ['java', '-jar', self.gatk3_location, '-T', 'BaseRecalibrator', '-R', self.fasta_file, '-I', self.input().path, '-knownSites', self.known_vcf, '-o',  self.output()[1].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.8)
-		self.input().remove()
+		# self.input().remove()
 
 # ~75 mins (no multiprocessing available)
 class recalibrated_bam(luigi.Task):
