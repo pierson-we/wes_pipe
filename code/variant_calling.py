@@ -22,6 +22,7 @@ class mutect(luigi.Task):
 	gatk3_location = luigi.Parameter()
 	known_vcf = luigi.Parameter()
 	germline_resource = luigi.Parameter()
+	library_bed = luigi.Parameter()
 	fasta_file = luigi.Parameter()
 	fasta_dir = os.path.join('/', *luigi.Parameter().task_value('bowtie', 'fasta_file').split('/')[:-1])
 
