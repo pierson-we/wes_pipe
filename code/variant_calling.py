@@ -38,9 +38,9 @@ class mutect(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
 		if self.matched_n:
-			cmd = [self.gatk4_location, 'Mutect2', '-R', self.fasta_file, '-I', self.input()[0][0].path, '-tumor', self.case + '_T', '-I', self.input()[1][0].path, '-normal', self.case + '_N', '--germline-resource', self.germline_resource, '-O', self.output().path]
+			cmd = [self.gatk4_location, 'Mutect2', '-R', self.fasta_file, '-I', self.input()[0][0].path, '-tumor', self.case + '_T', '-I', self.input()[1][0].path, '-normal', self.case + '_N', '--germline-resource', self.germline_resource, '--af-of-alleles-not-in-resource', '0.0000025', '-L', self.library_bed, '-O', self.output().path]
 		else:
-			cmd = [self.gatk4_location, 'Mutect2', '-R', self.fasta_file, '-I', self.input()[0][0].path, '-tumor', self.case + '_T', '--germline-resource', self.germline_resource, '-O', self.output().path]
+			cmd = [self.gatk4_location, 'Mutect2', '-R', self.fasta_file, '-I', self.input()[0][0].path, '-tumor', self.case + '_T', '--germline-resource', self.germline_resource, '--af-of-alleles-not-in-resource', '0.0000025', '-L', self.library_bed, '-O', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], threads_needed=4)
 
 class filter_mutect(luigi.Task):
