@@ -487,7 +487,7 @@ class cases(luigi.Task):
 	project_dir = luigi.Parameter()
 	max_threads = luigi.IntParameter()
 	sample_dir = luigi.Parameter()
-	threads_per_sample = luigi.Parameter()
+	threads_per_sample = luigi.IntParameter()
 
 	def requires(self):
 		# global global_max_threads, thread_count
