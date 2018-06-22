@@ -103,7 +103,7 @@ class scalpel_discovery(luigi.Task):
 			cmd = ['./packages/scalpel-0.5.4/scalpel-discovery', '--somatic', '--normal', self.input()[1][0].path, '--tumor', self.input()[0][0].path, '--bed', self.library_bed, '--ref', self.fasta_file, '--two-pass', '--dir', os.path.join(self.vcf_path, 'scalpel'), '--numprocs', str(self.max_threads)]
 		else:
 			cmd = ['./packages/scalpel-0.5.4/scalpel-discovery', '--single', '--bam', self.input()[0][0].path, '--bed', self.library_bed, '--ref', self.fasta_file, '--dir', os.path.join(self.vcf_path, 'scalpel'), '--numprocs', str(self.max_threads)]
-		pipeline_utils.command_call(cmd, threads_needed=self.max_threads, [self.output()])
+		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads)
 
 class scalpel_export(luigi.Task):
 	max_threads = luigi.IntParameter()
