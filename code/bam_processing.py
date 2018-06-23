@@ -503,8 +503,9 @@ class cases(luigi.Task):
 					tumor_fastq = os.path.join(self.sample_dir, sample, 'tumor', os.listdir(os.path.join(self.sample_dir, sample, 'tumor'))[0:2])
 					sample_dict[sample]['T'] = tumor_fastq
 					if os.path.exists(os.path.join(self.sample_dir, sample, 'normal')):
-						normal_fastq = os.path.join(self.sample_dir, sample, 'normal', os.listdir(os.path.join(self.sample_dir, sample, 'normal'))[0:2])
-						sample_dict[sample]['N'] = normal_fastq
+						if len(os.listdir(os.path.join(self.sample_dir, sample, 'normal'))) > 0:
+							normal_fastq = os.path.join(self.sample_dir, sample, 'normal', os.listdir(os.path.join(self.sample_dir, sample, 'normal'))[0:2])
+							sample_dict[sample]['N'] = normal_fastq
 		except:
 			raise ValueError("Error in parsing fastq directory.")
 		# print('\n\n\n\n')
