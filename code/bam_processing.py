@@ -106,7 +106,7 @@ class bowtie(luigi.Task):
 		os.chdir(os.path.join(os.path.join(*self.fasta_file.split('/')[:-1]), 'index'))
 
 		# cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
-		cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-1', self.fastq_file.split('\t')[0], '-2', self.fasta_file.split('\t')[1], '-S', self.sample + '_raw.sam']
+		cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-1', self.fastq_file.split('|')[0], '-2', self.fasta_file.split('|')[1], '-S', self.sample + '_raw.sam']
 		pipeline_utils.command_call(cmd, [self.output()], cwd=cwd, threads_needed=self.max_threads, sleep_time=0.2)
 
 		os.chdir(cwd)
@@ -502,11 +502,11 @@ class cases(luigi.Task):
 				sample_dict[sample] = {'T': '', 'N': ''}
 				print(os.listdir(os.path.join(self.sample_dir, sample, 'tumor')))
 				print(os.listdir(os.path.join(self.sample_dir, sample, 'tumor'))[1])
-				tumor_fastq = os.path.join(self.sample_dir, sample, 'tumor', os.listdir(os.path.join(self.sample_dir, sample, 'tumor'))[0]) + '\t' + os.path.join(self.sample_dir, sample, 'tumor', os.listdir(os.path.join(self.sample_dir, sample, 'tumor'))[1])
+				tumor_fastq = os.path.join(self.sample_dir, sample, 'tumor', os.listdir(os.path.join(self.sample_dir, sample, 'tumor'))[0]) + '|' + os.path.join(self.sample_dir, sample, 'tumor', os.listdir(os.path.join(self.sample_dir, sample, 'tumor'))[1])
 				sample_dict[sample]['T'] = tumor_fastq
 				if os.path.exists(os.path.join(self.sample_dir, sample, 'normal')):
 					if len(os.listdir(os.path.join(self.sample_dir, sample, 'normal'))) > 0:
-						normal_fastq = os.path.join(self.sample_dir, sample, 'normal', os.listdir(os.path.join(self.sample_dir, sample, 'normal'))[0]) + '\t' + os.path.join(self.sample_dir, sample, 'normal', os.listdir(os.path.join(self.sample_dir, sample, 'normal'))[1])
+						normal_fastq = os.path.join(self.sample_dir, sample, 'normal', os.listdir(os.path.join(self.sample_dir, sample, 'normal'))[0]) + '|' + os.path.join(self.sample_dir, sample, 'normal', os.listdir(os.path.join(self.sample_dir, sample, 'normal'))[1])
 						sample_dict[sample]['N'] = normal_fastq
 		# except:
 		# 	raise ValueError("Error in parsing fastq directory.")
