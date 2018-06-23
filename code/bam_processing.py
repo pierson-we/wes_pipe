@@ -48,7 +48,7 @@ class samtools_index(luigi.Task):
 	
 	def run(self):
 		# cmd = [self.samtools_location, 'faidx', '--nthreads=%s' % self.max_threads, self.fasta_file]
-		cmd = [self.samtools_location, 'faidx', '--nthreads=%s' % self.max_threads, self.fasta_file]
+		cmd = ['samtools', 'faidx', '--nthreads=%s' % self.max_threads, self.fasta_file]
 		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads, sleep_time=0.1)
 		# samtools faidx Homo_sapiens_assembly18.fasta
 
