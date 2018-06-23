@@ -22,13 +22,13 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 
-	if not os.path.exists(os.path.join(os.getcwd(), 'code')):
+	if not os.path.exists(os.path.join(os.getcwd(), 'pipeline_code')):
 		os.chdir('/'.join(sys.argv[0].split('/')[:-1]))
 		sys.path.append(os.getcwd())
-	if not os.path.exists(os.path.join(os.getcwd(), 'code')):
+	if not os.path.exists(os.path.join(os.getcwd(), 'pipeline_code')):
 		raise ValueError('you must run script from "pipeline" directory, as relative references are used throughout the analysis.')
 	
-	sys.path.append('./code')
+	sys.path.append('./pipeline_code')
 	sys.path.append('./packages')
 	import luigi
 	import bam_processing
