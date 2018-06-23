@@ -28,8 +28,8 @@ class genome_index(luigi.Task):
 	
 	def run(self):
 		cwd = os.getcwd()
-		if cwd.split('/')[-1] != 'wes_pipe':
-			print(cwd)
+		# if cwd.split('/')[-1] != 'wes_pipe':
+		print(cwd)
 		os.chdir(self.fasta_dir)
 		if not os.path.exists('./index'):
 			os.mkdir('./index')
@@ -502,8 +502,6 @@ class cases(luigi.Task):
 		for sample in os.listdir(self.sample_dir):
 			if os.path.isdir(os.path.join(self.sample_dir, sample)):
 				sample_dict[sample] = {'T': '', 'N': ''}
-				print(os.listdir(os.path.join(self.sample_dir, sample, 'tumor')))
-				print(os.listdir(os.path.join(self.sample_dir, sample, 'tumor'))[1])
 				tumor_fastq = os.path.join(self.sample_dir, sample, 'tumor', os.listdir(os.path.join(self.sample_dir, sample, 'tumor'))[0]) + '\t' + os.path.join(self.sample_dir, sample, 'tumor', os.listdir(os.path.join(self.sample_dir, sample, 'tumor'))[1])
 				sample_dict[sample]['T'] = tumor_fastq
 				if os.path.exists(os.path.join(self.sample_dir, sample, 'normal')):
