@@ -29,7 +29,7 @@ class genome_index(luigi.Task):
 	def run(self):
 		cwd = os.getcwd()
 		if cwd.split('/')[-1] != 'wes_pipe':
-			sys.exit()
+			print(cwd)
 		os.chdir(self.fasta_dir)
 		if not os.path.exists('./index'):
 			os.mkdir('./index')
