@@ -26,8 +26,9 @@ if __name__ == '__main__':
 		os.chdir('/'.join(sys.argv[0].split('/')[:-1]))
 		sys.path.append(os.getcwd())
 	if not os.path.exists(os.path.join(os.getcwd(), 'code')):
-		raise ValueError('you must run script from "pipeline" directory, as relative references are used throughout the analysis.')
+		raise ValueError('you must run script from "wes_pipe" directory, as relative references are used throughout the analysis.')
 	
+	print('\n\n\n' + os.getcwd() + '\n\n\n' + )
 	sys.path.append('./code')
 	sys.path.append('./packages')
 	import luigi
