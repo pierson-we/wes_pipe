@@ -27,7 +27,7 @@ def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 	# # 	time.sleep(sleep_time)
 	# # thread_count += threads_needed
 	# # print('new thread count: %s' % thread_count)
-	print('\n\n' + ' '.join(cmd) + '\n\n')
+	# print('\n\n' + ' '.join(cmd) + '\n\n')
 	
 	while not add_thread_count(thread_file, threads_needed):
 		print('waiting for godot...')

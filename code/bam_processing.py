@@ -34,7 +34,7 @@ class genome_index(luigi.Task):
 		os.chdir('./index')
 		# cmd = [cwd + self.bowtie_location + 'bowtie2-build', '--threads=%s' % self.max_threads, self.fasta_file, self.base_name]
 		cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2-build'), '--threads=%s' % self.max_threads, self.fasta_file, self.base_name]
-		pipeline_utils.command_call(cmd, threads_needed=self.max_threads, sleep_time=0.1)
+		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads, sleep_time=0.1)
 		# subprocess.call([self.bowtie_location + 'bowtie2-build', '--threads=%s' % self.max_threads, self.fasta_file, self.base_name], stdout=subprocess.PIPE)
 		os.chdir(cwd)
 
@@ -49,7 +49,7 @@ class samtools_index(luigi.Task):
 	def run(self):
 		# cmd = [self.samtools_location, 'faidx', '--nthreads=%s' % self.max_threads, self.fasta_file]
 		cmd = [self.samtools_location, 'faidx', '--nthreads=%s' % self.max_threads, self.fasta_file]
-		pipeline_utils.command_call(cmd, threads_needed=self.max_threads, sleep_time=0.1)
+		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads, sleep_time=0.1)
 		# samtools faidx Homo_sapiens_assembly18.fasta
 
 class picard_index(luigi.Task):
@@ -61,7 +61,7 @@ class picard_index(luigi.Task):
 	
 	def run(self):
 		cmd = ['java', '-jar', self.picard_location, 'CreateSequenceDictionary', 'R=%s' % self.fasta_file, 'O=%s' % self.output().path]
-		pipeline_utils.command_call(cmd, sleep_time=0.1)
+		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.1)
 		# subprocess.call(cmd, stdout=subprocess.PIPE)
 
 # FastQC: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/
