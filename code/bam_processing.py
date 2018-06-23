@@ -500,6 +500,7 @@ class cases(luigi.Task):
 			for sample in os.listdir(self.sample_dir):
 				if os.path.isdir(os.path.join(self.sample_dir, sample)):
 					sample_dict[sample] = {'T': '', 'N': ''}
+					print(os.listdir(os.path.join(self.sample_dir, sample, 'tumor')))
 					tumor_fastq = [os.path.join(self.sample_dir, sample, 'tumor', os.listdir(os.path.join(self.sample_dir, sample, 'tumor'))[0]), os.path.join(self.sample_dir, sample, 'tumor', os.listdir(os.path.join(self.sample_dir, sample, 'tumor'))[1])]
 					sample_dict[sample]['T'] = tumor_fastq
 					if os.path.exists(os.path.join(self.sample_dir, sample, 'normal')):
