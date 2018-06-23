@@ -105,6 +105,7 @@ class bowtie(luigi.Task):
 	def run(self):
 		# try:
 		cwd = os.getcwd()
+		print(cwd)
 		os.chdir(os.path.join(os.path.join(*self.fasta_file.split('/')[:-1]), 'index'))
 
 		# cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
