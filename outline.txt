@@ -29,8 +29,8 @@ fastq file
 					LUMPY
 					DELLY
 					WHAM
-			Variant filtering
-				freebayes (https://wabi-wiki.scilifelab.se/display/SHGATG/Somatic+variant+calling+in+cancer)
+			Variant filtering (method may vary for each variant caller, based on any filtering and annotation it performs by default)
+				freebayes (https://wabi-wiki.scilifelab.se/display/SHGATG/Somatic+variant+calling+in+cancer and https://github.com/ekg/freebayes#calling-variants-from-fastq-to-vcf)
 			Variant Recalibration (GATK)
 			Annotate Variants (ANNOVAR)
 			Merge VCFs (picard)
@@ -62,3 +62,6 @@ incorporate paired reads
 add scratch path
 create docker containers with and without resource_bundle, for both os x and linux
 	specify the default run command, and setup parameter passing
+possibility of streaming inputs (using stdin "|")
+create panel of normals or similar for analyzing CNV in unpaired samples
+pass fastq params as lists
