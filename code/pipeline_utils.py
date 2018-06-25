@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import fcntl
 import os
+import sys
 import time
 import subprocess
 import random
@@ -103,8 +104,8 @@ def sub_thread_count(thread_file, threads=1, sleep_time=0.05):
 def error_handling(exception):
 	print('Current working files at time of interruption:')
 	print(pipeline_utils.working_files)
+	print(cwd)
 	os.chdir(cwd)
 	for file in pipeline_utils.working_files:
 		os.remove(file)
 	raise exception
-	return None
