@@ -88,7 +88,7 @@ class bowtie(luigi.Task):
 	base_name = luigi.Parameter()
 	sample = luigi.Parameter()
 
-	fasta_dir = os.path.join('/', *luigi.Parameter().task_value('bowtie', 'fasta_file').split('/')[:-1])
+	fasta_dir = os.path.join(*luigi.Parameter().task_value('bowtie', 'fasta_file').split('/')[:-1])
 
 	# fasta_dir = os.path.join('/', *luigi.Parameter().task_value('bowtie', 'fasta_file').split('/')[:-1])
 
