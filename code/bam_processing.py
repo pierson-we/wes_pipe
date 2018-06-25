@@ -104,11 +104,11 @@ class bowtie(luigi.Task):
 	def run(self):
 		# try:
 		cwd = os.getcwd()
-		print(cwd)
+		# print(cwd)
 
 		# os.chdir(os.path.join(os.path.join(*self.fasta_file.split('/')[:-1]), 'index'))
 		os.chdir(os.path.join(self.fasta_dir, 'index'))
-		print(os.getcwd())
+		# print(os.getcwd())
 		# cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
 		cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-1', self.fastq_file.split('\t')[0], '-2', self.fastq_file.split('\t')[1], '-S', self.sample + '_raw.sam']
 		pipeline_utils.command_call(cmd, [self.output()], cwd=cwd, threads_needed=self.max_threads, sleep_time=0.2)
@@ -497,6 +497,7 @@ class cases(luigi.Task):
 		# global global_max_threads, thread_count
 		pipeline_utils.global_max_threads = self.max_threads
 		pipeline_utils.thread_file = os.path.join(os.getcwd(), 'thread_count_temp.txt')
+		print(pipeline_utils.thread_file)
 		pipeline_utils.init_thread_file(pipeline_utils.thread_file)
 
 		sample_dict = {}
