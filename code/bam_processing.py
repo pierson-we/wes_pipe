@@ -502,6 +502,7 @@ class cases(luigi.Task):
 		pipeline_utils.thread_file = os.path.join(os.getcwd(), 'thread_count_temp.txt')
 		print(pipeline_utils.thread_file)
 		pipeline_utils.init_thread_file(pipeline_utils.thread_file)
+		pipeline_utils.cwd = os.getcwd()
 
 		sample_dict = {}
 		# try:
@@ -526,6 +527,5 @@ class cases(luigi.Task):
 		for case in sample_dict:
 			tumor = sample_dict[case]['T']
 			matched_n = sample_dict[case]['N']
-			print('sample_threads:%s' % sample_threads)
 			yield aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=self.project_dir, max_threads=sample_threads)
 

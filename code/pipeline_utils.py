@@ -8,6 +8,7 @@ import random
 global_max_threads = 0
 thread_file = ''
 working_files = {}
+cwd = ''
 
 def confirm_path(file):
 	if not os.path.exists(os.path.dirname(file)):
@@ -101,6 +102,8 @@ def sub_thread_count(thread_file, threads=1, sleep_time=0.05):
 def error_handling(exception):
 	print('Current working files at time of interruption:')
 	print(pipeline_utils.working_files)
+	os.chdir(cwd)
 	for file in pipeline_utils.working_files:
 		os.remove(file)
 	raise exception
+	return None
