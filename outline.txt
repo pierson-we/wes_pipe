@@ -64,4 +64,6 @@ create docker containers with and without resource_bundle, for both os x and lin
 	specify the default run command, and setup parameter passing
 possibility of streaming inputs (using stdin "|")
 create panel of normals or similar for analyzing CNV in unpaired samples
-pass fastq params as lists
+pass fastq params as a list
+incorporate clinvar sites in filtering
+look at best practices for all tools

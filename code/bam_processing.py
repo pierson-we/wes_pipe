@@ -5,7 +5,6 @@ import luigi.interface
 import os
 import sys
 import time
-# import numpy as np
 import pipeline_utils
 from variant_calling import *
 
@@ -503,6 +502,7 @@ class cases(luigi.Task):
 		sample_dict = {}
 		# try:
 		for sample in os.listdir(self.sample_dir):
+			print(sample)
 			if os.path.isdir(os.path.join(self.sample_dir, sample)):
 				sample_dict[sample] = {'T': '', 'N': ''}
 				tumor_fastq = os.path.join(self.sample_dir, sample, 'tumor', os.listdir(os.path.join(self.sample_dir, sample, 'tumor'))[0]) + '\t' + os.path.join(self.sample_dir, sample, 'tumor', os.listdir(os.path.join(self.sample_dir, sample, 'tumor'))[1])
