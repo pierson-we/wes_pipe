@@ -24,7 +24,7 @@ def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 	# try:
 	wait_time = random.uniform(0,0.3)
 	print(wait_time)
-	# time.sleep(wait_time)
+	time.sleep(wait_time)
 	# print('max threads: %s' % global_max_threads)
 	# print('thread count: %s' % get_thread_count(thread_file))
 	# # while global_max_threads - thread_count < threads_needed:
@@ -37,6 +37,7 @@ def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 	print('\n\n' + ' '.join(cmd) + '\n\n')
 	print(global_vars.thread_file)
 	print(global_vars.global_max_threads)
+	print(global_vars.working_files)
 	sys.stdout.flush()
 	while not add_thread_count(global_vars.thread_file, threads_needed):
 		# print('waiting for godot...')
