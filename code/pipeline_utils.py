@@ -7,10 +7,10 @@ import subprocess
 import random
 import global_vars
 
-global_max_threads = 0
-thread_file = ''
-working_files = {}
-cwd = ''
+# global_max_threads = 0
+# thread_file = ''
+# working_files = {}
+# cwd = ''
 
 def confirm_path(file):
 	if not os.path.exists(os.path.dirname(file)):

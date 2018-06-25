@@ -2,7 +2,7 @@
 import os
 import sys
 import argparse
-from code import pipeline_utils, global_vars
+# from code import pipeline_utils, global_vars
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='wes pipeline parser')
