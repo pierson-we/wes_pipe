@@ -35,17 +35,17 @@ def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 
 	print('\n\n' + ' '.join(cmd) + '\n\n')
 	
-	while not add_thread_count(thread_file, threads_needed):
+	while not add_thread_count(global_vars.thread_file, threads_needed):
 		# print('waiting for godot...')
 		time.sleep(sleep_time)
 	for output in outputs:
-		working_files[output.path] = ''
-	print(working_files)
+		global_vars.working_files[output.path] = ''
+	print(global_vars.working_files)
 	sys.stdout.flush()
 	subprocess.call(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	for output in outputs:
-		del working_files[output.path]
-	while not sub_thread_count(thread_file, threads_needed):
+		del global_vars.working_files[output.path]
+	while not sub_thread_count(global_vars.thread_file, threads_needed):
 		# print('waiting for godot...')
 		time.sleep(sleep_time)
 	# thread_count -= threads_needed
@@ -80,7 +80,7 @@ def add_thread_count(thread_file, threads=1, sleep_time=0.05):
 			with open(thread_file, 'r+') as f:
 				fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
 				thread_count = int(f.readlines()[-1])
-				if global_max_threads - thread_count >= threads:
+				if global_vars.global_max_threads - thread_count >= threads:
 					f.write('\n' + str(thread_count + threads))
 					fcntl.flock(f, fcntl.LOCK_UN)
 					return True
