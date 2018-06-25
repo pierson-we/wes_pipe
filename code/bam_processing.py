@@ -28,7 +28,7 @@ class genome_index(luigi.Task):
 	def run(self):
 		cwd = os.getcwd()
 		# if cwd.split('/')[-1] != 'wes_pipe':
-		print(cwd)
+		# print(cwd)
 		os.chdir(self.fasta_dir)
 		if not os.path.exists('./index'):
 			os.mkdir('./index')
@@ -108,7 +108,7 @@ class bowtie(luigi.Task):
 
 		# os.chdir(os.path.join(os.path.join(*self.fasta_file.split('/')[:-1]), 'index'))
 		os.chdir(os.path.join(self.fasta_dir, 'index'))
-		print(cwd)
+		print(os.getcwd())
 		# cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
 		cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-1', self.fastq_file.split('\t')[0], '-2', self.fastq_file.split('\t')[1], '-S', self.sample + '_raw.sam']
 		pipeline_utils.command_call(cmd, [self.output()], cwd=cwd, threads_needed=self.max_threads, sleep_time=0.2)
@@ -502,7 +502,6 @@ class cases(luigi.Task):
 		sample_dict = {}
 		# try:
 		for sample in os.listdir(self.sample_dir):
-			print(sample)
 			if os.path.isdir(os.path.join(self.sample_dir, sample)):
 				sample_dict[sample] = {'T': '', 'N': ''}
 				tumor_fastq = os.path.join(self.sample_dir, sample, 'tumor', os.listdir(os.path.join(self.sample_dir, sample, 'tumor'))[0]) + '\t' + os.path.join(self.sample_dir, sample, 'tumor', os.listdir(os.path.join(self.sample_dir, sample, 'tumor'))[1])
