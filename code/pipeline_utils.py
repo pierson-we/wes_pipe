@@ -6,6 +6,8 @@ import time
 import subprocess
 import random
 import global_vars
+import bam_processing
+import variant_calling
 
 # global_max_threads = 0
 # thread_file = ''
