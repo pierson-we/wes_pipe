@@ -35,7 +35,6 @@ def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 	global working_files
 
 	print('\n\n' + ' '.join(cmd) + '\n\n')
-	sys.stdout.flush()
 	
 	while not add_thread_count(thread_file, threads_needed):
 		# print('waiting for godot...')
@@ -43,6 +42,7 @@ def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 	for output in outputs:
 		working_files[output.path] = ''
 	print(working_files)
+	sys.stdout.flush()
 	subprocess.call(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	for output in outputs:
 		del working_files[output.path]
@@ -104,12 +104,12 @@ def sub_thread_count(thread_file, threads=1, sleep_time=0.05):
 		except IOError as e:
 			time.sleep(sleep_time)
 
-def error_handling(exception):
-	global working_files
-	print('Current working files at time of interruption:')
-	print(pipeline_utils.working_files)
-	print(cwd)
-	os.chdir(cwd)
-	for file in pipeline_utils.working_files:
-		os.remove(file)
-	raise exception
+# def error_handling(exception):
+# 	global working_files
+# 	print('Current working files at time of interruption:')
+# 	print(pipeline_utils.working_files)
+# 	print(cwd)
+# 	os.chdir(cwd)
+# 	for file in pipeline_utils.working_files:
+# 		os.remove(file)
+# 	raise exception

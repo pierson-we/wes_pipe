@@ -105,20 +105,20 @@ class bowtie(luigi.Task):
 		return luigi.LocalTarget(os.path.join(os.path.join(*self.fasta_file.split('/')[:-1]), 'index', self.sample + '_raw.bam'))
 
 	def run(self):
-		try:
-			cwd = os.getcwd()
-			# print(cwd)
+		# try:
+		cwd = os.getcwd()
+		# print(cwd)
 
-			# os.chdir(os.path.join(os.path.join(*self.fasta_file.split('/')[:-1]), 'index'))
-			os.chdir(os.path.join(self.fasta_dir, 'index'))
-			# print(os.getcwd())
-			# cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
-			cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-1', self.fastq_file.split('\t')[0], '-2', self.fastq_file.split('\t')[1], '-S', self.sample + '_raw.bam']
-			pipeline_utils.command_call(cmd, [self.output()], cwd=cwd, threads_needed=self.max_threads, sleep_time=0.2)
+		# os.chdir(os.path.join(os.path.join(*self.fasta_file.split('/')[:-1]), 'index'))
+		os.chdir(os.path.join(self.fasta_dir, 'index'))
+		# print(os.getcwd())
+		# cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
+		cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-1', self.fastq_file.split('\t')[0], '-2', self.fastq_file.split('\t')[1], '-S', self.sample + '_raw.bam']
+		pipeline_utils.command_call(cmd, [self.output()], cwd=cwd, threads_needed=self.max_threads, sleep_time=0.2)
 
-			os.chdir(cwd)
-		except KeyboardInterrupt:
-			pipeline_utils.error_handling(KeyboardInterrupt)
+		os.chdir(cwd)
+		# except KeyboardInterrupt:
+		# 	pipeline_utils.error_handling(KeyboardInterrupt)
 		# 	os.chdir(cwd)
 		# 	self.output().remove()
 		# 	sys.exit()
@@ -529,4 +529,14 @@ class cases(luigi.Task):
 			tumor = sample_dict[case]['T']
 			matched_n = sample_dict[case]['N']
 			yield aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=self.project_dir, max_threads=sample_threads)
+
+@luigi.Task.event_handler(luigi.Event.FAILURE)
+def error_handling(exception):
+	print('Current working files at time of interruption:')
+	print(pipeline_utils.working_files)
+	print(cwd)
+	os.chdir(cwd)
+	for file in pipeline_utils.working_files:
+		os.remove(file)
+	raise exception
 
