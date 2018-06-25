@@ -8,7 +8,6 @@ import random
 
 global_max_threads = 0
 thread_file = ''
-global working_files, cwd
 working_files = {}
 cwd = ''
 
@@ -32,7 +31,7 @@ def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 	# # 	time.sleep(sleep_time)
 	# # thread_count += threads_needed
 	# # print('new thread count: %s' % thread_count)
-	global working_files
+	# global working_files
 
 	print('\n\n' + ' '.join(cmd) + '\n\n')
 	

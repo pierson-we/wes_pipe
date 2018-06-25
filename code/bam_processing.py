@@ -13,6 +13,15 @@ from variant_calling import *
 # https://software.broadinstitute.org/gatk/download/bundle
 # ***
 
+@luigi.Task.event_handler(luigi.Event.FAILURE)
+def error_handling(task, exception):
+	print('Current working files at time of interruption:')
+	print(pipeline_utils.working_files)
+	print(cwd)
+	os.chdir(cwd)
+	for file in pipeline_utils.working_files:
+		os.remove(file)
+	raise exception
 
 class genome_index(luigi.Task):
 	max_threads = luigi.IntParameter()
@@ -529,14 +538,4 @@ class cases(luigi.Task):
 			tumor = sample_dict[case]['T']
 			matched_n = sample_dict[case]['N']
 			yield aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=self.project_dir, max_threads=sample_threads)
-
-@luigi.Task.event_handler(luigi.Event.FAILURE)
-def error_handling(exception):
-	print('Current working files at time of interruption:')
-	print(pipeline_utils.working_files)
-	print(cwd)
-	os.chdir(cwd)
-	for file in pipeline_utils.working_files:
-		os.remove(file)
-	raise exception
 
