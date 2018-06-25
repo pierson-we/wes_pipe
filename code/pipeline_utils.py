@@ -31,13 +31,14 @@ def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 	# # thread_count += threads_needed
 	# # print('new thread count: %s' % thread_count)
 	print('\n\n' + ' '.join(cmd) + '\n\n')
-	print(thread_file)
+	sys.stdout.flush()
 	
 	while not add_thread_count(thread_file, threads_needed):
 		# print('waiting for godot...')
 		time.sleep(sleep_time)
 	for output in outputs:
 		working_files[output.path] = ''
+	print(working_files)
 	subprocess.call(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	for output in outputs:
 		del working_files[output.path]
