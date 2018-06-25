@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
 import os
 import sys
 import argparse
+from code import pipeline_utils
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='wes pipeline parser')
@@ -51,6 +53,11 @@ if __name__ == '__main__':
 	
 	# project_dir = sys.argv[1]
 	# sample_dir = sys.argv[2]
-
-	luigi.build([bam_processing.cases(max_threads=args.max_threads, project_dir=args.project_dir, sample_dir=args.sample_dir, threads_per_sample=args.threads_per_sample)], workers=args.workers, local_scheduler=args.local_scheduler)
+	try:
+		luigi.build([bam_processing.cases(max_threads=args.max_threads, project_dir=args.project_dir, sample_dir=args.sample_dir, threads_per_sample=args.threads_per_sample)], workers=args.workers, local_scheduler=args.local_scheduler)
+	except:
+		print('Current working files at time of interruption:')
+		print(pipeline_utils.working_files)
+		for file in pipeline_utils.working_files:
+			os.remove(file)
 	# luigi.build([bowtie(fastq_path=fastq_path, sam_path=sam_path, threads=threads, fasta_path=fasta_path), convert_bam(sam_path=sam_path, bam_path=bam_path)], workers=1, local_scheduler=False)

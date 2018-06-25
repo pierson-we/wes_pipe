@@ -7,6 +7,7 @@ import random
 
 global_max_threads = 0
 thread_file = ''
+working_files = {}
 
 def confirm_path(file):
 	if not os.path.exists(os.path.dirname(file)):
@@ -34,7 +35,11 @@ def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 	while not add_thread_count(thread_file, threads_needed):
 		# print('waiting for godot...')
 		time.sleep(sleep_time)
+	for output in outputs:
+		working_files[output.path] = ''
 	subprocess.call(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	for output in outputs:
+		del working_files[output.path]
 	while not sub_thread_count(thread_file, threads_needed):
 		# print('waiting for godot...')
 		time.sleep(sleep_time)
