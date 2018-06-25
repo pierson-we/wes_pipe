@@ -518,7 +518,7 @@ class cases(luigi.Task):
 		if self.threads_per_sample:
 			sample_threads = self.threads_per_sample
 		else:
-			sample_threads = self.max_threads//len(sample_dict.keys())
+			sample_threads = max(1, self.max_threads//len(sample_dict.keys()))
 		for case in sample_dict:
 			tumor = sample_dict[case]['T']
 			matched_n = sample_dict[case]['N']
