@@ -32,7 +32,7 @@ def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 	print(thread_file)
 	
 	while not add_thread_count(thread_file, threads_needed):
-		print('waiting for godot...')
+		# print('waiting for godot...')
 		time.sleep(sleep_time)
 	subprocess.call(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	while not sub_thread_count(thread_file, threads_needed):
