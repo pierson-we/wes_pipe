@@ -523,5 +523,6 @@ class cases(luigi.Task):
 		for case in sample_dict:
 			tumor = sample_dict[case]['T']
 			matched_n = sample_dict[case]['N']
+			print('sample_threads:%s' % sample_threads)
 			yield aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=self.project_dir, max_threads=sample_threads)
 
