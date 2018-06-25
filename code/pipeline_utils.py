@@ -8,6 +8,7 @@ import random
 
 global_max_threads = 0
 thread_file = ''
+global working_files, cwd
 working_files = {}
 cwd = ''
 
@@ -31,6 +32,8 @@ def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 	# # 	time.sleep(sleep_time)
 	# # thread_count += threads_needed
 	# # print('new thread count: %s' % thread_count)
+	global working_files
+
 	print('\n\n' + ' '.join(cmd) + '\n\n')
 	sys.stdout.flush()
 	
@@ -102,6 +105,7 @@ def sub_thread_count(thread_file, threads=1, sleep_time=0.05):
 			time.sleep(sleep_time)
 
 def error_handling(exception):
+	global working_files
 	print('Current working files at time of interruption:')
 	print(pipeline_utils.working_files)
 	print(cwd)
