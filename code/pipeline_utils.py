@@ -97,3 +97,10 @@ def sub_thread_count(thread_file, threads=1, sleep_time=0.05):
 				return True
 		except IOError as e:
 			time.sleep(sleep_time)
+
+def error_handling(exception):
+	print('Current working files at time of interruption:')
+	print(pipeline_utils.working_files)
+	for file in pipeline_utils.working_files:
+		os.remove(file)
+	raise exception

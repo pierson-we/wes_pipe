@@ -90,6 +90,9 @@ class bowtie(luigi.Task):
 
 	fasta_dir = os.path.join(*luigi.Parameter().task_value('bowtie', 'fasta_file').split('/')[:-1])
 
+	def on_failure(self, exception):
+		pipeline_utils.error_handling(exception)
+
 	# fasta_dir = os.path.join('/', *luigi.Parameter().task_value('bowtie', 'fasta_file').split('/')[:-1])
 
 	def requires(self):
