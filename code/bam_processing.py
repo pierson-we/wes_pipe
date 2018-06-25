@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import pipeline_utils
+import global_vars
 from variant_calling import *
 
 # ***
@@ -16,10 +17,10 @@ from variant_calling import *
 @luigi.Task.event_handler(luigi.Event.FAILURE)
 def error_handling(task, exception):
 	print('Current working files at time of interruption:')
-	print(pipeline_utils.working_files)
+	print(global_vars.working_files)
 	print(cwd)
 	os.chdir(cwd)
-	for file in pipeline_utils.working_files:
+	for file in global_vars.working_files:
 		os.remove(file)
 	raise exception
 
@@ -508,11 +509,11 @@ class cases(luigi.Task):
 
 	def requires(self):
 		# global global_max_threads, thread_count
-		pipeline_utils.global_max_threads = self.max_threads
-		pipeline_utils.thread_file = os.path.join(os.getcwd(), 'thread_count_temp.txt')
-		print(pipeline_utils.thread_file)
-		pipeline_utils.init_thread_file(pipeline_utils.thread_file)
-		pipeline_utils.cwd = os.getcwd()
+		global_vars.global_max_threads = self.max_threads
+		global_vars.thread_file = os.path.join(os.getcwd(), 'thread_count_temp.txt')
+		print(global_vars.thread_file)
+		pipeline_utils.init_thread_file(global_vars.thread_file)
+		global_vars.cwd = os.getcwd()
 
 		sample_dict = {}
 		# try:

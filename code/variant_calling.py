@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import pipeline_utils
+import global_vars
 import bam_processing
 
 class mutect(luigi.Task):
