@@ -5,6 +5,7 @@ import sys
 import time
 import subprocess
 import random
+import global_vars
 
 global_max_threads = 0
 thread_file = ''
