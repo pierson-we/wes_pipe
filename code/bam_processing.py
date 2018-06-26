@@ -544,5 +544,5 @@ class cases(luigi.Task):
 		for case in sample_dict:
 			tumor = sample_dict[case]['T']
 			matched_n = sample_dict[case]['N']
-			yield aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=self.project_dir, max_threads=sample_threads, case_dict=sample_dict
+			yield aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=self.project_dir, max_threads=sample_threads, case_dict=sample_dict)
 
