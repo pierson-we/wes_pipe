@@ -50,7 +50,9 @@ def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 	
 	add_working_files(global_vars.working_files, outputs)
 	
-	subprocess.call(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	f_out = open('/home/wpierson/projects/wes_pipe/out.txt', 'w')
+	f_err = open('/home/wpierson/projects/wes_pipe/err.txt', 'w')
+	subprocess.call(cmd, stdout=f_out, stderr=f_err)
 	
 	rm_working_files(global_vars.working_files, outputs)
 
