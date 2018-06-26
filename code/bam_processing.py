@@ -114,7 +114,7 @@ class bowtie(luigi.Task):
 
 	def output(self):
 		# print(os.path.join(os.path.join('/', *self.fasta_file.split('/')[:-1]), 'index', self.sample + '_raw.sam'))
-		return luigi.LocalTarget(os.path.join(os.path.join(*self.fasta_file.split('/')[:-1]), 'index', self.sample + '_raw.bam'))
+		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_raw.bam'))
 
 	def run(self):
 		# try:
