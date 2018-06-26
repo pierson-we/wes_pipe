@@ -587,7 +587,7 @@ def run_pipeline(args):
 	for case in sample_dict:
 		tumor = sample_dict[case]['T']
 		matched_n = sample_dict[case]['N']
-		luigi.build([bam_processing.aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=args.project_dir, max_threads=sample_threads, case_dict=sample_dict)], workers=2, local_scheduler=args.local_scheduler, worker_scheduler_factory=worker_scheduler_factory) # workers=sample_threads
+		luigi.build([bam_processing.aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=args.project_dir, max_threads=sample_threads, case_dict=sample_dict)], workers=sample_threads, local_scheduler=args.local_scheduler, worker_scheduler_factory=worker_scheduler_factory) # workers=sample_threads
 		# [(max_threads=args.max_threads, project_dir=args.project_dir, sample_dir=args.sample_dir, threads_per_sample=args.threads_per_sample, timestamp=timestamp)], workers=args.workers, local_scheduler=args.local_scheduler)
 		# yield aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=self.project_dir, max_threads=sample_threads, case_dict=sample_dict)
 
