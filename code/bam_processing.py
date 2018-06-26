@@ -15,15 +15,15 @@ from variant_calling import *
 # https://software.broadinstitute.org/gatk/download/bundle
 # ***
 
-@luigi.Task.event_handler(luigi.Event.FAILURE)
-def error_handling(exception):
-	print('Current working files at time of interruption:')
-	print(global_vars.working_files)
-	# print(cwd)
-	os.chdir(global_vars.cwd)
-	# for file in global_vars.working_files:
-	# 	os.remove(file)
-	raise exception
+# @luigi.Task.event_handler(luigi.Event.FAILURE)
+# def error_handling(exception):
+# 	print('Current working files at time of interruption:')
+# 	print(global_vars.working_files)
+# 	# print(cwd)
+# 	os.chdir(global_vars.cwd)
+# 	# for file in global_vars.working_files:
+# 	# 	os.remove(file)
+# 	raise exception
 
 class genome_index(luigi.Task):
 	max_threads = luigi.IntParameter()
