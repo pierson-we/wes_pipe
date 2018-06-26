@@ -16,7 +16,7 @@ import pickle
 # cwd = ''
 
 def confirm_path(file):
-	wait_time = random.uniform(0,.1)
+	wait_time = random.uniform(0,1)
 	time.sleep(wait_time)
 	if not os.path.exists(os.path.dirname(file)):
 		try:
