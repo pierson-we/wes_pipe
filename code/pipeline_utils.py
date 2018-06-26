@@ -8,6 +8,7 @@ import random
 import global_vars
 import bam_processing
 import variant_calling
+import pickle
 
 # global_max_threads = 0
 # thread_file = ''
@@ -24,8 +25,8 @@ def confirm_path(file):
 
 def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 	# try:
-	wait_time = random.uniform(0,0.3)
-	print(wait_time)
+	wait_time = random.uniform(0,5)
+	# print(wait_time)
 	time.sleep(wait_time)
 	# print('max threads: %s' % global_max_threads)
 	# print('thread count: %s' % get_thread_count(thread_file))
@@ -37,20 +38,20 @@ def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 	# global working_files
 
 	print('\n\n' + ' '.join(cmd) + '\n\n')
-	print(global_vars.thread_file)
-	print(global_vars.global_max_threads)
-	print(global_vars.working_files)
+	# print(global_vars.thread_file)
+	# print(global_vars.global_max_threads)
+	# print(global_vars.working_files)
 	sys.stdout.flush()
 	while not add_thread_count(global_vars.thread_file, threads_needed):
 		# print('waiting for godot...')
 		time.sleep(sleep_time)
-	for output in outputs:
-		global_vars.working_files[output.path] = ''
-	print(global_vars.working_files)
-	sys.stdout.flush()
+	
+	add_working_files(global_vars.working_files, outputs)
+	
 	subprocess.call(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	for output in outputs:
-		del global_vars.working_files[output.path]
+	
+	rm_working_files(global_vars.working_files, outputs)
+
 	while not sub_thread_count(global_vars.thread_file, threads_needed):
 		# print('waiting for godot...')
 		time.sleep(sleep_time)
@@ -109,6 +110,54 @@ def sub_thread_count(thread_file, threads=1, sleep_time=0.05):
 		except IOError as e:
 			time.sleep(sleep_time)
 
+def init_working_files(file_log):
+	with open(file_log, 'wb') as f:
+		pickle.dump({}, f)
+
+def add_working_files(file_log, outputs, sleep_time=0.05):
+	while True:
+		try:
+			with open(file_log, 'rb') as f:
+				fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+				working_files = pickle.load(f)
+				fcntl.flock(f, fcntl.LOCK_UN)
+		except IOError as e:
+			time.sleep(sleep_time)
+
+		try: 
+			with open(file_log, 'wb') as f:
+				fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+				for output in outputs:
+					working_files[output.path] = ''
+				pickle.dump(working_files, f)
+				fcntl.flock(f, fcntl.LOCK_UN)
+				return
+		except IOError as e:
+			time.sleep(sleep_time)
+
+def rm_working_files(file_log, outputs, sleep_time=0.05):
+	while True:
+		try:
+			with open(file_log, 'rb') as f:
+				fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+				working_files = pickle.load(f)
+				fcntl.flock(f, fcntl.LOCK_UN)
+		except IOError as e:
+			time.sleep(sleep_time)
+
+		try: 
+			with open(file_log, 'wb') as f:
+				fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+				for output in outputs:
+					try:
+						del working_files[output.path]
+					except:
+						pass
+				pickle.dump(working_files, f)
+				fcntl.flock(f, fcntl.LOCK_UN)
+				return
+		except IOError as e:
+			time.sleep(sleep_time)
 # def error_handling(exception):
 # 	global working_files
 # 	print('Current working files at time of interruption:')

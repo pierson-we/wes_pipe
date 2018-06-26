@@ -512,10 +512,13 @@ class cases(luigi.Task):
 
 	def requires(self):
 		# global global_max_threads, thread_count
+		timestamp = int(time.time())
 		global_vars.global_max_threads = self.max_threads
-		global_vars.thread_file = os.path.join(os.getcwd(), 'thread_count_temp_%s.txt' % int(time.time()))
+		global_vars.thread_file = os.path.join(os.getcwd(), 'thread_count_temp_%s.txt' % timestamp)
 		print(global_vars.thread_file)
 		pipeline_utils.init_thread_file(global_vars.thread_file)
+		global_vars.working_files = os.path.join(os.getcwd(), 'working_files_%s.pkl' % timestamp)
+		pipeline_utils.init_working_files(global_vars.working_files)
 		global_vars.cwd = os.getcwd()
 
 		sample_dict = {}
