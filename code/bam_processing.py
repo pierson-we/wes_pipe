@@ -19,8 +19,8 @@ from variant_calling import *
 def error_handling(task, exception):
 	print('Current working files at time of interruption:')
 	print(global_vars.working_files)
-	print(cwd)
-	os.chdir(cwd)
+	# print(cwd)
+	os.chdir(global_vars.cwd)
 	for file in global_vars.working_files:
 		os.remove(file)
 	raise exception
@@ -37,7 +37,7 @@ class genome_index(luigi.Task):
 		return luigi.LocalTarget(os.path.join(self.fasta_dir, 'index', self.base_name + '.1.bt2'))
 	
 	def run(self):
-		cwd = os.getcwd()
+		# cwd = os.getcwd()
 		# if cwd.split('/')[-1] != 'wes_pipe':
 		# print(cwd)
 		os.chdir(self.fasta_dir)
@@ -45,10 +45,10 @@ class genome_index(luigi.Task):
 			os.mkdir('./index')
 		os.chdir('./index')
 		# cmd = [cwd + self.bowtie_location + 'bowtie2-build', '--threads=%s' % self.max_threads, self.fasta_file, self.base_name]
-		cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2-build'), '--threads=%s' % self.max_threads, self.fasta_file, self.base_name]
+		cmd = [os.path.join(global_vars.cwd, self.bowtie_location, 'bowtie2-build'), '--threads=%s' % self.max_threads, self.fasta_file, self.base_name]
 		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads, sleep_time=0.1)
 		# subprocess.call([self.bowtie_location + 'bowtie2-build', '--threads=%s' % self.max_threads, self.fasta_file, self.base_name], stdout=subprocess.PIPE)
-		os.chdir(cwd)
+		os.chdir(global_vars.cwd)
 
 class samtools_index(luigi.Task):
 	max_threads = luigi.IntParameter()
@@ -103,7 +103,7 @@ class bowtie(luigi.Task):
 	fasta_dir = os.path.join(*luigi.Parameter().task_value('bowtie', 'fasta_file').split('/')[:-1])
 
 	def on_failure(self, exception):
-		pipeline_utils.error_handling(exception)
+		error_handling(exception)
 
 	# fasta_dir = os.path.join('/', *luigi.Parameter().task_value('bowtie', 'fasta_file').split('/')[:-1])
 
@@ -118,17 +118,17 @@ class bowtie(luigi.Task):
 
 	def run(self):
 		# try:
-		cwd = os.getcwd()
+		# cwd = os.getcwd()
 		# print(cwd)
 
 		# os.chdir(os.path.join(os.path.join(*self.fasta_file.split('/')[:-1]), 'index'))
 		os.chdir(os.path.join(self.fasta_dir, 'index'))
 		# print(os.getcwd())
 		# cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
-		cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-1', self.fastq_file.split('\t')[0], '-2', self.fastq_file.split('\t')[1], '|', os.path.join(cwd, self.samtools_location), 'view', '-bS', '-', '>', self.sample + '_raw.bam']
-		pipeline_utils.command_call(cmd, [self.output()], cwd=cwd, threads_needed=self.max_threads, sleep_time=0.2)
+		cmd = [os.path.join(global_Vars.cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-1', self.fastq_file.split('\t')[0], '-2', self.fastq_file.split('\t')[1], '|', os.path.join(global_vars.cwd, self.samtools_location), 'view', '-bS', '-', '>', self.sample + '_raw.bam']
+		pipeline_utils.command_call(cmd, [self.output()], cwd=global_vars.cwd, threads_needed=self.max_threads, sleep_time=0.2)
 
-		os.chdir(cwd)
+		os.chdir(global_vars.cwd)
 		# except KeyboardInterrupt:
 		# 	pipeline_utils.error_handling(KeyboardInterrupt)
 		# 	os.chdir(cwd)
