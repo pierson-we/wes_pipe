@@ -32,7 +32,7 @@ if __name__ == '__main__':
 	
 	sys.path.append('./code')
 	sys.path.append('./packages')
-	import luigi
+	# import luigi
 	import bam_processing
 	# sample_csv = sys.argv[1]
 	# sample_df = pd.read_csv(sample_csv, header=True, index_col='sample_id')
@@ -54,6 +54,7 @@ if __name__ == '__main__':
 	# project_dir = sys.argv[1]
 	# sample_dir = sys.argv[2]
 	
-	luigi.build([bam_processing.cases(max_threads=args.max_threads, project_dir=args.project_dir, sample_dir=args.sample_dir, threads_per_sample=args.threads_per_sample)], workers=args.workers, local_scheduler=args.local_scheduler)
+	bam_processing.run_pipeline(args)
+	# luigi.build([bam_processing.cases(max_threads=args.max_threads, project_dir=args.project_dir, sample_dir=args.sample_dir, threads_per_sample=args.threads_per_sample, timestamp=timestamp)], workers=args.workers, local_scheduler=args.local_scheduler)
 		
 	# luigi.build([bowtie(fastq_path=fastq_path, sam_path=sam_path, threads=threads, fasta_path=fasta_path), convert_bam(sam_path=sam_path, bam_path=bam_path)], workers=1, local_scheduler=False)
