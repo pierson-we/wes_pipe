@@ -16,13 +16,13 @@ from variant_calling import *
 # ***
 
 @luigi.Task.event_handler(luigi.Event.FAILURE)
-def error_handling(task, exception):
+def error_handling(exception):
 	print('Current working files at time of interruption:')
 	print(global_vars.working_files)
 	# print(cwd)
 	os.chdir(global_vars.cwd)
-	for file in global_vars.working_files:
-		os.remove(file)
+	# for file in global_vars.working_files:
+	# 	os.remove(file)
 	raise exception
 
 class genome_index(luigi.Task):
@@ -102,8 +102,8 @@ class bowtie(luigi.Task):
 
 	fasta_dir = os.path.join(*luigi.Parameter().task_value('bowtie', 'fasta_file').split('/')[:-1])
 
-	def on_failure(self, exception):
-		error_handling(exception)
+	# def on_failure(self, exception):
+	# 	error_handling(self, exception)
 
 	# fasta_dir = os.path.join('/', *luigi.Parameter().task_value('bowtie', 'fasta_file').split('/')[:-1])
 
