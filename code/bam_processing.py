@@ -125,13 +125,13 @@ class bowtie(luigi.Task):
 		# os.chdir(os.path.join(os.path.join(*self.fasta_file.split('/')[:-1]), 'index'))
 		pipeline_utils.confirm_path(self.output().path)
 		os.chdir(os.path.join(self.fasta_dir, 'index'))
-		# print(os.getcwd())
+		print(os.getcwd())
 		# cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
 		cmd = [os.path.join(global_vars.cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-1', self.fastq_file.split('\t')[0], '-2', self.fastq_file.split('\t')[1], '|', os.path.join(global_vars.cwd, self.samtools_location), 'view', '-bS', '-', '>', self.output().path]
-		pipeline_utils.command_call(cmd, [self.output()], cwd=global_vars.cwd, threads_needed=self.max_threads, sleep_time=0.2)
+		pipeline_utils.command_call(cmd, [self.output()], cwd=os.getcwd(), threads_needed=self.max_threads, sleep_time=0.2)
 
 		os.chdir(global_vars.cwd)
-		sys.exit()
+		print(os.getcwd())
 		# except KeyboardInterrupt:
 		# 	pipeline_utils.error_handling(KeyboardInterrupt)
 		# 	os.chdir(cwd)
