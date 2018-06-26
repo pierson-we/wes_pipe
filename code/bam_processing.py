@@ -511,7 +511,7 @@ class cases(luigi.Task):
 	def requires(self):
 		# global global_max_threads, thread_count
 		global_vars.global_max_threads = self.max_threads
-		global_vars.thread_file = os.path.join(os.getcwd(), 'thread_count_temp_%s.txt' % random.randint(1,10000000))
+		global_vars.thread_file = os.path.join(os.getcwd(), 'thread_count_temp_%s.txt' % int(time.time()))
 		print(global_vars.thread_file)
 		pipeline_utils.init_thread_file(global_vars.thread_file)
 		global_vars.cwd = os.getcwd()
