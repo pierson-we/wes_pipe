@@ -199,3 +199,68 @@ class vardict(luigi.Task):
 		else:
 			cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.fasta_file, '-f', '0.01', '-N', self.case + '_T', '-b', self.input()[0][0].path, '-z', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.library_bed, '|', './packages/VarDictJava/VarDict/teststrandbias.R', '|', './packages/VarDictJava/VarDict/var2vcf_valid.pl', '-N', self.case + '_T', 'E', '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
 		pipeline_utils.command_call(cmd, [self.output()])
+
+# this will be pretty annoying to get up and going
+class varscan(luigi.Task):
+	max_threads = luigi.IntParameter()
+	matched_n = luigi.Parameter()
+	project_dir = luigi.Parameter()
+
+	case = luigi.Parameter()
+	tumor = luigi.Parameter()
+	matched_n = luigi.Parameter()
+	vcf_path = luigi.Parameter()
+
+	library_bed = luigi.Parameter()
+	fasta_file = luigi.Parameter()
+
+	def requires(self):
+		if self.matched_n != '':
+			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads), bam_processing.recalibrated_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads)]
+		else:
+			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads)]
+
+
+	def output(self):
+		return luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_freebayes' + '.vcf'))
+	
+	def run(self):
+		pipeline_utils.confirm_path(self.output().path)
+		if self.matched_n:
+			cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.fasta_file, '-f', '0.01', '-N', self.case + '_T', '-b', '"%s|%s"' % (self.input()[0][0].path, self.input()[1][0].path), '-z', '-F', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.library_bed, '|', './packages/VarDictJava/VarDict/testsomatic.R', '|', './packages/VarDictJava/VarDict/var2vcf_paired.pl', '-N', '"%s|%s"' % (self.case + '_T', self.case + '_N'), '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
+		else:
+			cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.fasta_file, '-f', '0.01', '-N', self.case + '_T', '-b', self.input()[0][0].path, '-z', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.library_bed, '|', './packages/VarDictJava/VarDict/teststrandbias.R', '|', './packages/VarDictJava/VarDict/var2vcf_valid.pl', '-N', self.case + '_T', 'E', '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
+		pipeline_utils.command_call(cmd, [self.output()])
+
+class cnvkit_reference(luigi.Task):
+	max_threads = luigi.IntParameter()
+	matched_n = luigi.Parameter()
+	project_dir = luigi.Parameter()
+
+	case = luigi.Parameter()
+	tumor = luigi.Parameter()
+	matched_n = luigi.Parameter()
+	vcf_path = luigi.Parameter()
+	case_dict = luigi.DictParameter()
+
+	library_bed = luigi.Parameter()
+	fasta_file = luigi.Parameter()
+
+	def requires(self):
+		# if self.matched_n != '':
+		# 	return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads), bam_processing.recalibrated_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads)]
+		# else:
+		return [bam_processing.recalibrated_bam(sample=case_name + '_N', fastq_file=self.case_dict[case_name]['N'], project_dir=self.project_dir, max_threads=self.max_threads) for case_name in self.case_dict if self.case_dict[case_name]['N'] != ''] \
+		+ [bam_processing.recalibrated_bam(sample=case_name + '_T', fastq_file=self.case_dict[case_name]['T'], project_dir=self.project_dir, max_threads=self.max_threads) for case_name in self.case_dict]
+
+
+	def output(self):
+		return [luigi.LocalTarget(os.path.join(self.vcf_path, 'cnvkit', 'reference', 'reference.cnn'))] + [luigi.LocalTarget(os.path.join(self.vcf_path, 'cnvkit', 'output', '*%s*.vcf.gz' % case_name)) for case_name in self.case_dict]
+	
+	def run(self):
+		pipeline_utils.confirm_path(self.output().path)
+		# if self.matched_n:
+		# 	cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.fasta_file, '-f', '0.01', '-N', self.case + '_T', '-b', '"%s|%s"' % (self.input()[0][0].path, self.input()[1][0].path), '-z', '-F', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.library_bed, '|', './packages/VarDictJava/VarDict/testsomatic.R', '|', './packages/VarDictJava/VarDict/var2vcf_paired.pl', '-N', '"%s|%s"' % (self.case + '_T', self.case + '_N'), '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
+		# else:
+		cmd = ['./packages/path/to/cnvkit.py', 'batch', os.path.join(self.project_dir, 'output', '*', 'alignment', '*T*.bam'), '--normal', os.path.join(self.project_dir, 'output', '*', 'alignment', '*N*.bam'), '--targets', self.library_bed, '--fasta', self.fasta_file, '--output-reference', self.output()[0].path, '--output-dir', os.path.join(self.vcf_path, 'cnvkit', 'output'), '--diagram', '--scatter', '-p', self.max_threads]
+		pipeline_utils.command_call(cmd, [self.output()])

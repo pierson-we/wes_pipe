@@ -124,7 +124,7 @@ class bowtie(luigi.Task):
 		os.chdir(os.path.join(self.fasta_dir, 'index'))
 		# print(os.getcwd())
 		# cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
-		cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-1', self.fastq_file.split('\t')[0], '-2', self.fastq_file.split('\t')[1], '-S', self.sample + '_raw.bam']
+		cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads - 1, '-1', self.fastq_file.split('\t')[0], '-2', self.fastq_file.split('\t')[1], '|', self.samtools_location, 'view', '-bS', '-', '>', self.sample + '_raw.bam']
 		pipeline_utils.command_call(cmd, [self.output()], cwd=cwd, threads_needed=self.max_threads, sleep_time=0.2)
 
 		os.chdir(cwd)
@@ -243,7 +243,7 @@ class mark_duplicates(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[0].path)
 		pipeline_utils.confirm_path(self.output()[1].path)
-		cmd = ['java', '-jar', self.picard_location, 'MarkDuplicatesWithMateCigar', 'I=%s' % self.input().path, 'O=%s' % self.output()[0].path, 'M=%s' % self.output()[1].path]
+		cmd = ['java', '-Xmx32G', '-jar', self.picard_location, 'MarkDuplicatesWithMateCigar', 'I=%s' % self.input().path, 'O=%s' % self.output()[0].path, 'M=%s' % self.output()[1].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.4)
 		# self.input().remove()
 
@@ -469,6 +469,8 @@ class aggregate_variants(luigi.Task):
 	case = luigi.Parameter()
 	tumor = luigi.Parameter()
 	matched_n = luigi.Parameter()
+	case_dict = luigi.DictParameter()
+
 
 	
 	def requires(self):
@@ -539,5 +541,5 @@ class cases(luigi.Task):
 		for case in sample_dict:
 			tumor = sample_dict[case]['T']
 			matched_n = sample_dict[case]['N']
-			yield aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=self.project_dir, max_threads=sample_threads)
+			yield aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=self.project_dir, max_threads=sample_threads, case_dict=sample_dict())
 
