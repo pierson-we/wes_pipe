@@ -41,8 +41,8 @@ max threads/processes management
 cleaner input/output file param passing
 clean up file hierarchy/names
 error handling (mainly incomplete file deletion)
-intuitive file structure for inputs (i.e. /project/case/normal/normal.fastq)
-utilize luigi.Target tmp file functionality (https://luigi.readthedocs.io/en/stable/api/luigi.local_target.html)
+#intuitive file structure for inputs (i.e. /project/case/normal/normal.fastq)
+#utilize luigi.Target tmp file functionality (https://luigi.readthedocs.io/en/stable/api/luigi.local_target.html)
 defaults for threads/base_name/other variables
 verbose mode
 print stdout to log file
@@ -67,3 +67,4 @@ create panel of normals or similar for analyzing CNV in unpaired samples
 pass fastq params as a list
 incorporate clinvar sites in filtering
 look at best practices for all tools
+see if it's possible to share global_vars module across workers

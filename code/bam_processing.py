@@ -326,7 +326,8 @@ class indel_realignment(luigi.Task):
 		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_realigned.bam')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_realigned.bam.bai'))]
 
 	def run(self):
-		pipeline_utils.confirm_path(self.output().path)
+		pipeline_utils.confirm_path(self.output()[0].path)
+		pipeline_utils.confirm_path(self.output()[1].path)
 		cmd = ['java', '-Xmx32G', '-jar', self.gatk3_location, '-T', 'IndelRealigner', '-R', self.fasta_file, '-I', self.input()[0].path, '-known', self.known_vcf, '-targetIntervals', self.input()[2].path, '-o', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.7)
 		for input_file in self.input():
