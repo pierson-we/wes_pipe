@@ -135,6 +135,7 @@ def add_working_files(file_log, outputs, sleep_time=0.05):
 					working_files[output.path] = ''
 				pickle.dump(working_files, f)
 				fcntl.flock(f, fcntl.LOCK_UN)
+				print(working_files)
 				return
 		except IOError as e:
 			time.sleep(sleep_time)
