@@ -72,7 +72,7 @@ class picard_index(luigi.Task):
 		return luigi.LocalTarget(self.fasta_file + '.dict')
 	
 	def run(self):
-		cmd = ['java', '-jar', self.picard_location, 'CreateSequenceDictionary', 'R=%s' % self.fasta_file, 'O=%s' % self.output().path]
+		cmd = ['java', '-Xmx32G', '-jar', self.picard_location, 'CreateSequenceDictionary', 'R=%s' % self.fasta_file, 'O=%s' % self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.1)
 		# subprocess.call(cmd, stdout=subprocess.PIPE)
 
@@ -201,7 +201,7 @@ class add_read_groups(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
-		cmd = ['java', '-jar', self.picard_location, 'AddOrReplaceReadGroups', 'I=%s' % self.input().path, 'O=%s' % self.output().path, 'SORT_ORDER=coordinate', 'RGID=1', 'RGLB=%s' % self.library_prep, 'RGPL=%s' % self.platform, 'RGPU=barcode', 'RGSM=%s' % self.sample]
+		cmd = ['java', '-Xmx32G', '-jar', self.picard_location, 'AddOrReplaceReadGroups', 'I=%s' % self.input().path, 'O=%s' % self.output().path, 'SORT_ORDER=coordinate', 'RGID=1', 'RGLB=%s' % self.library_prep, 'RGPL=%s' % self.platform, 'RGPU=barcode', 'RGSM=%s' % self.sample]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.3)
 		self.input().remove()
 
@@ -247,7 +247,7 @@ class mark_duplicates(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[0].path)
 		pipeline_utils.confirm_path(self.output()[1].path)
-		cmd = ['java', '-Xmx16G', '-jar', self.picard_location, 'MarkDuplicatesWithMateCigar', 'I=%s' % self.input().path, 'O=%s' % self.output()[0].path, 'M=%s' % self.output()[1].path]
+		cmd = ['java', '-Xmx32G', '-jar', self.picard_location, 'MarkDuplicatesWithMateCigar', 'I=%s' % self.input().path, 'O=%s' % self.output()[0].path, 'M=%s' % self.output()[1].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.4)
 		# self.input().remove()
 
@@ -299,7 +299,7 @@ class realigner_target(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[2].path)
-		cmd = ['java', '-jar', self.gatk3_location, '-nt', str(self.max_threads), '-T', 'RealignerTargetCreator', '-R', self.fasta_file, '-I', self.input()[0].path, '--known', self.known_vcf, '-o', self.output()[2].path]
+		cmd = ['java', '-Xmx32G', '-jar', self.gatk3_location, '-nt', str(self.max_threads), '-T', 'RealignerTargetCreator', '-R', self.fasta_file, '-I', self.input()[0].path, '--known', self.known_vcf, '-o', self.output()[2].path]
 		pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads, sleep_time=0.6)
 		# for input_file in self.input():
 		# 	input_file.remove()
@@ -327,7 +327,7 @@ class indel_realignment(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
-		cmd = ['java', '-jar', self.gatk3_location, '-T', 'IndelRealigner', '-R', self.fasta_file, '-I', self.input()[0].path, '-known', self.known_vcf, '-targetIntervals', self.input()[2].path, '-o', self.output().path]
+		cmd = ['java', '-Xmx32G', '-jar', self.gatk3_location, '-T', 'IndelRealigner', '-R', self.fasta_file, '-I', self.input()[0].path, '-known', self.known_vcf, '-targetIntervals', self.input()[2].path, '-o', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.7)
 		for input_file in self.input():
 			input_file.remove()
@@ -355,7 +355,7 @@ class bqsr(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[2].path)
-		cmd = ['java', '-jar', self.gatk3_location, '-T', 'BaseRecalibrator', '-R', self.fasta_file, '-I', self.input()[0].path, '-knownSites', self.known_vcf, '-o',  self.output()[2].path]
+		cmd = ['java', '-Xmx32G', '-jar', self.gatk3_location, '-T', 'BaseRecalibrator', '-R', self.fasta_file, '-I', self.input()[0].path, '-knownSites', self.known_vcf, '-o',  self.output()[2].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.8)
 		# self.input().remove()
 
@@ -381,7 +381,7 @@ class recalibrated_bam(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
-		cmd = ['java', '-jar', self.gatk3_location, '-T', 'PrintReads', '-R', self.fasta_file, '-I', self.input()[0].path, '-BQSR', self.input()[2].path, '-o',  self.output()[0].path]
+		cmd = ['java', '-Xmx32G', '-jar', self.gatk3_location, '-T', 'PrintReads', '-R', self.fasta_file, '-I', self.input()[0].path, '-BQSR', self.input()[2].path, '-o',  self.output()[0].path]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.9)
 		for input_file in self.input():
 			input_file.remove()
