@@ -27,7 +27,7 @@ def confirm_path(file):
 
 def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 	# try:
-	wait_time = random.uniform(0,5)
+	wait_time = random.uniform(0,3)
 	# print(wait_time)
 	time.sleep(wait_time)
 	# print('max threads: %s' % global_max_threads)
@@ -50,9 +50,7 @@ def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 	
 	add_working_files(global_vars.working_files, outputs)
 	
-	f_out = open('/home/wpierson/projects/wes_pipe/%s_out.txt' % wait_time, 'w')
-	f_err = open('/home/wpierson/projects/wes_pipe/%s_err.txt' % wait_time, 'w')
-	subprocess.call(cmd, stdout=f_out, stderr=f_err)
+	subprocess.call(' '.join(cmd), shell=True)
 	
 	rm_working_files(global_vars.working_files, outputs)
 
