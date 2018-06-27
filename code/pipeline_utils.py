@@ -120,6 +120,8 @@ def init_working_files(file_log):
 
 def add_working_files(file_log, outputs, sleep_time=0.05):
 	while True:
+		wait_time = random.uniform(0,1)
+		time.sleep(wait_time)
 		try:
 			with open(file_log, 'rb') as f:
 				fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -142,6 +144,9 @@ def add_working_files(file_log, outputs, sleep_time=0.05):
 
 def rm_working_files(file_log, outputs, sleep_time=0.05):
 	while True:
+		wait_time = random.uniform(0,3)
+		# print(wait_time)
+		time.sleep(wait_time)
 		try:
 			with open(file_log, 'rb') as f:
 				fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
