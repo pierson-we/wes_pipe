@@ -39,6 +39,8 @@ def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 	# # print('new thread count: %s' % thread_count)
 	# global working_files
 
+	cmd = [str(x) for x in cmd]
+
 	print('\n\n' + ' '.join(cmd) + '\n\n')
 	# print(global_vars.thread_file)
 	# print(global_vars.global_max_threads)
