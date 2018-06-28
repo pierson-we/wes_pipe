@@ -2,6 +2,8 @@
 import os
 import sys
 import argparse
+import subprocess
+import time
 # from code import pipeline_utils, global_vars
 
 if __name__ == '__main__':
@@ -21,6 +23,7 @@ if __name__ == '__main__':
 	parser.add_argument('-D', action='store_false', dest='delly', default=True, help='This flag suppresses analysis with DELLY')
 	parser.add_argument('-w', action='store_false', dest='wham', default=True, help='This flag suppresses analysis with WHAM')
 	parser.add_argument('--local_scheduler', action='store_true', dest='local_scheduler', default=False, help='This flag will use the local luigi scheduler as opposed to the luigi server.')
+	parser.add_argument('--port', action='store', dest='port', default='8082', help='If using the central luigi scheduler, use this parameter to specify a custom port for the luigi server to operate on (defaults to 8082)')
 
 	args = parser.parse_args()
 
@@ -53,7 +56,11 @@ if __name__ == '__main__':
 	
 	# project_dir = sys.argv[1]
 	# sample_dir = sys.argv[2]
-	
+	if not args.local_scheduler:
+		subprocess.call('luigid --background --port %s &' % args.port, shell=True)
+		print('Starting luigi server...\n\n')
+		time.wait(2)
+
 	bam_processing.run_pipeline(args)
 	# luigi.build([bam_processing.cases(max_threads=args.max_threads, project_dir=args.project_dir, sample_dir=args.sample_dir, threads_per_sample=args.threads_per_sample, timestamp=timestamp)], workers=args.workers, local_scheduler=args.local_scheduler)
 		

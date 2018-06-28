@@ -68,3 +68,9 @@ pass fastq params as a list
 incorporate clinvar sites in filtering
 look at best practices for all tools
 see if it's possible to share global_vars module across workers
+
+switch to grch37 (will hopefully solve memory issues)
+go live on docker image/udocker
+	allows active monitoring, but how to deal with concurrent instances?
+		for now, just use different ports for each instance.
+		If I want to get fancy, I could make a central server that controls all, and communicate with it to launch new analyses.

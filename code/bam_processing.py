@@ -45,7 +45,7 @@ class genome_index(luigi.Task):
 			os.mkdir('./index')
 		os.chdir('./index')
 		# cmd = [cwd + self.bowtie_location + 'bowtie2-build', '--threads=%s' % self.max_threads, self.fasta_file, self.base_name]
-		cmd = [os.path.join(global_vars.cwd, self.bowtie_location, 'bowtie2-build'), '--threads=%s' % self.max_threads, self.fasta_file, self.base_name]
+		cmd = [self.bowtie_location, '--threads=%s' % self.max_threads, self.fasta_file, './index/%s' % self.base_name]
 		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads, sleep_time=0.1)
 		# subprocess.call([self.bowtie_location + 'bowtie2-build', '--threads=%s' % self.max_threads, self.fasta_file, self.base_name], stdout=subprocess.PIPE)
 		os.chdir(global_vars.cwd)
@@ -72,7 +72,7 @@ class picard_index(luigi.Task):
 		return luigi.LocalTarget(self.fasta_file + '.dict')
 	
 	def run(self):
-		cmd = ['java', '-Xmx32G', '-jar', self.picard_location, 'CreateSequenceDictionary', 'R=%s' % self.fasta_file, 'O=%s' % self.output().path]
+		cmd = ['java', '-jar', self.picard_location, 'CreateSequenceDictionary', 'R=%s' % self.fasta_file, 'O=%s' % self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.1)
 		# subprocess.call(cmd, stdout=subprocess.PIPE)
 
@@ -127,7 +127,7 @@ class bowtie(luigi.Task):
 		# os.chdir(os.path.join(self.fasta_dir, 'index'))
 		# print(os.getcwd())
 		# cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
-		cmd = [os.path.join(self.bowtie_location, 'bowtie2'), '-x', os.path.join(self.fasta_dir, 'index', self.base_name), '-1', self.fastq_file.split('\t')[0], '-2', self.fastq_file.split('\t')[1], '-p', self.max_threads, '|', os.path.join(global_vars.cwd, self.samtools_location), 'view', '-b', '-', '>', self.output().path]
+		cmd = [self.bowtie_location, '-x', os.path.join(self.fasta_dir, 'index', self.base_name), '-1', self.fastq_file.split('\t')[0], '-2', self.fastq_file.split('\t')[1], '-p', self.max_threads, '|', self.samtools_location, 'view', '-b', '-', '>', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], cwd=os.getcwd(), threads_needed=self.max_threads, sleep_time=0.2)
 
 		# os.chdir(global_vars.cwd)
@@ -201,7 +201,7 @@ class add_read_groups(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
-		cmd = ['java', '-Xmx32G', '-jar', self.picard_location, 'AddOrReplaceReadGroups', 'I=%s' % self.input().path, 'O=%s' % self.output().path, 'SORT_ORDER=coordinate', 'RGID=1', 'RGLB=%s' % self.library_prep, 'RGPL=%s' % self.platform, 'RGPU=barcode', 'RGSM=%s' % self.sample]
+		cmd = ['java', '-jar', self.picard_location, 'AddOrReplaceReadGroups', 'I=%s' % self.input().path, 'O=%s' % self.output().path, 'SORT_ORDER=coordinate', 'RGID=%s' % self.sample, 'RGLB=%s' % self.library_prep, 'RGPL=%s' % self.platform, 'RGPU=%s' % self.sample + '_barcode', 'RGSM=%s' % self.sample]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.3)
 		self.input().remove()
 
@@ -247,7 +247,7 @@ class mark_duplicates(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[0].path)
 		pipeline_utils.confirm_path(self.output()[1].path)
-		cmd = ['java', '-Xmx32G', '-jar', self.picard_location, 'MarkDuplicatesWithMateCigar', 'I=%s' % self.input().path, 'O=%s' % self.output()[0].path, 'M=%s' % self.output()[1].path]
+		cmd = ['java', '-jar', self.picard_location, 'MarkDuplicatesWithMateCigar', 'I=%s' % self.input().path, 'O=%s' % self.output()[0].path, 'M=%s' % self.output()[1].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.4)
 		# self.input().remove()
 
@@ -286,7 +286,8 @@ class realigner_target(luigi.Task):
 
 	sample = luigi.Parameter()
 	fasta_file = luigi.Parameter()
-	known_vcf = luigi.Parameter()
+	mills = luigi.Parameter()
+	kg = luigi.Parameter()
 
 	# input_bam = luigi.Parameter()
 	# output_file = luigi.Parameter()
@@ -299,7 +300,7 @@ class realigner_target(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[2].path)
-		cmd = ['java', '-Xmx32G', '-jar', self.gatk3_location, '-nt', str(self.max_threads), '-T', 'RealignerTargetCreator', '-R', self.fasta_file, '-I', self.input()[0].path, '--known', self.known_vcf, '-o', self.output()[2].path]
+		cmd = ['java', '-jar', self.gatk3_location, '-nt', str(self.max_threads), '-T', 'RealignerTargetCreator', '-R', self.fasta_file, '-I', self.input()[0].path, '--known', self.mills, '--known', self.kg, '-o', self.output()[2].path]
 		pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads, sleep_time=0.6)
 		# for input_file in self.input():
 		# 	input_file.remove()
@@ -313,7 +314,8 @@ class indel_realignment(luigi.Task):
 	gatk3_location = luigi.Parameter()
 
 	fasta_file = luigi.Parameter()
-	known_vcf = luigi.Parameter()
+	mills = luigi.Parameter()
+	kg = luigi.Parameter()
 	sample = luigi.Parameter()
 	
 	# input_bam = luigi.Parameter()
@@ -328,7 +330,7 @@ class indel_realignment(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[0].path)
 		pipeline_utils.confirm_path(self.output()[1].path)
-		cmd = ['java', '-Xmx32G', '-jar', self.gatk3_location, '-T', 'IndelRealigner', '-R', self.fasta_file, '-I', self.input()[0].path, '-known', self.known_vcf, '-targetIntervals', self.input()[2].path, '-o', self.output()[0].path]
+		cmd = ['java', '-jar', self.gatk3_location, '-T', 'IndelRealigner', '-R', self.fasta_file, '-I', self.input()[0].path, '-known', self.mills, '-known', self.kg, '-targetIntervals', self.input()[2].path, '-o', self.output()[0].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.7)
 		for input_file in self.input():
 			input_file.remove()
@@ -339,10 +341,12 @@ class bqsr(luigi.Task):
 	max_threads = luigi.IntParameter()
 	project_dir = luigi.Parameter()
 	fastq_file = luigi.Parameter()
-	gatk3_location = luigi.Parameter()
+	gatk4_location = luigi.Parameter()
 
 	fasta_file = luigi.Parameter()
-	known_vcf = luigi.Parameter()
+	mills = luigi.Parameter()
+	kg = luigi.Parameter()
+	dbsnp = luigi.Parameter()
 	sample = luigi.Parameter()
 	
 	# input_bam = luigi.Parameter()
@@ -356,7 +360,7 @@ class bqsr(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[2].path)
-		cmd = ['java', '-Xmx32G', '-jar', self.gatk3_location, '-T', 'BaseRecalibrator', '-R', self.fasta_file, '-I', self.input()[0].path, '-knownSites', self.known_vcf, '-o',  self.output()[2].path]
+		cmd = [self.gatk4_location, 'BaseRecalibrator', '-R', self.fasta_file, '-I', self.input()[0].path, '--known-sites', self.dbsnp, '--known-sites', self.mills, '--known-sites', self.kg, '-o',  self.output()[2].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.8)
 		# self.input().remove()
 
@@ -365,7 +369,7 @@ class recalibrated_bam(luigi.Task):
 	max_threads = luigi.IntParameter()
 	project_dir = luigi.Parameter()
 	fastq_file = luigi.Parameter()
-	gatk3_location = luigi.Parameter()
+	gatk4_location = luigi.Parameter()
 
 	fasta_file = luigi.Parameter()
 	sample = luigi.Parameter()
@@ -382,7 +386,7 @@ class recalibrated_bam(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
-		cmd = ['java', '-Xmx32G', '-jar', self.gatk3_location, '-T', 'PrintReads', '-R', self.fasta_file, '-I', self.input()[0].path, '-BQSR', self.input()[2].path, '-o',  self.output()[0].path]
+		cmd = [self.gatk4_location, 'ApplyBQSR', '-R', self.fasta_file, '-I', self.input()[0].path, '--bqsr-recal-file', self.input()[2].path, '-O',  self.output()[0].path]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.9)
 		for input_file in self.input():
 			input_file.remove()
@@ -556,10 +560,10 @@ def run_pipeline(args):
 	timestamp = str(int(time.time()))
 
 	global_vars.global_max_threads = args.max_threads
-	global_vars.thread_file = os.path.join(os.getcwd(), 'thread_count_temp_%s.txt' % timestamp)
+	global_vars.thread_file = os.path.join(os.getcwd(), 'thread_count_temp_%s.txt' % args.port)
 	print(global_vars.thread_file)
 	pipeline_utils.init_thread_file(global_vars.thread_file)
-	global_vars.working_files = os.path.join(os.getcwd(), 'working_files_%s.pkl' % timestamp)
+	global_vars.working_files = os.path.join(os.getcwd(), 'working_files_%s.pkl' % args.port)
 	pipeline_utils.init_working_files(global_vars.working_files)
 	global_vars.cwd = os.getcwd()
 
@@ -568,11 +572,13 @@ def run_pipeline(args):
 	for sample in os.listdir(args.sample_dir):
 		if os.path.isdir(os.path.join(args.sample_dir, sample)):
 			sample_dict[sample] = {'T': '', 'N': ''}
-			tumor_fastq = os.path.join(args.sample_dir, sample, 'tumor', os.listdir(os.path.join(args.sample_dir, sample, 'tumor'))[0]) + '\t' + os.path.join(args.sample_dir, sample, 'tumor', os.listdir(os.path.join(args.sample_dir, sample, 'tumor'))[1])
+			tumor_list = [filename for filename in os.listdir(os.path.join(args.sample_dir, sample, 'tumor')) if 'fastq' in filename]
+			tumor_fastq = os.path.join(args.sample_dir, sample, 'tumor', tumor_list[0]) + '\t' + os.path.join(args.sample_dir, sample, 'tumor', tumor_list[1])
 			sample_dict[sample]['T'] = tumor_fastq
 			if os.path.exists(os.path.join(args.sample_dir, sample, 'normal')):
 				if len(os.listdir(os.path.join(args.sample_dir, sample, 'normal'))) > 0:
-					normal_fastq = os.path.join(args.sample_dir, sample, 'normal', os.listdir(os.path.join(args.sample_dir, sample, 'normal'))[0]) + '\t' + os.path.join(args.sample_dir, sample, 'normal', os.listdir(os.path.join(args.sample_dir, sample, 'normal'))[1])
+					normal_list = [filename for filename in os.listdir(os.path.join(args.sample_dir, sample, 'normal')) if 'fastq' in filename]
+					normal_fastq = os.path.join(args.sample_dir, sample, 'normal', normal_list[0]) + '\t' + os.path.join(args.sample_dir, sample, 'normal', normal_list[1])
 					sample_dict[sample]['N'] = normal_fastq
 	# except:
 	# 	raise ValueError("Error in parsing fastq directory.")
@@ -588,7 +594,7 @@ def run_pipeline(args):
 	# for case in sample_dict:
 	# 	tumor = sample_dict[case]['T']
 	# 	matched_n = sample_dict[case]['N']
-	luigi.build([bam_processing.aggregate_variants(case=case, tumor=sample_dict[case]['T'], matched_n=sample_dict[case]['N'], project_dir=args.project_dir, max_threads=sample_threads, case_dict=sample_dict) for case in sample_dict], workers=args.workers, local_scheduler=args.local_scheduler, worker_scheduler_factory=worker_scheduler_factory) # workers=sample_threads
+	luigi.build([bam_processing.aggregate_variants(case=case, tumor=sample_dict[case]['T'], matched_n=sample_dict[case]['N'], project_dir=args.project_dir, max_threads=sample_threads, case_dict=sample_dict) for case in sample_dict], workers=args.workers, local_scheduler=args.local_scheduler, worker_scheduler_factory=worker_scheduler_factory, scheduler_port=int(args.port)) # workers=sample_threads
 		# [(max_threads=args.max_threads, project_dir=args.project_dir, sample_dir=args.sample_dir, threads_per_sample=args.threads_per_sample, timestamp=timestamp)], workers=args.workers, local_scheduler=args.local_scheduler)
 		# yield aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=self.project_dir, max_threads=sample_threads, case_dict=sample_dict)
 
