@@ -560,10 +560,10 @@ def run_pipeline(args):
 	timestamp = str(int(time.time()))
 
 	global_vars.global_max_threads = args.max_threads
-	global_vars.thread_file = os.path.join(os.getcwd(), 'thread_count_temp_%s.txt' % args.port)
+	global_vars.thread_file = os.path.join(os.getcwd(), 'thread_count_temp_%s.txt' % timestamp)
 	print(global_vars.thread_file)
 	pipeline_utils.init_thread_file(global_vars.thread_file)
-	global_vars.working_files = os.path.join(os.getcwd(), 'working_files_%s.pkl' % args.port)
+	global_vars.working_files = os.path.join(os.getcwd(), 'working_files_%s.pkl' % timestamp)
 	pipeline_utils.init_working_files(global_vars.working_files)
 	global_vars.cwd = os.getcwd()
 
