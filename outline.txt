@@ -69,8 +69,11 @@ incorporate clinvar sites in filtering
 look at best practices for all tools
 see if it's possible to share global_vars module across workers
 
-switch to grch37 (will hopefully solve memory issues)
+# actually don't do this. switch to grch37 (will hopefully solve memory issues)
+# switch over to gatk4 where possible
+# change --known variant file for indel realigner target creator
 go live on docker image/udocker
 	allows active monitoring, but how to deal with concurrent instances?
 		for now, just use different ports for each instance.
+		launch luigid from python script - add port as a command line param
 		If I want to get fancy, I could make a central server that controls all, and communicate with it to launch new analyses.
