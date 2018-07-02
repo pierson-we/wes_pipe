@@ -138,6 +138,7 @@ class scalpel_export(luigi.Task):
 			cmd = ['./scalpel-0.5.4/scalpel-export', '--single', '--db', self.input().path[:-4], '--bed', self.library_bed, '--ref', self.fasta_file]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=1.1)
 
+# not yet tested - need to install GNU Parallel on cluster...
 class freebayes(luigi.Task):
 	max_threads = luigi.IntParameter()
 	matched_n = luigi.Parameter()
@@ -164,9 +165,9 @@ class freebayes(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
 		if self.matched_n:
-			cmd = ['./packages/freebayes/scripts/freebayes-parallel', '<(fasta_generate_regions.py %s.fai 100000)' % self.fasta_file, self.max_threads, '-f', self.fasta_file, '-t', self.library_bed, '--pooled-continuous', '--pooled-discrete', '-F', '0.01', '-C', '2', self.input()[0][0].path, self.input()[1][0].path, '>', os.path.join(self.vcf_path, 'freebayes')]
+			cmd = ['./packages/freebayes/scripts/freebayes-parallel', '<(./packages/freebayes/scripts/fasta_generate_regions.py %s.fai 100000)' % self.fasta_file, self.max_threads, '-f', self.fasta_file, '-t', self.library_bed, '--pooled-continuous', '--pooled-discrete', '-F', '0.01', '-C', '2', self.input()[0][0].path, self.input()[1][0].path, '>', os.path.join(self.vcf_path, 'freebayes')]
 		else:
-			cmd = ['./packages/freebayes/scripts/freebayes-parallel', '<(fasta_generate_regions.py %s.fai 100000)' % self.fasta_file, self.max_threads, '-f', self.fasta_file, '-t', self.library_bed, '--pooled-continuous', '--pooled-discrete', '-F', '0.01', '-C', '2', self.input()[0][0].path, '>', os.path.join(self.vcf_path, 'freebayes')]
+			cmd = ['./packages/freebayes/scripts/freebayes-parallel', '<(./packages/freebayes/scripts/fasta_generate_regions.py %s.fai 100000)' % self.fasta_file, self.max_threads, '-f', self.fasta_file, '-t', self.library_bed, '--pooled-continuous', '--pooled-discrete', '-F', '0.01', '-C', '2', self.input()[0][0].path, '>', os.path.join(self.vcf_path, 'freebayes')]
 		pipeline_utils.command_call(cmd, [self.output()])
 
 class vardict(luigi.Task):
@@ -195,10 +196,10 @@ class vardict(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
 		if self.matched_n:
-			cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.fasta_file, '-f', '0.01', '-N', self.case + '_T', '-b', '"%s|%s"' % (self.input()[0][0].path, self.input()[1][0].path), '-z', '-F', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.library_bed, '|', './packages/VarDictJava/VarDict/testsomatic.R', '|', './packages/VarDictJava/VarDict/var2vcf_paired.pl', '-N', '"%s|%s"' % (self.case + '_T', self.case + '_N'), '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
+			cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.fasta_file, '-f', '0.01', '-N', self.case + '_T', '-b', '"%s|%s"' % (self.input()[0][0].path, self.input()[1][0].path), '-th', self.max_threads, '-z', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.library_bed, '|', './packages/VarDictJava/VarDict/testsomatic.R', '|', './packages/VarDictJava/VarDict/var2vcf_paired.pl', '-N', '"%s|%s"' % (self.case + '_T', self.case + '_N'), '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
 		else:
-			cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.fasta_file, '-f', '0.01', '-N', self.case + '_T', '-b', self.input()[0][0].path, '-z', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.library_bed, '|', './packages/VarDictJava/VarDict/teststrandbias.R', '|', './packages/VarDictJava/VarDict/var2vcf_valid.pl', '-N', self.case + '_T', 'E', '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
-		pipeline_utils.command_call(cmd, [self.output()])
+			cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.fasta_file, '-f', '0.01', '-N', self.case + '_T', '-b', self.input()[0][0].path, '-th', self.max_threads, '-z', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.library_bed, '|', './packages/VarDictJava/VarDict/teststrandbias.R', '|', './packages/VarDictJava/VarDict/var2vcf_valid.pl', '-N', self.case + '_T', 'E', '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
+		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads)
 
 # this will be pretty annoying to get up and going
 class varscan(luigi.Task):
