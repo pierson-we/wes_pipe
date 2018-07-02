@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import subprocess
 import luigi
 import luigi.interface
@@ -30,6 +29,7 @@ class genome_index(luigi.Task):
 	fasta_file = luigi.Parameter()
 	# threads = luigi.Parameter()
 	base_name = luigi.Parameter()
+	bowtie_location = luigi.Parameter()
 
 	fasta_dir = os.path.join(*luigi.Parameter().task_value('genome_index', 'fasta_file').split('/')[:-1])
 
