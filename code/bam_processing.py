@@ -37,15 +37,16 @@ class genome_index(luigi.Task):
 		return luigi.LocalTarget(os.path.join(self.fasta_dir, 'index', self.base_name + '.1.bt2'))
 	
 	def run(self):
+		pipeline_utils.confirm_path(self.output().path)
 		# cwd = os.getcwd()
 		# if cwd.split('/')[-1] != 'wes_pipe':
 		# print(cwd)
-		os.chdir(self.fasta_dir)
-		if not os.path.exists('./index'):
-			os.mkdir('./index')
-		os.chdir('./index')
+		# os.chdir(self.fasta_dir)
+		# if not os.path.exists('./index'):
+		# 	os.mkdir('./index')
+		# os.chdir('./index')
 		# cmd = [cwd + self.bowtie_location + 'bowtie2-build', '--threads=%s' % self.max_threads, self.fasta_file, self.base_name]
-		cmd = [self.bowtie_location, '--threads=%s' % self.max_threads, self.fasta_file, './index/%s' % self.base_name]
+		cmd = [self.bowtie_location, '--threads=%s' % self.max_threads, self.fasta_file, os.path.join(self.fasta_dir, 'index', self.base_name)]
 		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads, sleep_time=0.1)
 		# subprocess.call([self.bowtie_location + 'bowtie2-build', '--threads=%s' % self.max_threads, self.fasta_file, self.base_name], stdout=subprocess.PIPE)
 		os.chdir(global_vars.cwd)
