@@ -119,7 +119,9 @@ def init_working_files(file_log):
 		pickle.dump({}, f)
 
 def add_working_files(file_log, outputs, sleep_time=0.05):
-	while True:
+	read_file = False
+	write_file = False
+	while not read_file:
 		wait_time = random.uniform(0,1)
 		time.sleep(wait_time)
 		try:
@@ -127,9 +129,11 @@ def add_working_files(file_log, outputs, sleep_time=0.05):
 				fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
 				working_files = pickle.load(f)
 				fcntl.flock(f, fcntl.LOCK_UN)
+				read_file = True
 		except IOError as e:
 			time.sleep(sleep_time)
 
+	while note write_file
 		try: 
 			with open(file_log, 'wb') as f:
 				fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -137,13 +141,16 @@ def add_working_files(file_log, outputs, sleep_time=0.05):
 					working_files[output.path] = ''
 				pickle.dump(working_files, f)
 				fcntl.flock(f, fcntl.LOCK_UN)
+				write_file = True
 				print(working_files)
 				return
 		except IOError as e:
 			time.sleep(sleep_time)
 
 def rm_working_files(file_log, outputs, sleep_time=0.05):
-	while True:
+	read_file = False
+	write_file = False
+	while not read_file:
 		wait_time = random.uniform(0,3)
 		# print(wait_time)
 		time.sleep(wait_time)
@@ -152,9 +159,11 @@ def rm_working_files(file_log, outputs, sleep_time=0.05):
 				fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
 				working_files = pickle.load(f)
 				fcntl.flock(f, fcntl.LOCK_UN)
+				read_file = True
 		except IOError as e:
 			time.sleep(sleep_time)
 
+	while not write_file
 		try: 
 			with open(file_log, 'wb') as f:
 				fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -165,6 +174,7 @@ def rm_working_files(file_log, outputs, sleep_time=0.05):
 						pass
 				pickle.dump(working_files, f)
 				fcntl.flock(f, fcntl.LOCK_UN)
+				write_file = True
 				return
 		except IOError as e:
 			time.sleep(sleep_time)
