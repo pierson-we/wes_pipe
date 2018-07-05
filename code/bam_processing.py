@@ -498,6 +498,7 @@ class aggregate_variants(luigi.Task):
 		}
 		yield filter_mutect(**kwargs)
 		yield scalpel_export(**kwargs)
+		yield vardict(**kwargs)
 		# yield run_variant_caller(caller='VarDict', **kwargs)
 		# yield run_variant_caller(caller='FreeBayes', **kwargs)
 		# yield run_variant_caller(caller='VarScan', **kwargs)

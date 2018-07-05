@@ -265,3 +265,4 @@ class cnvkit_reference(luigi.Task):
 		# else:
 		cmd = ['./packages/path/to/cnvkit.py', 'batch', os.path.join(self.project_dir, 'output', '*', 'alignment', '*T*.bam'), '--normal', os.path.join(self.project_dir, 'output', '*', 'alignment', '*N*.bam'), '--targets', self.library_bed, '--fasta', self.fasta_file, '--output-reference', self.output()[0].path, '--output-dir', os.path.join(self.vcf_path, 'cnvkit', 'output'), '--diagram', '--scatter', '-p', self.max_threads]
 		pipeline_utils.command_call(cmd, [self.output()])
+
