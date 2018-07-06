@@ -89,6 +89,17 @@ class picard_index(luigi.Task):
 # 	def run(self):
 # 		pipeline_utils.confirm_path(self.fastqc_file)
 
+class trim(luigi.Task):
+	fastq_file = luigi.Parameter()
+	trim_location = luigi.Parameter()
+	sample = luigi.Parameter()
+
+	def output(self):
+		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], self.fastq_file.split('/')[-1].split('.')[0] + '_trimmed.fq.gz'))
+	
+	def run(self):
+		cmd = [self.trim_location, self.fastq_file, '-o', os.path.join(self.project_dir, 'output', self.sample[:-2])]
+		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.1)
 
 class bowtie(luigi.Task):
 	max_threads = luigi.IntParameter()
@@ -301,7 +312,7 @@ class realigner_target(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[2].path)
-		cmd = ['java', '-jar', self.gatk3_location, '-nt', str(self.max_threads), '-T', 'RealignerTargetCreator', '-R', self.fasta_file, '-I', self.input()[0].path, '--known', self.mills, '--known', self.kg, '-o', self.output()[2].path]
+		cmd = ['java', '-Xmx8g', '-jar', self.gatk3_location, '-T', 'RealignerTargetCreator', '-nt', str(self.max_threads), '-R', self.fasta_file, '-I', self.input()[0].path, '--known', self.mills, '--known', self.kg, '-o', self.output()[2].path]
 		pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads, sleep_time=0.6)
 		# for input_file in self.input():
 		# 	input_file.remove()
@@ -326,13 +337,13 @@ class indel_realignment(luigi.Task):
 		return realigner_target(fastq_file=self.fastq_file, project_dir=self.project_dir, sample=self.sample, max_threads=self.max_threads)
 
 	def output(self):
-		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_realigned.bam')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_realigned.bam.bai'))]
+		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_realigned.bam')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_realigned.bai'))]
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[0].path)
 		pipeline_utils.confirm_path(self.output()[1].path)
-		cmd = ['java', '-jar', self.gatk3_location, '-T', 'IndelRealigner', '-R', self.fasta_file, '-I', self.input()[0].path, '-known', self.mills, '-known', self.kg, '-targetIntervals', self.input()[2].path, '-o', self.output()[0].path]
-		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.7)
+		cmd = ['java', '-Xmx8g', '-jar', self.gatk3_location, '-T', 'IndelRealigner', '-R', self.fasta_file, '-I', self.input()[0].path, '-known', self.mills, '-known', self.kg, '-targetIntervals', self.input()[2].path, '-o', self.output()[0].path]
+		pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads, sleep_time=0.7)
 		for input_file in self.input():
 			input_file.remove()
 
