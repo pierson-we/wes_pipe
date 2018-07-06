@@ -342,7 +342,7 @@ class indel_realignment(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[0].path)
 		pipeline_utils.confirm_path(self.output()[1].path)
-		cmd = ['java', '-Xmx8g', '-jar', self.gatk3_location, '-T', 'IndelRealigner', '-R', self.fasta_file, '-I', self.input()[0].path, '-known', self.mills, '-known', self.kg, '-targetIntervals', self.input()[2].path, '-o', self.output()[0].path]
+		cmd = ['java', '-Xmx8g', '-XX:MaxPermSize=4g', '-jar', self.gatk3_location, '-T', 'IndelRealigner', '-R', self.fasta_file, '-I', self.input()[0].path, '-known', self.mills, '-known', self.kg, '-targetIntervals', self.input()[2].path, '-o', self.output()[0].path]
 		pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads, sleep_time=0.7)
 		for input_file in self.input():
 			input_file.remove()
