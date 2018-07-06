@@ -35,7 +35,7 @@ if __name__ == '__main__':
 	
 	sys.path.append('./code')
 	sys.path.append('./packages')
-	sys.path.append('./packages/lib/python3.6/site-packages')
+	#sys.path.append('./packages/lib/python3.6/site-packages')
 	# import luigi
 	import bam_processing
 	# sample_csv = sys.argv[1]
