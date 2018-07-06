@@ -78,6 +78,7 @@ class picard_index(luigi.Task):
 
 class trim(luigi.Task):
 	fastq_file = luigi.Parameter()
+	project_dir = luigi.Parameter()
 	trim_location = luigi.Parameter()
 	sample = luigi.Parameter()
 
@@ -90,11 +91,12 @@ class trim(luigi.Task):
 
 class fastqc(luigi.Task):
 	sample = luigi.Parameter()
+	project_dir = luigi.Parameter()
 	fastq_file = luigi.Parameter()
 	fastqc_location = luigi.Parameter()
 
 	def requires(self):
-		return trim(fastq_file=self.fastq_file, sample=self.sample)
+		return trim(fastq_file=self.fastq_file, sample=self.sample, project_dir=self.project_dir)
 
 	def output(self):
 		return [self.input(), luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'fastqc', self.input().path.split('/')[-1].split('.')[0] + '_fastqc.html'))]
@@ -127,8 +129,8 @@ class bowtie(luigi.Task):
 		return [genome_index(max_threads=self.max_threads), #threads=self.threads, base_name=self.base_name, fasta_path=self.fasta_path)
 		samtools_index(max_threads=self.max_threads),
 		picard_index(),
-		fastqc(fastq_file=self.fastq_file.split('\t')[0], sample=self.sample),
-		fastqc(fastq_file=self.fastq_file.split('\t')[1], sample=self.sample)]
+		fastqc(fastq_file=self.fastq_file.split('\t')[0], sample=self.sample, project_dir=self.project_dir),
+		fastqc(fastq_file=self.fastq_file.split('\t')[1], sample=self.sample, project_dir=self.project_dir)]
 
 	def output(self):
 		# print(os.path.join(os.path.join('/', *self.fasta_file.split('/')[:-1]), 'index', self.sample + '_raw.sam'))
