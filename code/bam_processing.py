@@ -75,19 +75,6 @@ class picard_index(luigi.Task):
 	def run(self):
 		cmd = ['java', '-jar', self.picard_location, 'CreateSequenceDictionary', 'R=%s' % self.fasta_file, 'O=%s' % self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.1)
-		# subprocess.call(cmd, stdout=subprocess.PIPE)
-
-# FastQC: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/
-# FASTX-Toolkit: http://hannonlab.cshl.edu/fastx_toolkit/commandline.html
-# class quality_control(luigi.Task):
-# 	fastq_file = luigi.Parameter()
-# 	fastqc_file = luigi.Parameter()
-
-# 	def output(self):
-# 		return luigi.LocalTarget(self.fastqc_file)
-
-# 	def run(self):
-# 		pipeline_utils.confirm_path(self.fastqc_file)
 
 class trim(luigi.Task):
 	fastq_file = luigi.Parameter()
@@ -99,6 +86,22 @@ class trim(luigi.Task):
 	
 	def run(self):
 		cmd = [self.trim_location, self.fastq_file, '-o', os.path.join(self.project_dir, 'output', self.sample[:-2])]
+		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.05)
+
+class fastqc(luigi.Task):
+	sample = luigi.Parameter()
+	fastq_file = luigi.Parameter()
+	fastqc_location = luigi.Parameter()
+
+	def requires(self):
+		return trim(fastq_file=self.fastq_file, sample=self.sample)
+
+	def output(self):
+		return [self.input(), luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'fastqc', self.input().path.split('/')[-1].split('.')[0] + '_fastqc.html'))]
+
+	def run(self):
+		pipeline_utils.confirm_path(self.output()[1].path)
+		cmd = [self.fastqc_location, '--outdir=%s' % os.path.join(self.project_dir, 'output', self.sample[:-2], 'fastqc'), self.input().path]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.1)
 
 class bowtie(luigi.Task):
@@ -121,9 +124,11 @@ class bowtie(luigi.Task):
 	# fasta_dir = os.path.join('/', *luigi.Parameter().task_value('bowtie', 'fasta_file').split('/')[:-1])
 
 	def requires(self):
-		yield genome_index(max_threads=self.max_threads) #threads=self.threads, base_name=self.base_name, fasta_path=self.fasta_path)
-		yield samtools_index(max_threads=self.max_threads)
-		yield picard_index()
+		return [genome_index(max_threads=self.max_threads), #threads=self.threads, base_name=self.base_name, fasta_path=self.fasta_path)
+		samtools_index(max_threads=self.max_threads),
+		picard_index(),
+		fastqc(fastq_file=self.fastq_file.split('\t')[0], sample=self.sample),
+		fastqc(fastq_file=self.fastq_file.split('\t')[1], sample=self.sample)]
 
 	def output(self):
 		# print(os.path.join(os.path.join('/', *self.fasta_file.split('/')[:-1]), 'index', self.sample + '_raw.sam'))
@@ -139,7 +144,7 @@ class bowtie(luigi.Task):
 		# os.chdir(os.path.join(self.fasta_dir, 'index'))
 		# print(os.getcwd())
 		# cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
-		cmd = [self.bowtie_location, '-x', os.path.join(self.fasta_dir, 'index', self.base_name), '-1', self.fastq_file.split('\t')[0], '-2', self.fastq_file.split('\t')[1], '-p', self.max_threads, '|', self.samtools_location, 'view', '-b', '-', '>', self.output().path]
+		cmd = [self.bowtie_location, '-x', os.path.join(self.fasta_dir, 'index', self.base_name), '-1', self.input()[-2][0].path, '-2', self.input()[-1][0].path, '-p', self.max_threads, '|', self.samtools_location, 'view', '-b', '-', '>', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], cwd=os.getcwd(), threads_needed=self.max_threads, sleep_time=0.2)
 
 		# os.chdir(global_vars.cwd)
@@ -149,49 +154,6 @@ class bowtie(luigi.Task):
 		# 	os.chdir(cwd)
 		# 	self.output().remove()
 		# 	sys.exit()
-
-# class move_file(luigi.Task):
-# 	from_file = luigi.Parameter()
-# 	to_file = luigi.Parameter()
-# 	required = luigi.Parameter()
-
-# 	def requires(self):
-# 		return self.required
-	
-# 	def output(self):
-# 		return luigi.LocalTarget(self.to_file)
-
-# 	def run(self):
-# 		os.rename(self.from_file, self.to_file)
-
-# class convert_bam(luigi.Task):
-# 	project_dir = luigi.Parameter()
-# 	fastq_file = luigi.Parameter()
-
-# 	# case_dir = luigi.Parameter()
-# 	sample = luigi.Parameter()
-# 	# fastq_file = luigi.Parameter()
-
-# 	# sam_file = luigi.Parameter() # os.path.join(luigi.Parameter().task_value('convert_bam', 'case_dir'), 'alignment', luigi.Parameter().task_value('convert_bam', 'sample'), '.sam')
-# 	# bam_file = luigi.Parameter() # os.path.join(luigi.Parameter().task_value('convert_bam', 'case_dir'), 'alignment', luigi.Parameter().task_value('convert_bam', 'sample'), '.bam')
-
-# 	def requires(self):
-# 		return bowtie(fastq_file=self.fastq_file, sample=self.sample)
-
-# 	def output(self):
-# 		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], self.sample + '_raw.bam'))
-
-# 	def run(self):
-# 		try:
-# 			pipeline_utils.confirm_path(self.output().path)
-# 			p = subprocess.Popen("samtools view -Sb %s > %s" % (self.input().path, self.output().path), shell=True, stdout=subprocess.PIPE)
-# 			p.wait()
-# 			#os.remove(self.input().path)
-# 		except KeyboardInterrupt:
-# 			try:
-# 				os.remove(self.output().path)
-# 			except:
-# 				pass
 
 class add_read_groups(luigi.Task):
 	max_threads = luigi.IntParameter()
@@ -216,27 +178,6 @@ class add_read_groups(luigi.Task):
 		cmd = ['java', '-jar', self.picard_location, 'AddOrReplaceReadGroups', 'I=%s' % self.input().path, 'O=%s' % self.output().path, 'SORT_ORDER=coordinate', 'RGID=%s' % self.sample, 'RGLB=%s' % self.library_prep, 'RGPL=%s' % self.platform, 'RGPU=%s' % self.sample + '_barcode', 'RGSM=%s' % self.sample]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.3)
 		self.input().remove()
-
-# # https://broadinstitute.github.io/picard/command-line-overview.html
-# class sort_bam(luigi.Task):
-# 	project_dir = luigi.Parameter()
-# 	fastq_file = luigi.Parameter()
-# 	picard_location = luigi.Parameter()
-
-# 	# input_bam = luigi.Parameter()
-# 	# output_bam = luigi.Parameter()
-# 	sample = luigi.Parameter()
-
-# 	def requires(self):
-# 		return add_read_groups(fastq_file=self.fastq_file, project_dir=self.project_dir, sample=self.sample)
-
-# 	def output(self):
-# 		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], self.sample + '_sorted.bam'))
-
-# 	def run(self):
-# 		pipeline_utils.confirm_path(self.output().path)
-# 		cmd = ['java', '-jar', self.picard_location, 'SortSam', 'I=%s' % self.input().path, 'O=%s' % self.output().path, 'SORT_ORDER=coordinate']
-# 		subprocess.call(cmd, stdout=subprocess.PIPE)
 
 # https://broadinstitute.github.io/picard/command-line-overview.html#MarkDuplicates
 class mark_duplicates(luigi.Task):
@@ -343,7 +284,7 @@ class indel_realignment(luigi.Task):
 		pipeline_utils.confirm_path(self.output()[0].path)
 		pipeline_utils.confirm_path(self.output()[1].path)
 		cmd = ['java', '-Xmx8g', '-XX:+UseSerialGC', '-jar', self.gatk3_location, '-T', 'IndelRealigner', '-R', self.fasta_file, '-I', self.input()[0].path, '-known', self.mills, '-known', self.kg, '-targetIntervals', self.input()[2].path, '-o', self.output()[0].path]
-		pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads, sleep_time=0.7)
+		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.7)
 		for input_file in self.input():
 			input_file.remove()
 
