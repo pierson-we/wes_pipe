@@ -86,6 +86,8 @@ class trim(luigi.Task):
 		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], filename.split('/')[-1].split('.')[0] + '_trimmed.fq.gz')) for filename in self.fastq_file.split('\t')]
 	
 	def run(self):
+		for output in self.output():
+			pipeline_utils.confirm_path(output.path)
 		cmd = [self.trim_location, '--paired', self.fastq_file.split('\t')[0], self.fastq_file.split('\t')[1], '-o', os.path.join(self.project_dir, 'output', self.sample[:-2])]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.05)
 
