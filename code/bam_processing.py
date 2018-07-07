@@ -86,7 +86,7 @@ class trim(luigi.Task):
 		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], filename.split('/')[-1].split('.')[0] + '_trimmed.fq.gz')) for filename in self.fastq_file.split('\t')]
 	
 	def run(self):
-		cmd = [self.trim_location, self.fastq_file, '-o', os.path.join(self.project_dir, 'output', self.sample[:-2])]
+		cmd = [self.trim_location, '--paired', self.fastq_file.split('\t')[0], self.fastq_file.split('\t')[1], '-o', os.path.join(self.project_dir, 'output', self.sample[:-2])]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.05)
 
 class fastqc(luigi.Task):
@@ -96,10 +96,28 @@ class fastqc(luigi.Task):
 	fastqc_location = luigi.Parameter()
 
 	def requires(self):
-		return trim(fastq_file=self.fastq_file, sample=self.sample, project_dir=self.project_dir)
+		luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], self.fastq_file.split('/')[-1].split('.')[0] + '_trimmed.fq.gz'))
 
 	def output(self):
-		return [self.input()[0], luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'fastqc', self.input()[0].path.split('/')[-1].split('.')[0] + '_fastqc.html'))], [self.input()[1], luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'fastqc', self.input()[1].path.split('/')[-1].split('.')[0] + '_fastqc.html'))]
+		return [self.input()[0], luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'fastqc', self.input()[0].path.split('/')[-1].split('.')[0] + '_fastqc.html'))]
+
+	def run(self):
+		pipeline_utils.confirm_path(self.output()[1].path)
+		cmd = [self.fastqc_location, '--outdir=%s' % os.path.join(self.project_dir, 'output', self.sample[:-2], 'fastqc'), self.input().path]
+		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.1)
+
+class fastqc_launch(luigi.Task):
+	sample = luigi.Parameter()
+	project_dir = luigi.Parameter()
+	fastq_file = luigi.Parameter()
+
+	def requires(self):
+		return [trim(fastq_file=self.fastq_file, sample=self.sample, project_dir=self.project_dir), 
+		fastqc(fastq_file=self.fastq_file.split('\t')[0], sample=self.sample, project_dir=self.project_dir),
+		fastqc(fastq_file=self.fastq_file.split('\t')[1], sample=self.sample, project_dir=self.project_dir)]
+
+	def output(self):
+		return [self.input()[1], self.input()[2]]
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[1].path)
@@ -129,7 +147,7 @@ class bowtie(luigi.Task):
 		return [genome_index(max_threads=self.max_threads), #threads=self.threads, base_name=self.base_name, fasta_path=self.fasta_path)
 		samtools_index(max_threads=self.max_threads),
 		picard_index(),
-		fastqc(fastq_file=self.fastq_file, sample=self.sample, project_dir=self.project_dir)]
+		fastqc_launch(fastq_file=self.fastq_file, sample=self.sample, project_dir=self.project_dir)]
 		#fastqc(fastq_file=self.fastq_file.split('\t')[1], sample=self.sample, project_dir=self.project_dir)]
 
 	def output(self):
@@ -146,7 +164,7 @@ class bowtie(luigi.Task):
 		# os.chdir(os.path.join(self.fasta_dir, 'index'))
 		# print(os.getcwd())
 		# cmd = [os.path.join(cwd, self.bowtie_location, 'bowtie2'), '-x', self.base_name, '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
-		cmd = [self.bowtie_location, '-x', os.path.join(self.fasta_dir, 'index', self.base_name), '-1', self.input()[-2][0].path, '-2', self.input()[-1][0].path, '-p', self.max_threads, '|', self.samtools_location, 'view', '-b', '-', '>', self.output().path]
+		cmd = [self.bowtie_location, '-x', os.path.join(self.fasta_dir, 'index', self.base_name), '-1', self.input()[-1][0][0].path, '-2', self.input()[-1][0][1].path, '-p', self.max_threads, '|', self.samtools_location, 'view', '-b', '-', '>', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], cwd=os.getcwd(), threads_needed=self.max_threads, sleep_time=0.2)
 
 		# os.chdir(global_vars.cwd)
