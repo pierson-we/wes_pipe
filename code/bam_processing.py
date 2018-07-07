@@ -104,7 +104,7 @@ class fastqc(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[1].path)
-		cmd = [self.fastqc_location, '--outdir=%s' % os.path.join(self.project_dir, 'output', self.sample[:-2], 'fastqc'), self.input().path]
+		cmd = [self.fastqc_location, '--outdir=%s' % os.path.join(self.project_dir, 'output', self.sample[:-2], 'fastqc'), os.path.join(self.project_dir, 'output', self.sample[:-2], self.fastq_file.split('/')[-1].split('.')[0] + '_trimmed.fq.gz')]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.1)
 
 class fastqc_launch(luigi.Task):
@@ -121,9 +121,6 @@ class fastqc_launch(luigi.Task):
 		return [self.input()[1], self.input()[2]]
 
 	def run(self):
-		pipeline_utils.confirm_path(self.output()[1].path)
-		cmd = [self.fastqc_location, '--outdir=%s' % os.path.join(self.project_dir, 'output', self.sample[:-2], 'fastqc'), self.input().path]
-		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.1)
 
 class bowtie(luigi.Task):
 	max_threads = luigi.IntParameter()
