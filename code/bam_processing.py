@@ -121,6 +121,7 @@ class fastqc_launch(luigi.Task):
 		return [self.input()[1], self.input()[2]]
 
 	def run(self):
+		pass
 
 class bowtie(luigi.Task):
 	max_threads = luigi.IntParameter()
