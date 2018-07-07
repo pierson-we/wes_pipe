@@ -93,10 +93,11 @@ class fastqc(luigi.Task):
 	sample = luigi.Parameter()
 	project_dir = luigi.Parameter()
 	fastq_file = luigi.Parameter()
+	both_fastq_files = luigi.Parameter()
 	fastqc_location = luigi.Parameter()
 
 	def requires(self):
-		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], self.fastq_file.split('/')[-1].split('.')[0] + '_trimmed.fq.gz'))
+		return trim(fastq_file=self.both_fastq_files, sample=self.sample, project_dir=self.project_dir)
 
 	def output(self):
 		return [self.input(), luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'fastqc', self.input().path.split('/')[-1].split('.')[0] + '_fastqc.html'))]
@@ -113,8 +114,8 @@ class fastqc_launch(luigi.Task):
 
 	def requires(self):
 		return [trim(fastq_file=self.fastq_file, sample=self.sample, project_dir=self.project_dir), 
-		fastqc(fastq_file=self.fastq_file.split('\t')[0], sample=self.sample, project_dir=self.project_dir),
-		fastqc(fastq_file=self.fastq_file.split('\t')[1], sample=self.sample, project_dir=self.project_dir)]
+		fastqc(fastq_file=self.fastq_file.split('\t')[0], sample=self.sample, project_dir=self.project_dir, both_fastq_files=self.fastq_file),
+		fastqc(fastq_file=self.fastq_file.split('\t')[1], sample=self.sample, project_dir=self.project_dir, both_fastq_files=self.fastq_file)]
 
 	def output(self):
 		return [self.input()[1], self.input()[2]]
