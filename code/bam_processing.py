@@ -102,7 +102,7 @@ class fastqc(luigi.Task):
 		return trim(fastq_file=self.both_fastq_files, sample=self.sample, project_dir=self.project_dir)
 
 	def output(self):
-		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], self.fastq_file.split('/')[-1].split('.')[0] + '_trimmed.fq.gz')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'fastqc', os.path.join(self.project_dir, 'output', self.sample[:-2], self.fastq_file.split('/')[-1].split('.')[0] + '_trimmed_fastq.html')))]
+		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], self.fastq_file.split('/')[-1].split('.')[0] + '_trimmed.fq.gz')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'fastqc', self.fastq_file.split('/')[-1].split('.')[0] + '_trimmed_fastq.html'))]
 
 	def run(self):
 		for output in self.output():
