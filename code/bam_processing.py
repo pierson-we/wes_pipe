@@ -83,7 +83,7 @@ class trim(luigi.Task):
 	sample = luigi.Parameter()
 
 	def output(self):
-		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], filename.split('/')[-1].split('.')[0] + '_trimmed.fq.gz')) for filename in self.fastq_file.split('\t')]
+		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], self.fastq_file.split('\t')[0].split('/')[-1].split('.')[0] + '_val_1.fq.gz')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], self.fastq_file.split('\t')[1].split('/')[-1].split('.')[0] + '_val_2.fq.gz'))]
 	
 	def run(self):
 		for output in self.output():
