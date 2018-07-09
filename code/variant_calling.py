@@ -233,7 +233,7 @@ class varscan(luigi.Task):
 			cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.fasta_file, '-f', '0.01', '-N', self.case + '_T', '-b', self.input()[0][0].path, '-z', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.library_bed, '|', './packages/VarDictJava/VarDict/teststrandbias.R', '|', './packages/VarDictJava/VarDict/var2vcf_valid.pl', '-N', self.case + '_T', 'E', '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
 		pipeline_utils.command_call(cmd, [self.output()])
 
-class cnvkit_reference(luigi.Task):
+class cnvkit(luigi.Task):
 	max_threads = luigi.IntParameter()
 	matched_n = luigi.Parameter()
 	project_dir = luigi.Parameter()
@@ -263,6 +263,6 @@ class cnvkit_reference(luigi.Task):
 		# if self.matched_n:
 		# 	cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.fasta_file, '-f', '0.01', '-N', self.case + '_T', '-b', '"%s|%s"' % (self.input()[0][0].path, self.input()[1][0].path), '-z', '-F', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.library_bed, '|', './packages/VarDictJava/VarDict/testsomatic.R', '|', './packages/VarDictJava/VarDict/var2vcf_paired.pl', '-N', '"%s|%s"' % (self.case + '_T', self.case + '_N'), '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
 		# else:
-		cmd = ['./packages/path/to/cnvkit.py', 'batch', os.path.join(self.project_dir, 'output', '*', 'alignment', '*T*.bam'), '--normal', os.path.join(self.project_dir, 'output', '*', 'alignment', '*N*.bam'), '--targets', self.library_bed, '--fasta', self.fasta_file, '--output-reference', self.output()[0].path, '--output-dir', os.path.join(self.vcf_path, 'cnvkit', 'output'), '--diagram', '--scatter', '-p', self.max_threads]
+		cmd = ['./packages/cnvkit/cnvkit.py', 'batch', os.path.join(self.project_dir, 'output', '*', 'alignment', '*T*.bam'), '--normal', os.path.join(self.project_dir, 'output', '*', 'alignment', '*N*.bam'), '--targets', self.library_bed, '--fasta', self.fasta_file, '--output-reference', self.output()[0].path, '--output-dir', os.path.join(self.vcf_path, 'cnvkit', 'output'), '--diagram', '--scatter', '-p', self.max_threads]
 		pipeline_utils.command_call(cmd, [self.output()])
 
