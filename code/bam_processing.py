@@ -105,6 +105,8 @@ class fastqc(luigi.Task):
 		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], self.fastq_file.split('/')[-1].split('.')[0] + '_trimmed.fq.gz')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'fastqc', os.path.join(self.project_dir, 'output', self.sample[:-2], self.fastq_file.split('/')[-1].split('.')[0] + '_trimmed_fastq.html')))]
 
 	def run(self):
+		for output in self.output():
+			pipeline_utils.confirm_path(output.path)
 		pipeline_utils.confirm_path(self.output()[1].path)
 		cmd = [self.fastqc_location, '--outdir=%s' % os.path.join(self.project_dir, 'output', self.sample[:-2], 'fastqc'), os.path.join(self.project_dir, 'output', self.sample[:-2], self.fastq_file.split('/')[-1].split('.')[0] + '_trimmed.fq.gz')]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.1)
