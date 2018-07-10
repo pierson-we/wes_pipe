@@ -59,10 +59,10 @@ if __name__ == '__main__':
 	# project_dir = sys.argv[1]
 	# sample_dir = sys.argv[2]
 	if not args.local_scheduler:
-		print('about to start luigi server...')
-		p = subprocess.Popen(['python3', '/home/wpierson/luigi/src/luigi/bin/luigid', '--background', '--pidfile', '/home/wpierson/projects/wes_pipe/luigi_pidfile.txt', '--logdir', '/home/wpierson/projects/wes_pipe', '--state-path', '/home/wpierson/projects/wes_pipe/luigi_statepath.txt', '&'])
-		print('Starting luigi server...\n\n')
-		sys.stdout.flush()
+		# print('about to start luigi server...')
+		# subprocess.call('python3 /home/wpierson/luigi/src/luigi/bin/luigid --background --pidfile /home/wpierson/projects/wes_pipe/luigi_pidfile.txt --logdir /home/wpierson/projects/wes_pipe --state-path /home/wpierson/projects/wes_pipe/luigi_statepath.txt --port %s &' % args.port)
+		# print('Starting luigi server...\n\n')
+		# sys.stdout.flush()
 		time.sleep(2)
 
 	sys.stdout.flush()
