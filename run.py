@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 
-	print()
+	print('args have been parsed')
 	if not os.path.exists(os.path.join(os.getcwd(), 'code')):
 		os.chdir('/'.join(sys.argv[0].split('/')[:-1]))
 		sys.path.append(os.getcwd())
@@ -60,7 +60,7 @@ if __name__ == '__main__':
 	# sample_dir = sys.argv[2]
 	if not args.local_scheduler:
 		print('about to start luigi server...')
-		subprocess.call('python3 /home/wpierson/luigi/src/luigi/bin/luigid --background --pidfile /home/wpierson/projects/wes_pipe/luigi_pidfile.txt --logdir /home/wpierson/projects/wes_pipe --state-path /home/wpierson/projects/wes_pipe/luigi_statepath.txt --port %s &' % args.port, shell=True)
+		subprocess.call('nohup python3 /home/wpierson/luigi/src/luigi/bin/luigid --background --pidfile /home/wpierson/projects/wes_pipe/luigi_pidfile.txt --logdir /home/wpierson/projects/wes_pipe --state-path /home/wpierson/projects/wes_pipe/luigi_statepath.txt --port %s &' % args.port, shell=True)
 		print('Starting luigi server...\n\n')
 		sys.stdout.flush()
 		time.sleep(2)
