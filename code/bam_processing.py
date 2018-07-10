@@ -362,6 +362,7 @@ class recalibrated_bam(luigi.Task):
 		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_recalibrated.bam')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_recalibrated.bam'))]
 
 	def run(self):
+		sys.exit()
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 		cmd = [self.gatk4_location, 'ApplyBQSR', '-R', self.fasta_file, '-I', self.input()[0].path, '--bqsr-recal-file', self.input()[2].path, '-O',  self.output()[0].path]
@@ -535,7 +536,7 @@ class cases(luigi.Task):
 		# 	matched_n = sample_dict[case]['N']
 		# 	yield aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=self.project_dir, max_threads=sample_threads, case_dict=sample_dict)
 
-class run_pipeline(args):
+def run_pipeline(args):
 	timestamp = str(int(time.time()))
 
 	global_vars.global_max_threads = args.max_threads
