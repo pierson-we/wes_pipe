@@ -63,7 +63,7 @@ if __name__ == '__main__':
 		# subprocess.call('python3 /home/wpierson/luigi/src/luigi/bin/luigid --background --pidfile /home/wpierson/projects/wes_pipe/luigi_pidfile.txt --logdir /home/wpierson/projects/wes_pipe --state-path /home/wpierson/projects/wes_pipe/luigi_statepath.txt --port %s &' % args.port)
 		# print('Starting luigi server...\n\n')
 		# sys.stdout.flush()
-		time.sleep(2)
+		# time.sleep(2)
 
 	sys.stdout.flush()
 	bam_processing.run_pipeline(args)
