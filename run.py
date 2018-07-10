@@ -65,7 +65,6 @@ if __name__ == '__main__':
 		# sys.stdout.flush()
 		# time.sleep(2)
 
-	sys.stdout.flush()
 	bam_processing.run_pipeline(args)
 	# luigi.build([bam_processing.cases(max_threads=args.max_threads, project_dir=args.project_dir, sample_dir=args.sample_dir, threads_per_sample=args.threads_per_sample, timestamp=timestamp)], workers=args.workers, local_scheduler=args.local_scheduler)
 		
