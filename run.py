@@ -58,7 +58,7 @@ if __name__ == '__main__':
 	# project_dir = sys.argv[1]
 	# sample_dir = sys.argv[2]
 	if not args.local_scheduler:
-		subprocess.call('luigid --background --port %s &' % args.port, shell=True)
+		subprocess.call('/home/wpierson/luigi/src/luigi/bin/luigid --background --pidfile /home/wpierson/projects/wes_pipe/luigi_pidfile.txt --logdir /home/wpierson/projects/wes_pipe --state-path /home/wpierson/projects/wes_pipe/luigi_statepath.txt --port %s &' % args.port, shell=True)
 		print('Starting luigi server...\n\n')
 		time.wait(2)
 
