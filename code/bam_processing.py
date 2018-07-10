@@ -336,7 +336,7 @@ class bqsr(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[2].path)
-		cmd = [self.gatk4_location, 'BaseRecalibrator', '-R', self.fasta_file, '-I', self.input()[0].path, '--known-sites', self.dbsnp, '--known-sites', self.mills, '--known-sites', self.kg, '-o',  self.output()[2].path]
+		cmd = [self.gatk4_location, 'BaseRecalibrator', '-R', self.fasta_file, '-I', self.input()[0].path, '--known-sites', self.dbsnp, '--known-sites', self.mills, '--known-sites', self.kg, '-O',  self.output()[2].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.8)
 		# self.input().remove()
 
