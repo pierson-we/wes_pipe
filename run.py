@@ -27,6 +27,7 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 
+	print()
 	if not os.path.exists(os.path.join(os.getcwd(), 'code')):
 		os.chdir('/'.join(sys.argv[0].split('/')[:-1]))
 		sys.path.append(os.getcwd())
@@ -62,8 +63,7 @@ if __name__ == '__main__':
 		print('Starting luigi server...\n\n')
 		time.wait(2)
 
-	print('beginning analysis')
-
+	sys.stdout.flush()
 	bam_processing.run_pipeline(args)
 	# luigi.build([bam_processing.cases(max_threads=args.max_threads, project_dir=args.project_dir, sample_dir=args.sample_dir, threads_per_sample=args.threads_per_sample, timestamp=timestamp)], workers=args.workers, local_scheduler=args.local_scheduler)
 		
