@@ -362,7 +362,6 @@ class recalibrated_bam(luigi.Task):
 		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_recalibrated.bam')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_recalibrated.bam'))]
 
 	def run(self):
-		sys.exit()
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 		cmd = [self.gatk4_location, 'ApplyBQSR', '-R', self.fasta_file, '-I', self.input()[0].path, '--bqsr-recal-file', self.input()[2].path, '-O',  self.output()[0].path]
