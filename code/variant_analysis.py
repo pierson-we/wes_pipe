@@ -43,7 +43,6 @@ class msi(luigi.Task):
 	case = luigi.Parameter()
 	tumor = luigi.Parameter()
 	matched_n = luigi.Parameter()
-	case_dict = luigi.DictParameter()
 
 	fasta_file = luigi.Parameter()
 
