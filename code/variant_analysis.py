@@ -39,6 +39,7 @@ class msi(luigi.Task):
 	max_threads = luigi.IntParameter()
 	project_dir = luigi.Parameter()
 
+	vcf_path = luigi.Parameter()
 	case = luigi.Parameter()
 	tumor = luigi.Parameter()
 	matched_n = luigi.Parameter()
