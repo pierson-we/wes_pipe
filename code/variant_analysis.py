@@ -25,7 +25,9 @@ class vep(luigi.Task):
 		return bam_processing.aggregate_variants(case=self.case, tumor=self.tumor, matched_n=self.matched_n, case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads)
 
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_vep' + '.vcf'))
+		case_dir = os.path.join(self.project_dir, 'output', self.case)
+		vcf_path = os.path.join(case_dir, 'variants')
+		return luigi.LocalTarget(os.path.join(vcf_path, self.case + '_vep' + '.vcf'))
 	
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
