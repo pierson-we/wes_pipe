@@ -34,44 +34,49 @@ fastq file
 			Variant Recalibration (GATK)
 			Annotate Variants (ANNOVAR)
 			Merge VCFs (picard)
+			MSI status (mSINGS for tumor-only, MANTIS for matched pairs. see more options here: http://ascopubs.org/doi/full/10.1200/PO.17.00189)
 			
 			
 TODO
-max threads/processes management
-cleaner input/output file param passing
-clean up file hierarchy/names
+
 error handling (mainly incomplete file deletion)
-#intuitive file structure for inputs (i.e. /project/case/normal/normal.fastq)
-#utilize luigi.Target tmp file functionality (https://luigi.readthedocs.io/en/stable/api/luigi.local_target.html)
 defaults for threads/base_name/other variables
 verbose mode
 print stdout to log file
-create quality check (against reference genome(s))
-incorporate luigi workers functionality?
-RGID in add read group - implement sample counter, or just use sample id
+create quality check (against reference samples)
 minimize saving duplicate files
-add duplicates should be able to convert to bam and sort in one step
-maximize efficiency by limiting as many steps as possible to regions specified in exome .bed file
-make all command calls from separate fxn, incorporate threading
 chromoplexy
 clean up all parameters (cfg vs. passed)
 add /tmp folder option (will delete all intermediate files once analysis is complete)
-add num requested cpus to docker command
-create linux and mac versions
-incorporate paired reads
 add scratch path
-create docker containers with and without resource_bundle, for both os x and linux
-	specify the default run command, and setup parameter passing
 possibility of streaming inputs (using stdin "|")
 create panel of normals or similar for analyzing CNV in unpaired samples
 pass fastq params as a list
 incorporate clinvar sites in filtering
 look at best practices for all tools
-see if it's possible to share global_vars module across workers
+get MSI status running
 
-# actually don't do this. switch to grch37 (will hopefully solve memory issues)
+
+#max threads/processes management
+#cleaner input/output file param passing
+#clean up file hierarchy/names
+#intuitive file structure for inputs (i.e. /project/case/normal/normal.fastq)
+#utilize luigi.Target tmp file functionality (https://luigi.readthedocs.io/en/stable/api/luigi.local_target.html)
+#incorporate luigi workers functionality?
+#RGID in add read group - implement sample counter, or just use sample id
+#add duplicates should be able to convert to bam and sort in one step
+#maximize efficiency by limiting as many steps as possible to regions specified in exome .bed file
+#make all command calls from separate fxn, incorporate threading
+#add num requested cpus to docker command
+#incorporate paired reads
+#see if it's possible to share global_vars module across workers
 # switch over to gatk4 where possible
 # change --known variant file for indel realigner target creator
+
+
+create docker containers with and without resource_bundle, for both os x and linux
+	specify the default run command, and setup parameter passing
+create linux and mac versions
 go live on docker image/udocker
 	allows active monitoring, but how to deal with concurrent instances?
 		for now, just use different ports for each instance.

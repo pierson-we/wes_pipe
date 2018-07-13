@@ -35,7 +35,7 @@ class mutect(luigi.Task):
 
 
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_mutect' + '.vcf.gz'))
+		return [luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_mutect.vcf.gz')), luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_mutect.vcf.gz.tbi'))]
 	
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
@@ -60,20 +60,17 @@ class filter_mutect(luigi.Task):
 	fasta_dir = os.path.join('/', *luigi.Parameter().task_value('bowtie', 'fasta_file').split('/')[:-1])
 
 	def requires(self):
-		if self.matched_n != '':
-			return mutect(project_dir=self.project_dir, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n, max_threads=self.max_threads)
-		else:
-			return mutect(project_dir=self.project_dir, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n, max_threads=self.max_threads)
-
+		return mutect(project_dir=self.project_dir, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n, max_threads=self.max_threads)
 
 	def output(self):
 		return luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_mutect_filtered' + '.vcf.gz'))
 	
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
-		cmd = [self.gatk4_location, 'FilterMutectCalls', '-V', self.input().path, '-O', self.output().path]
+		cmd = [self.gatk4_location, 'FilterMutectCalls', '-V', self.input()[0].path, '-O', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=1.1)
-		self.input().remove()
+		for input_file in self.input():
+			input_file.remove()
 
 
 class scalpel_discovery(luigi.Task):
@@ -97,8 +94,11 @@ class scalpel_discovery(luigi.Task):
 
 
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.vcf_path, 'scalpel', 'variants.db.dir'))
-	
+		if self.matched_n != '':
+			return luigi.LocalTarget(os.path.join(self.vcf_path, 'scalpel', 'twopass', 'somatic.db.dir'))
+		else:
+			return luigi.LocalTarget(os.path.join(self.vcf_path, 'scalpel', 'variants.db.dir'))
+
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
 		if self.matched_n:
@@ -129,7 +129,10 @@ class scalpel_export(luigi.Task):
 
 
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_scalpel' + '.vcf'))
+		if self.matched_n != '':
+			return luigi.LocalTarget(os.path.join(self.vcf_path, 'scalpel', 'twopass', 'somatic.indel.vcf'))
+		else:
+			return luigi.LocalTarget(os.path.join(self.vcf_path, 'scalpel', 'variants.indel.vcf'))
 	
 	def run(self):
 		if self.matched_n:
@@ -141,7 +144,6 @@ class scalpel_export(luigi.Task):
 # not yet tested - need to install GNU Parallel on cluster...
 class freebayes(luigi.Task):
 	max_threads = luigi.IntParameter()
-	matched_n = luigi.Parameter()
 	project_dir = luigi.Parameter()
 
 	case = luigi.Parameter()
@@ -191,14 +193,14 @@ class vardict(luigi.Task):
 
 
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_freebayes' + '.vcf'))
+		return luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_vardict' + '.vcf'))
 	
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
 		if self.matched_n:
-			cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.fasta_file, '-f', '0.01', '-N', self.case + '_T', '-b', '"%s|%s"' % (self.input()[0][0].path, self.input()[1][0].path), '-th', self.max_threads, '-z', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.library_bed, '|', './packages/VarDictJava/VarDict/testsomatic.R', '|', './packages/VarDictJava/VarDict/var2vcf_paired.pl', '-N', '"%s|%s"' % (self.case + '_T', self.case + '_N'), '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
+			cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.fasta_file, '-f', '0.01', '-N', self.case + '_T', '-b', '"%s|%s"' % (self.input()[0][0].path, self.input()[1][0].path), '-th', self.max_threads, '-z', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.library_bed, '|', './packages/VarDictJava/VarDict/testsomatic.R', '|', './packages/VarDictJava/VarDict/var2vcf_paired.pl', '-N', '"%s|%s"' % (self.case + '_T', self.case + '_N'), '-f', '0.01', '>%s' % self.output().path]
 		else:
-			cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.fasta_file, '-f', '0.01', '-N', self.case + '_T', '-b', self.input()[0][0].path, '-th', self.max_threads, '-z', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.library_bed, '|', './packages/VarDictJava/VarDict/teststrandbias.R', '|', './packages/VarDictJava/VarDict/var2vcf_valid.pl', '-N', self.case + '_T', 'E', '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
+			cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.fasta_file, '-f', '0.01', '-N', self.case + '_T', '-b', self.input()[0][0].path, '-th', self.max_threads, '-z', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.library_bed, '|', './packages/VarDictJava/VarDict/teststrandbias.R', '|', './packages/VarDictJava/VarDict/var2vcf_valid.pl', '-N', self.case + '_T', '-E', '-f', '0.01', '>%s' % self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads)
 
 # this will be pretty annoying to get up and going
@@ -223,7 +225,7 @@ class varscan(luigi.Task):
 
 
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_freebayes' + '.vcf'))
+		return luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_varscan' + '.vcf'))
 	
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
