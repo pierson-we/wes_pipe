@@ -237,13 +237,12 @@ class varscan(luigi.Task):
 
 class cnvkit(luigi.Task):
 	max_threads = luigi.IntParameter()
-	matched_n = luigi.Parameter()
 	project_dir = luigi.Parameter()
 
-	case = luigi.Parameter()
-	tumor = luigi.Parameter()
-	matched_n = luigi.Parameter()
-	vcf_path = luigi.Parameter()
+	# case = luigi.Parameter()
+	# tumor = luigi.Parameter()
+	# matched_n = luigi.Parameter()
+	# vcf_path = luigi.Parameter()
 	case_dict = luigi.DictParameter()
 
 	library_bed = luigi.Parameter()
@@ -258,13 +257,14 @@ class cnvkit(luigi.Task):
 
 
 	def output(self):
-		return [luigi.LocalTarget(os.path.join(self.vcf_path, 'cnvkit', 'reference', 'reference.cnn'))] + [luigi.LocalTarget(os.path.join(self.vcf_path, 'cnvkit', 'output', '*%s*.vcf.gz' % case_name)) for case_name in self.case_dict]
+		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'variants', 'cnvkit', 'reference', 'reference.cnn'))] + [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'variants', 'cnvkit', 'output', '*%s*.cns' % case_name)) for case_name in self.case_dict]
 	
 	def run(self):
-		pipeline_utils.confirm_path(self.output().path)
+		for output in self.output():
+			pipeline_utils.confirm_path(output.path)
 		# if self.matched_n:
 		# 	cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.fasta_file, '-f', '0.01', '-N', self.case + '_T', '-b', '"%s|%s"' % (self.input()[0][0].path, self.input()[1][0].path), '-z', '-F', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.library_bed, '|', './packages/VarDictJava/VarDict/testsomatic.R', '|', './packages/VarDictJava/VarDict/var2vcf_paired.pl', '-N', '"%s|%s"' % (self.case + '_T', self.case + '_N'), '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
 		# else:
-		cmd = ['python3', './packages/cnvkit/cnvkit.py', 'batch', os.path.join(self.project_dir, 'output', '*', 'alignment', '*T*.bam'), '--normal', os.path.join(self.project_dir, 'output', '*', 'alignment', '*N*.bam'), '--targets', self.library_bed, '--fasta', self.fasta_file, '--output-reference', self.output()[0].path, '--output-dir', os.path.join(self.vcf_path, 'cnvkit', 'output'), '--diagram', '--scatter', '-p', self.max_threads]
-		pipeline_utils.command_call(cmd, [self.output()])
+		cmd = ['python3', './packages/cnvkit/cnvkit.py', 'batch', os.path.join(self.project_dir, 'output', '*', 'alignment', '*T*.bam'), '--normal', os.path.join(self.project_dir, 'output', '*', 'alignment', '*N*.bam'), '--targets', self.library_bed, '--fasta', self.fasta_file, '--output-reference', self.output()[0].path, '--output-dir', os.path.join(self.project_dir, 'output', self.sample[:-2], 'variants', 'cnvkit', 'output'), '--diagram', '--scatter', '-p', self.max_threads]
+		pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads)
 
