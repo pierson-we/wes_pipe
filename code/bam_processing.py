@@ -8,6 +8,7 @@ import time
 import random
 import pipeline_utils
 import global_vars
+import variant_analysis
 from variant_calling import *
 
 # ***
@@ -477,6 +478,7 @@ class aggregate_variants(luigi.Task):
 		yield scalpel_export(**kwargs)
 		yield vardict(**kwargs)
 		yield cnvkit(case_dict=self.case_dict, **kwargs)
+		yield variant_analysis.msi(**kwargs)
 		# yield run_variant_caller(caller='VarDict', **kwargs)
 		# yield run_variant_caller(caller='FreeBayes', **kwargs)
 		# yield run_variant_caller(caller='VarScan', **kwargs)
@@ -498,8 +500,10 @@ class cases(luigi.Task):
 	sample_threads = luigi.IntParameter()
 
 	def requires(self):
-		return [aggregate_variants(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict) for case in self.sample_dict]
+		# return [aggregate_variants(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict) for case in self.sample_dict]
 		
+		return [variant_analysis.vep(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict) for case in self.sample_dict]
+
 		# # global global_max_threads, thread_count
 		
 		# global_vars.global_max_threads = self.max_threads
