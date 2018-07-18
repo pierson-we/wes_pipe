@@ -55,6 +55,7 @@ pass fastq params as a list
 incorporate clinvar sites in filtering
 look at best practices for all tools
 get MSI status running
+reintroduce variant_calling references (remove from variant_calling import *)
 
 
 #max threads/processes management
