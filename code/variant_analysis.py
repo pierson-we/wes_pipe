@@ -59,7 +59,7 @@ class msi(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
 		if self.matched_n != '':
-			cmd = ['python', './packages/MANTIS/mantis.py', '--bed_file', './packages/MANTIS/b37_exome_microsatellites.bed', '--genome', self.fasta_file, '-t', self.input()[0][0].path, '-n', self.input()[1][0].path, '--threads', self.max_threads, '-mrq', '20.0', '-mlq', '25.0', '-mlc', '20', '-mrr', '1', '-o', self.output().path]
+			cmd = ['python3', './packages/MANTIS/mantis.py', '--bed_file', './packages/MANTIS/b37_exome_microsatellites.bed', '--genome', self.fasta_file, '-t', self.input()[0][0].path, '-n', self.input()[1][0].path, '--threads', self.max_threads, '-mrq', '20.0', '-mlq', '25.0', '-mlc', '20', '-mrr', '1', '-o', self.output().path]
 			pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads)
 		else:
 			cmd = ['echo', '"mSINGS still needs to be set up for tumor-only samples"', '>', self.output().path] # this will be a pain to get up and going: https://bitbucket.org/uwlabmed/msings/src/8269e0e01acfc5e01d0de9d63ffc1e399996ce8a/Recommendations_for_custom_assays?at=master&fileviewer=file-view-default
