@@ -360,12 +360,14 @@ class recalibrated_bam(luigi.Task):
 		return bqsr(fastq_file=self.fastq_file, project_dir=self.project_dir, sample=self.sample, max_threads=self.max_threads)
 
 	def output(self):
-		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_recalibrated.bam')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_recalibrated.bai'))]
+		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_recalibrated.bam')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_recalibrated.bam.bai'))]
 
 	def run(self):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 		cmd = [self.gatk4_location, '--java-options', '"-Xmx8g -XX:+UseSerialGC"', 'ApplyBQSR', '-R', self.fasta_file, '-I', self.input()[0].path, '--bqsr-recal-file', self.input()[2].path, '-O',  self.output()[0].path]
+		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.9)
+		cmd = ['mv', luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_recalibrated.bai')), self.output()[1].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.9)
 		for input_file in self.input():
 			input_file.remove()
