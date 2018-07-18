@@ -32,7 +32,7 @@ class vep(luigi.Task):
 	
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
-		cmd = ['./packages/ensembl-vep/vep', '-i', self.input()[0].path, '-o', self.output().path, '--fasta', self.fasta_file, '--cache', '--dir_cache', './packages/ensembl-vep/cache', '--protein', '--symbol', '--hgvs', '--force_overwrite', '--check_existing', '--offline']
+		cmd = ['./packages/ensembl-vep/vep', '-i', self.input()[0].path, '-o', self.output().path, '--fasta', self.fasta_file, '--cache', '--dir_cache', './packages/ensembl-vep/cache', '--protein', '--symbol', '--hgvs', '--force_overwrite', '--check_existing', '--offline', '--buffer_size', '2500']
 		pipeline_utils.command_call(cmd, [self.output()])
 
 
