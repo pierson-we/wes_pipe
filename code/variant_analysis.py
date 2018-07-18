@@ -54,7 +54,7 @@ class msi(luigi.Task):
 			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads)]
 
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi' + '.txt'))
+		return luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.txt'))
 	
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
