@@ -120,16 +120,19 @@ class msi(luigi.Task):
 			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads)]
 
 	def output(self):
-		return [luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.txt')), luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.txt.status')), luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.kmer_counts.txt')), luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.kmer_counts_filtered.txt'))]
-	
+		if self.matched_n != '':
+			return [luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.txt')), luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.txt.status')), luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.kmer_counts.txt')), luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.kmer_counts_filtered.txt'))]
+		else:
+			return [luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.txt'))]
+
 	def run(self):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 		if self.matched_n != '':
-			cmd = ['python3', './packages/MANTIS/mantis.py', '-b', './packages/MANTIS/b37_exome_microsatellites.bed', '--genome', self.fasta_file, '-t', self.input()[0][0].path, '-n', self.input()[1][0].path, '--threads', self.max_threads, '-mrq', '20.0', '-mlq', '25.0', '-mlc', '20', '-mrr', '1', '-o', self.output().path]
+			cmd = ['python3', './packages/MANTIS/mantis.py', '-b', './packages/MANTIS/b37_exome_microsatellites.bed', '--genome', self.fasta_file, '-t', self.input()[0][0].path, '-n', self.input()[1][0].path, '--threads', self.max_threads, '-mrq', '20.0', '-mlq', '25.0', '-mlc', '20', '-mrr', '1', '-o', self.output()[0].path]
 			pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads)
 		else:
 			# cmd = ['./packages/msings/scripts/run_msings.sh', self.input()[0].path, './packages/MANTIS/b37_exome_microsatellites.intervals', './packages/MANTIS/b37_exome_microsatellites.bed', self.fasta_file]
 			# pipeline_utils.command_call(cmd, self.output())
-			cmd = ['echo', '"mSINGS still needs to be set up for tumor-only samples"', '>', self.output().path] # this will be a pain to get up and going: https://bitbucket.org/uwlabmed/msings/src/8269e0e01acfc5e01d0de9d63ffc1e399996ce8a/Recommendations_for_custom_assays?at=master&fileviewer=file-view-default
+			cmd = ['echo', '"mSINGS still needs to be set up for tumor-only samples"', '>', self.output()[0].path] # this will be a pain to get up and going: https://bitbucket.org/uwlabmed/msings/src/8269e0e01acfc5e01d0de9d63ffc1e399996ce8a/Recommendations_for_custom_assays?at=master&fileviewer=file-view-default
 			pipeline_utils.command_call(cmd, self.output())
