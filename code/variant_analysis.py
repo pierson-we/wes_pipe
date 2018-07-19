@@ -28,12 +28,12 @@ class vep(luigi.Task):
 	def output(self):
 		case_dir = os.path.join(self.project_dir, 'output', self.case)
 		vcf_path = os.path.join(case_dir, 'variants')
-		return luigi.LocalTarget(os.path.join(vcf_path, self.case + '_vep' + '.vcf'))
+		return [luigi.LocalTarget(os.path.join(vcf_path, self.case + '_vep.vcf')), luigi.LocalTarget(os.path.join(vcf_path, self.case + '_vep.vcf_summary.html'))]
 	
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
 		cmd = ['./packages/ensembl-vep/vep', '-i', self.input()[0].path, '-o', self.output().path, '--fasta', self.fasta_file, '--cache', '--dir_cache', './packages/ensembl-vep/cache', '--protein', '--symbol', '--hgvs', '--force_overwrite', '--check_existing', '--offline', '--buffer_size', '2500']
-		pipeline_utils.command_call(cmd, [self.output()])
+		pipeline_utils.command_call(cmd, self.output())
 
 class fpfilter(luigi.Task):
 	max_threads = luigi.IntParameter()
@@ -89,7 +89,7 @@ class msi(luigi.Task):
 			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads)]
 
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.txt'))
+		return [luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.txt')), luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.txt.status')), luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.kmer_counts.txt')), luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.kmer_counts_filtered.txt'))]
 	
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
@@ -98,4 +98,4 @@ class msi(luigi.Task):
 			pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads)
 		else:
 			cmd = ['echo', '"mSINGS still needs to be set up for tumor-only samples"', '>', self.output().path] # this will be a pain to get up and going: https://bitbucket.org/uwlabmed/msings/src/8269e0e01acfc5e01d0de9d63ffc1e399996ce8a/Recommendations_for_custom_assays?at=master&fileviewer=file-view-default
-			pipeline_utils.command_call(cmd, [self.output()])
+			pipeline_utils.command_call(cmd, self.output())
