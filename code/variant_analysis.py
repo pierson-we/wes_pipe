@@ -35,6 +35,41 @@ class vep(luigi.Task):
 		cmd = ['./packages/ensembl-vep/vep', '-i', self.input()[0].path, '-o', self.output().path, '--fasta', self.fasta_file, '--cache', '--dir_cache', './packages/ensembl-vep/cache', '--protein', '--symbol', '--hgvs', '--force_overwrite', '--check_existing', '--offline', '--buffer_size', '2500']
 		pipeline_utils.command_call(cmd, [self.output()])
 
+class fpfilter(luigi.Task):
+	max_threads = luigi.IntParameter()
+	project_dir = luigi.Parameter()
+
+	# vcf_path = luigi.Parameter()
+	case = luigi.Parameter()
+	tumor = luigi.Parameter()
+	matched_n = luigi.Parameter()
+	case_dict = luigi.DictParameter()
+
+	fasta_file = luigi.Parameter()
+
+	def requires(self):
+		return bam_processing.aggregate_variants(case=self.case, tumor=self.tumor, matched_n=self.matched_n, case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads)
+
+	def output(self):
+		case_dir = os.path.join(self.project_dir, 'output', self.case)
+		vcf_path = os.path.join(case_dir, 'variants')
+		return luigi.LocalTarget(os.path.join(vcf_path, self.case + '_snvs' + '.fpfilter'))
+	
+	def run(self):
+		pipeline_utils.confirm_path(self.output().path)
+		fpfilter_path = os.path.join(self.project_dir, 'output', self.case, 'fpfilter')
+		pipeline_utils.confirm_path(fpfilter_path)
+		cmd = ['mkdir', fpfilter_path]
+		pipeline_utils.command_call(cmd, [self.output()])
+		snvs_var = os.path.join(fpfilter_path, 'snvs.var')
+		cmd = ['perl', '-ane', '''\'print join("\t",@F[0,1,1])."\n" unless(m/^#/)\'''', self.input()[0].path, '>', snvs_var]
+		pipeline_utils.command_call(cmd, [self.output()])
+		snvs_readcount = os.path.join(fpfilter_path, 'snvs.readcount')
+		tumor_bam = os.path.join(self.project_dir, 'output', self.case, 'alignment', self.case + '_T_recalibrated.bam')
+		cmd = ['./packages/fpfilter/bam-readcount-master/build/bin/bam-readcount', '-q1', '-b15', '-w1', '-l', snvs_var, '-f', self.fasta_file, tumor_bam, '>', snvs_readcount]
+		pipeline_utils.command_call(cmd, [self.output()])
+		cmd = ['./packages/fpfilter/fpfilter.pl', '--var-file', self.input()[0].path, '--readcount-file', snvs_readcount, '--output-file', self.output().path]
+		pipeline_utils.command_call(cmd, [self.output()])
 
 class msi(luigi.Task):
 	max_threads = luigi.IntParameter()
