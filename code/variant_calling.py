@@ -141,7 +141,7 @@ class scalpel_export(luigi.Task):
 			cmd = ['./scalpel-0.5.4/scalpel-export', '--single', '--db', self.input().path[:-4], '--bed', self.library_bed, '--ref', self.fasta_file]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=1.1)
 
-# not yet tested - need to install GNU Parallel on cluster...
+# not yet tested - need to install GNU Parallel on cluster... but might be able to run local install http://git.savannah.gnu.org/cgit/parallel.git/tree/README
 class freebayes(luigi.Task):
 	max_threads = luigi.IntParameter()
 	project_dir = luigi.Parameter()
@@ -167,14 +167,13 @@ class freebayes(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
 		if self.matched_n:
-			cmd = ['./packages/freebayes/scripts/freebayes-parallel', '<(./packages/freebayes/scripts/fasta_generate_regions.py %s.fai 100000)' % self.fasta_file, self.max_threads, '-f', self.fasta_file, '-t', self.library_bed, '--pooled-continuous', '--pooled-discrete', '-F', '0.01', '-C', '2', self.input()[0][0].path, self.input()[1][0].path, '>', os.path.join(self.vcf_path, 'freebayes')]
+			cmd = ['./packages/freebayes/scripts/freebayes-parallel', '<(./packages/freebayes/scripts/fasta_generate_regions.py %s.fai 100000)' % self.fasta_file, self.max_threads, '-f', self.fasta_file, '-t', self.library_bed, '--pooled-continuous', '--pooled-discrete', '-F', '0.01', '-C', '2', self.input()[0][0].path, self.input()[1][0].path, '>', os.path.join(self.vcf_path, 'freebayes.vcf')]
 		else:
-			cmd = ['./packages/freebayes/scripts/freebayes-parallel', '<(./packages/freebayes/scripts/fasta_generate_regions.py %s.fai 100000)' % self.fasta_file, self.max_threads, '-f', self.fasta_file, '-t', self.library_bed, '--pooled-continuous', '--pooled-discrete', '-F', '0.01', '-C', '2', self.input()[0][0].path, '>', os.path.join(self.vcf_path, 'freebayes')]
+			cmd = ['./packages/freebayes/scripts/freebayes-parallel', '<(./packages/freebayes/scripts/fasta_generate_regions.py %s.fai 100000)' % self.fasta_file, self.max_threads, '-f', self.fasta_file, '-t', self.library_bed, '--pooled-continuous', '--pooled-discrete', '-F', '0.01', '-C', '2', self.input()[0][0].path, '>', os.path.join(self.vcf_path, 'freebayes.vcf')]
 		pipeline_utils.command_call(cmd, [self.output()])
 
 class vardict(luigi.Task):
 	max_threads = luigi.IntParameter()
-	matched_n = luigi.Parameter()
 	project_dir = luigi.Parameter()
 
 	case = luigi.Parameter()
