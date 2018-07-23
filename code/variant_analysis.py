@@ -90,7 +90,7 @@ class msings_baseline(luigi.Task):
 
 	def output(self):
 		return [self.input(), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'normal_bams.txt')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'MSI_BASELINE.txt'))] \
-		+ list(itertools.chain(*[[luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', case_name + '_N_recalibrated', case_name + '_N_recalibrated.%s')) % file_ext for file_ext in ['mpileup', 'msi_output', 'msi.txt']] for case_name in self.case_dict if self.case_dict[case_name]['N'] != '']))
+		+ list(itertools.chain(*[[luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', case_name + '_N_recalibrated', case_name + '_N_recalibrated.%s' % file_ext)) for file_ext in ['mpileup', 'msi_output', 'msi.txt']] for case_name in self.case_dict if self.case_dict[case_name]['N'] != '']))
 	
 	def run(self):
 		for output in self.output():
