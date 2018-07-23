@@ -5,6 +5,7 @@ import luigi.interface
 import os
 import sys
 import time
+import itertools
 import pipeline_utils
 import global_vars
 import bam_processing
