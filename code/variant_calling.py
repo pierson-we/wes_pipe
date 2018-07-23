@@ -167,9 +167,9 @@ class freebayes(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
 		if self.matched_n:
-			cmd = ['./packages/freebayes/scripts/freebayes-parallel', '<(python3 ./packages/freebayes/scripts/fasta_generate_regions.py %s.fai 100000)' % self.fasta_file, self.max_threads, '-f', self.fasta_file, '-t', self.library_bed, '--pooled-continuous', '--pooled-discrete', '-F', '0.01', '-C', '2', self.input()[0][0].path, self.input()[1][0].path, '>', os.path.join(self.vcf_path, 'freebayes.vcf')]
+			cmd = ['python3 ./packages/freebayes/scripts/fasta_generate_regions.py %s.fai 100000' % self.fasta_file, '|', './packages/freebayes/scripts/freebayes-parallel', self.max_threads, '-f', self.fasta_file, '-t', self.library_bed, '--pooled-continuous', '--pooled-discrete', '-F', '0.01', '-C', '2', self.input()[0][0].path, self.input()[1][0].path, '>', os.path.join(self.vcf_path, 'freebayes.vcf')]
 		else:
-			cmd = ['./packages/freebayes/scripts/freebayes-parallel', '<(python3 ./packages/freebayes/scripts/fasta_generate_regions.py %s.fai 100000)' % self.fasta_file, self.max_threads, '-f', self.fasta_file, '-t', self.library_bed, '--pooled-continuous', '--pooled-discrete', '-F', '0.01', '-C', '2', self.input()[0][0].path, '>', os.path.join(self.vcf_path, 'freebayes.vcf')]
+			cmd = ['python3 ./packages/freebayes/scripts/fasta_generate_regions.py %s.fai 100000' % self.fasta_file, '|', './packages/freebayes/scripts/freebayes-parallel', self.max_threads, '-f', self.fasta_file, '-t', self.library_bed, '--pooled-continuous', '--pooled-discrete', '-F', '0.01', '-C', '2', self.input()[0][0].path, '>', os.path.join(self.vcf_path, 'freebayes.vcf')]
 		pipeline_utils.command_call(cmd, [self.output()])
 
 class vardict(luigi.Task):
