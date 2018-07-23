@@ -93,6 +93,7 @@ class msings_baseline(luigi.Task):
 		+ list(itertools.chain(*[[luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', case_name + '_N_recalibrated', case_name + '_N_recalibrated.%s' % file_ext)) for file_ext in ['mpileup', 'msi_output', 'msi.txt']] for case_name in self.case_dict if self.case_dict[case_name]['N'] != '']))
 	
 	def run(self):
+		print(self.output())
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 		# cmd = ['./packages/msings/scripts/create_intervals.sh', './packages/MANTIS/b37_exome_microsatellites.bed']
