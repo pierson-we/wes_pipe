@@ -256,7 +256,7 @@ class cnvkit(luigi.Task):
 
 
 	def output(self):
-		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'reference', 'reference.cnn'))] + [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'variants', '*%s*.cns' % case_name)) for case_name in self.case_dict]
+		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'reference', 'reference.cnn'))] + [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'variants', '%s*_T_recalibrated.cnr' % case_name)) for case_name in self.case_dict]
 	
 	def run(self):
 		for output in self.output():
