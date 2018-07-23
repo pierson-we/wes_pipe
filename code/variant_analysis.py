@@ -89,7 +89,7 @@ class msings_baseline(luigi.Task):
 		return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads)]
 
 	def output(self):
-		return [self.input(), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'normal_bams.txt')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'MSI_BASELINE.txt'))] \
+		return self.input() + [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'normal_bams.txt')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'MSI_BASELINE.txt'))] \
 		+ list(itertools.chain(*[[luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', case_name + '_N_recalibrated', case_name + '_N_recalibrated.%s' % file_ext)) for file_ext in ['mpileup', 'msi_output', 'msi.txt']] for case_name in self.case_dict if self.case_dict[case_name]['N'] != '']))
 	
 	def run(self):
@@ -136,15 +136,15 @@ class msi(luigi.Task):
 		if self.matched_n != '':
 			cmd = ['python3', './packages/MANTIS/mantis.py', '-b', './packages/MANTIS/b37_exome_microsatellites.bed', '--genome', self.fasta_file, '-t', self.input()[0][0].path, '-n', self.input()[1][0].path, '--threads', self.max_threads, '-mrq', '20.0', '-mlq', '25.0', '-mlc', '20', '-mrr', '1', '-o', self.output()[0].path]
 			pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads)
-		else:
-			# tumor_bams_file = os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'tumor_bams.txt')
-			# with open(tumor_bams_file, 'w') as f:
-			# 	tumor_bams_list = [os.path.join(self.project_dir, 'output', self.case, 'alignment', case_name + '_T_recalibrated.bam') for case_name in self.case_dict if self.case_dict[case_name]['N'] == '']
-			# 	f.write('\n'.join(tumor_bams_list))
-		
-			cmd = ['source', './packages/msings/scripts/run_msings_single_sample.sh', self.input()[0][0].path, './packages/MANTIS/b37_exome_microsatellites.msi_intervals', './packages/MANTIS/b37_exome_microsatellites.bed', self.fasta_file, os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'MSI_BASELINE.txt'), os.path.join(self.project_dir, 'output', 'msings', 'tumor')]
-			pipeline_utils.command_call(cmd, self.output())
-			os.rename(os.path.join(self.project_dir, 'output', 'msings', 'tumor', self.case + '_T_recalibrated', self.case + '_T_recalibrated.MSI_Analysis.txt'), os.path.join(self.vcf_path, self.case + '_msi.txt'))
-			# cmd = ['echo', '"mSINGS still needs to be set up for tumor-only samples"', '>', self.output()[0].path] # this will be a pain to get up and going: https://bitbucket.org/uwlabmed/msings/src/8269e0e01acfc5e01d0de9d63ffc1e399996ce8a/Recommendations_for_custom_assays?at=master&fileviewer=file-view-default
-			# pipeline_utils.command_call(cmd, self.output())
+		# else:
+		# tumor_bams_file = os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'tumor_bams.txt')
+		# with open(tumor_bams_file, 'w') as f:
+		# 	tumor_bams_list = [os.path.join(self.project_dir, 'output', self.case, 'alignment', case_name + '_T_recalibrated.bam') for case_name in self.case_dict if self.case_dict[case_name]['N'] == '']
+		# 	f.write('\n'.join(tumor_bams_list))
+	
+		cmd = ['source', './packages/msings/scripts/run_msings_single_sample.sh', self.input()[0][0].path, './packages/MANTIS/b37_exome_microsatellites.msi_intervals', './packages/MANTIS/b37_exome_microsatellites.bed', self.fasta_file, os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'MSI_BASELINE.txt'), os.path.join(self.project_dir, 'output', 'msings', 'tumor')]
+		pipeline_utils.command_call(cmd, self.output())
+		os.rename(os.path.join(self.project_dir, 'output', 'msings', 'tumor', self.case + '_T_recalibrated', self.case + '_T_recalibrated.MSI_Analysis.txt'), os.path.join(self.vcf_path, self.case + '_msi.txt'))
+		# cmd = ['echo', '"mSINGS still needs to be set up for tumor-only samples"', '>', self.output()[0].path] # this will be a pain to get up and going: https://bitbucket.org/uwlabmed/msings/src/8269e0e01acfc5e01d0de9d63ffc1e399996ce8a/Recommendations_for_custom_assays?at=master&fileviewer=file-view-default
+		# pipeline_utils.command_call(cmd, self.output())
 
