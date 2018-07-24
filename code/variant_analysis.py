@@ -77,16 +77,17 @@ class msings_baseline(luigi.Task):
 	max_threads = luigi.IntParameter()
 	project_dir = luigi.Parameter()
 
-	vcf_path = luigi.Parameter()
-	case = luigi.Parameter()
-	tumor = luigi.Parameter()
-	matched_n = luigi.Parameter()
+	# vcf_path = luigi.Parameter()
+	# case = luigi.Parameter()
+	# tumor = luigi.Parameter()
+	# matched_n = luigi.Parameter()
 	case_dict = luigi.DictParameter()
 
 	fasta_file = luigi.Parameter()
 
 	def requires(self):
-		return bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads)
+		# return bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads)
+		return [bam_processing.recalibrated_bam(sample=case_name + '_N', fastq_file=self.case_dict[case_name]['N'], project_dir=self.project_dir, max_threads=self.max_threads) for case_name in self.case_dict if self.case_dict[case_name]['N'] != '']
 
 	def output(self):
 		return self.input() + [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'normal_bams.txt')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'MSI_BASELINE.txt'))] \
@@ -122,7 +123,7 @@ class msi(luigi.Task):
 		if self.matched_n != '':
 			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads), bam_processing.recalibrated_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads)]
 		else:
-			return [msings_baseline(project_dir=self.project_dir, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n, max_threads=self.max_threads, case_dict=self.case_dict)]
+			return [msings_baseline(project_dir=self.project_dir, max_threads=self.max_threads, case_dict=self.case_dict)] #, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n)]
 
 	def output(self):
 		if self.matched_n != '':
