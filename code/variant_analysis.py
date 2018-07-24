@@ -34,8 +34,8 @@ class vep(luigi.Task):
 	def run(self):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
-		cmd = ['./packages/ensembl-vep/vep', '-i', self.input()[0].path, '-o', self.output()[0].path, '--fasta', self.fasta_file, '--cache', '--dir_cache', './packages/ensembl-vep/cache', '--protein', '--symbol', '--hgvs', '--force_overwrite', '--check_existing', '--offline', '--buffer_size', '2500']
-		pipeline_utils.command_call(cmd, self.output())
+		cmd = ['./packages/ensembl-vep/vep', '-i', self.input()[0].path, '-o', self.output()[0].path, '--fasta', self.fasta_file, '-fork', self.max_threads, '--cache', '--dir_cache', './packages/ensembl-vep/cache', '--protein', '--symbol', '--hgvs', '--force_overwrite', '--check_existing', '--offline', '--buffer_size', '2500']
+		pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads)
 
 class fpfilter(luigi.Task):
 	max_threads = luigi.IntParameter()
