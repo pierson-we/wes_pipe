@@ -26,7 +26,7 @@ class vep(luigi.Task):
 
 	def requires(self):
 		# return bam_processing.aggregate_variants(case=self.case, tumor=self.tumor, matched_n=self.matched_n, case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads)
-		return fpfilter(case=self.case, tumor=self.case_dict[case]['T'], matched_n=self.case_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.case_dict)
+		return fpfilter(case=self.case, tumor=self.case_dict[self.case]['T'], matched_n=self.case_dict[self.case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.case_dict)
 
 	def output(self):
 		case_dir = os.path.join(self.project_dir, 'output', self.case)
