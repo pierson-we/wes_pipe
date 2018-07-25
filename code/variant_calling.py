@@ -38,12 +38,13 @@ class mutect(luigi.Task):
 		return [luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_mutect.vcf.gz')), luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_mutect.vcf.gz.tbi'))]
 	
 	def run(self):
-		pipeline_utils.confirm_path(self.output().path)
+		for output in self.output():
+			pipeline_utils.confirm_path(output.path)
 		if self.matched_n:
 			cmd = [self.gatk4_location, 'Mutect2', '-R', self.fasta_file, '-I', self.input()[0][0].path, '-tumor', self.case + '_T', '-I', self.input()[1][0].path, '-normal', self.case + '_N', '--germline-resource', self.germline_resource, '--af-of-alleles-not-in-resource', '0.0000025', '-L', self.library_bed, '-O', self.output().path]
 		else:
 			cmd = [self.gatk4_location, 'Mutect2', '-R', self.fasta_file, '-I', self.input()[0][0].path, '-tumor', self.case + '_T', '--germline-resource', self.germline_resource, '--af-of-alleles-not-in-resource', '0.0000025', '-L', self.library_bed, '-O', self.output().path]
-		pipeline_utils.command_call(cmd, [self.output()], threads_needed=4)
+		pipeline_utils.command_call(cmd, self.output(), threads_needed=4)
 
 class filter_mutect(luigi.Task):
 	max_threads = luigi.IntParameter()
@@ -69,8 +70,8 @@ class filter_mutect(luigi.Task):
 		pipeline_utils.confirm_path(self.output().path)
 		cmd = [self.gatk4_location, 'FilterMutectCalls', '-V', self.input()[0].path, '-O', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=1.1)
-		for input_file in self.input():
-			input_file.remove()
+		# for input_file in self.input():
+		# 	input_file.remove()
 
 
 class scalpel_discovery(luigi.Task):
@@ -135,6 +136,7 @@ class scalpel_export(luigi.Task):
 			return luigi.LocalTarget(os.path.join(self.vcf_path, 'scalpel', 'variants.indel.vcf'))
 	
 	def run(self):
+		pipeline_utils.confirm_path(self.output().path)
 		if self.matched_n:
 			cmd = ['./scalpel-0.5.4/scalpel-export', '--somatic', '--db', self.input().path[:-4], '--bed', self.library_bed, '--ref', self.fasta_file]
 		else:
