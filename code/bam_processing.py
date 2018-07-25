@@ -477,7 +477,7 @@ class aggregate_variants(luigi.Task):
 		'max_threads': self.max_threads
 		}
 		yield filter_mutect(**kwargs)
-		yield scalpel_export(**kwargs)
+		# yield scalpel_export(**kwargs)
 		yield vardict(**kwargs)
 		# yield freebayes(**kwargs)
 		# yield cnvkit(case_dict=self.case_dict, **kwargs)
@@ -506,7 +506,7 @@ class cases(luigi.Task):
 		# return [aggregate_variants(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict) for case in self.sample_dict]
 
 		return [variant_analysis.vep(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict) for case in self.sample_dict] \
-		+ [variant_analysis.fpfilter(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict) for case in self.sample_dict] \
+		# + [variant_analysis.fpfilter(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict) for case in self.sample_dict] \
 		+ [cnvkit(case_dict=self.sample_dict, project_dir=self.project_dir, max_threads=self.sample_threads)]
 		# # global global_max_threads, thread_count
 		
