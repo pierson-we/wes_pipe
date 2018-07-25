@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import itertools
+import gzip
 import pipeline_utils
 import global_vars
 import bam_processing
@@ -63,8 +64,13 @@ class fpfilter(luigi.Task):
 		pipeline_utils.confirm_path(fpfilter_path)
 		cmd = ['mkdir', '-p', fpfilter_path]
 		pipeline_utils.command_call(cmd, [self.output()])
+
+		with gzip.open(self.input()[0].path, 'rb') as f:
+			with open(self.input()[0].path.split('.gz')[0], 'w') as new_f:
+				new_f.write(f.read())
+
 		snvs_var = os.path.join(fpfilter_path, 'snvs.var')
-		cmd = ['perl', '-ane', '''\'print join("\\t",@F[0,1,1])."\\n" unless(m/^#/)\'''', self.input()[0].path, '>', snvs_var]
+		cmd = ['perl', '-ane', '''\'print join("\\t",@F[0,1,1])."\\n" unless(m/^#/)\'''', self.input()[0].path.split('.gz')[0], '>', snvs_var]
 		pipeline_utils.command_call(cmd, [self.output()])
 		snvs_readcount = os.path.join(fpfilter_path, 'snvs.readcount')
 		tumor_bam = os.path.join(self.project_dir, 'output', self.case, 'alignment', self.case + '_T_recalibrated.bam')
