@@ -61,10 +61,10 @@ class fpfilter(luigi.Task):
 		pipeline_utils.confirm_path(self.output().path)
 		fpfilter_path = os.path.join(self.project_dir, 'output', self.case, 'fpfilter')
 		pipeline_utils.confirm_path(fpfilter_path)
-		cmd = ['mkdir', fpfilter_path]
+		cmd = ['mkdir', '-p', fpfilter_path]
 		pipeline_utils.command_call(cmd, [self.output()])
 		snvs_var = os.path.join(fpfilter_path, 'snvs.var')
-		cmd = ['perl', '-ane', '''\'print join("\t",@F[0,1,1])."\n" unless(m/^#/)\'''', self.input()[0].path, '>', snvs_var]
+		cmd = ['perl', '-ane', '''\'print join("\\t",@F[0,1,1])."\\n" unless(m/^#/)\'''', self.input()[0].path, '>', snvs_var]
 		pipeline_utils.command_call(cmd, [self.output()])
 		snvs_readcount = os.path.join(fpfilter_path, 'snvs.readcount')
 		tumor_bam = os.path.join(self.project_dir, 'output', self.case, 'alignment', self.case + '_T_recalibrated.bam')
@@ -90,7 +90,7 @@ class msings_baseline(luigi.Task):
 		return [bam_processing.recalibrated_bam(sample=case_name + '_N', fastq_file=self.case_dict[case_name]['N'], project_dir=self.project_dir, max_threads=self.max_threads) for case_name in self.case_dict if self.case_dict[case_name]['N'] != '']
 
 	def output(self):
-		return self.input() + [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'normal_bams.txt')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'MSI_BASELINE.txt'))] \
+		return self.input()[0] + [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'normal_bams.txt')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'MSI_BASELINE.txt'))] \
 		+ list(itertools.chain(*[[luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', case_name + '_N_recalibrated', case_name + '_N_recalibrated.%s' % file_ext)) for file_ext in ['mpileup', 'msi_output', 'msi.txt']] for case_name in self.case_dict if self.case_dict[case_name]['N'] != '']))
 	
 	def run(self):
