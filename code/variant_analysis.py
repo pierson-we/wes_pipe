@@ -66,17 +66,20 @@ class fpfilter(luigi.Task):
 		pipeline_utils.command_call(cmd, [self.output()])
 
 		with gzip.open(self.input()[0].path, 'rb') as f:
-			with open(self.input()[0].path.split('.gz')[0], 'w') as new_f:
+			with open(self.input()[0].path.split('.gz')[0], 'wb') as new_f:
 				new_f.write(f.read())
 
-		snvs_var = os.path.join(fpfilter_path, 'snvs.var')
-		cmd = ['perl', '-ane', '''\'print join("\\t",@F[0,1,1])."\\n" unless(m/^#/)\'''', self.input()[0].path.split('.gz')[0], '>', snvs_var]
-		pipeline_utils.command_call(cmd, [self.output()])
-		snvs_readcount = os.path.join(fpfilter_path, 'snvs.readcount')
+		# snvs_var = os.path.join(fpfilter_path, 'snvs.var')
+		# cmd = ['perl', '-ane', '''\'print join("\\t",@F[0,1,1])."\\n" unless(m/^#/)\'''', self.input()[0].path.split('.gz')[0], '>', snvs_var]
+		# pipeline_utils.command_call(cmd, [self.output()])
+		# snvs_readcount = os.path.join(fpfilter_path, 'snvs.readcount')
 		tumor_bam = os.path.join(self.project_dir, 'output', self.case, 'alignment', self.case + '_T_recalibrated.bam')
-		cmd = ['./packages/fpfilter/bam-readcount-master/build/bin/bam-readcount', '-q1', '-b15', '-w1', '-l', snvs_var, '-f', self.fasta_file, tumor_bam, '>', snvs_readcount]
-		pipeline_utils.command_call(cmd, [self.output()])
-		cmd = ['./packages/fpfilter/fpfilter.pl', '--var-file', self.input()[0].path, '--readcount-file', snvs_readcount, '--output-file', self.output().path]
+		# cmd = ['./packages/fpfilter/bam-readcount-master/build/bin/bam-readcount', '-q1', '-b15', '-w1', '-l', snvs_var, '-f', self.fasta_file, tumor_bam, '>', snvs_readcount]
+		# pipeline_utils.command_call(cmd, [self.output()])
+		# cmd = ['./packages/fpfilter/fpfilter.pl', '--var-file', self.input()[0].path, '--readcount-file', snvs_readcount, '--output-file', self.output().path]
+		# pipeline_utils.command_call(cmd, [self.output()])
+
+		cmd = ['./packages/fpfilter/fpfilter.pl', '--vcf-file', self.input()[0].path.split('.gz')[0], '--bam-file', tumor_bam, '--reference', self.fasta_file, '--sample', self.case + '_T', '--output', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()])
 
 class msings_baseline(luigi.Task):
