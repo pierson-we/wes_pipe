@@ -476,12 +476,11 @@ class aggregate_variants(luigi.Task):
 		'matched_n': self.matched_n,
 		'max_threads': self.max_threads
 		}
-		yield filter_mutect(**kwargs)
-		# yield scalpel_export(**kwargs)
-		yield vardict(**kwargs)
-		# yield freebayes(**kwargs)
-		# yield cnvkit(case_dict=self.case_dict, **kwargs)
-		yield variant_analysis.msi(case_dict=self.case_dict, **kwargs)
+		return [filter_mutect(**kwargs),
+		vardict(**kwargs),
+		freebayes(**kwargs),
+		scalpel_export(**kwargs),
+		variant_analysis.msi(case_dict=self.case_dict, **kwargs)
 		# yield run_variant_caller(caller='VarDict', **kwargs)
 		# yield run_variant_caller(caller='FreeBayes', **kwargs)
 		# yield run_variant_caller(caller='VarScan', **kwargs)
@@ -493,9 +492,28 @@ class aggregate_variants(luigi.Task):
 		# yield run_variant_caller(caller='LUMPY', **kwargs)
 		# yield run_variant_caller(caller='DELLY', **kwargs)
 		# yield run_variant_caller(caller='WHAM', **kwargs)
+		]
 
 	def output(self):
-		return self.input()
+		outputs = []
+		for variant_caller_output in self.input():
+			if not type(variant_caller_output) == list:
+				vcf_path = variant_caller_output.path.split('.vcf')
+				outputs += [luigi.LocalTarget(vcf_path + '_' + vcf_filter + '.vcf') for vcf_filter in ['fpfilter', 'vep']]
+			else:
+				outputs += variant_caller_output
+		return outputs
+
+	def run(self):
+		for variant_caller in self.input():
+			if not type(variant_caller) == list:
+				vcf_path = variant_caller.path
+				if '.gz' in vcf_path:
+					with gzip.open(vcf_path, 'rb') as f:
+						with open(vcf_path.split('.gz')[0], 'wb') as new_f:
+							new_f.write(f.read())
+					vcf_path = vcf_path.split('.gz')[0]
+				variant_analysis.vep(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=vcf_path)
 
 class cases(luigi.Task):
 	sample_dict = luigi.DictParameter()

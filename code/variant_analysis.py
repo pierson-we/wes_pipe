@@ -20,19 +20,21 @@ class vep(luigi.Task):
 	case = luigi.Parameter()
 	tumor = luigi.Parameter()
 	matched_n = luigi.Parameter()
-	case_dict = luigi.DictParameter()
+	# case_dict = luigi.DictParameter()
+	vcf_path = luigi.Parameter()
 
 	fasta_file = luigi.Parameter()
 
 	def requires(self):
 		# return bam_processing.aggregate_variants(case=self.case, tumor=self.tumor, matched_n=self.matched_n, case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads)
-		return fpfilter(case=self.case, tumor=self.case_dict[self.case]['T'], matched_n=self.case_dict[self.case]['N'], project_dir=self.project_dir, max_threads=self.max_threads, case_dict=self.case_dict)
+		return fpfilter(case=self.case, tumor=self.tumor, matched_n=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, vcf_path=vcf_path)
 
 	def output(self):
-		case_dir = os.path.join(self.project_dir, 'output', self.case)
-		vcf_path = os.path.join(case_dir, 'variants')
-		return [luigi.LocalTarget(os.path.join(vcf_path, self.case + '_vep.vcf')), luigi.LocalTarget(os.path.join(vcf_path, self.case + '_vep.vcf_summary.html'))]
-	
+		# case_dir = os.path.join(self.project_dir, 'output', self.case)
+		# vcf_path = os.path.join(case_dir, 'variants')
+		# return [luigi.LocalTarget(os.path.join(vcf_path, self.case + '_vep.vcf')), luigi.LocalTarget(os.path.join(vcf_path, self.case + '_vep.vcf_summary.html'))]
+		return luigi.LocalTarget(self.vcf_path.split('fpfilter.vcf')[0] + 'vep.vcf')
+
 	def run(self):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
@@ -47,18 +49,20 @@ class fpfilter(luigi.Task):
 	case = luigi.Parameter()
 	tumor = luigi.Parameter()
 	matched_n = luigi.Parameter()
-	case_dict = luigi.DictParameter()
+	# case_dict = luigi.DictParameter()
+	vcf_path = luigi.Parameter()
 
 	fasta_file = luigi.Parameter()
 
 	def requires(self):
-		return bam_processing.aggregate_variants(case=self.case, tumor=self.tumor, matched_n=self.matched_n, case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads)
+		# return bam_processing.aggregate_variants(case=self.case, tumor=self.tumor, matched_n=self.matched_n, case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads)
 
 	def output(self):
-		case_dir = os.path.join(self.project_dir, 'output', self.case)
-		vcf_path = os.path.join(case_dir, 'variants')
-		return luigi.LocalTarget(os.path.join(vcf_path, self.case + '_fpfilter' + '.vcf'))
-	
+		# case_dir = os.path.join(self.project_dir, 'output', self.case)
+		# vcf_path = os.path.join(case_dir, 'variants')
+		# return luigi.LocalTarget(os.path.join(vcf_path, self.case + '_fpfilter' + '.vcf'))
+		return luigi.LocalTarget(self.vcf_path.split('.vcf')[0] + '_fpfilter.vcf')
+
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
 		# fpfilter_path = os.path.join(self.project_dir, 'output', self.case, 'fpfilter')
@@ -80,7 +84,7 @@ class fpfilter(luigi.Task):
 		# cmd = ['./packages/fpfilter/fpfilter.pl', '--var-file', self.input()[0].path, '--readcount-file', snvs_readcount, '--output-file', self.output().path]
 		# pipeline_utils.command_call(cmd, [self.output()])
 
-		cmd = ['./packages/fpfilter/fpfilter.pl', '--vcf-file', self.input()[1].path, '--bam-file', tumor_bam, '--reference', self.fasta_file, '--sample', self.case + '_T', '--output', self.output().path]
+		cmd = ['./packages/fpfilter/fpfilter.pl', '--vcf-file', self.vcf_path, '--bam-file', tumor_bam, '--reference', self.fasta_file, '--sample', self.case + '_T', '--output', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()])
 
 class msings_baseline(luigi.Task):
