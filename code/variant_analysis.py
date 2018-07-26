@@ -137,9 +137,9 @@ class msi(luigi.Task):
 
 	def output(self):
 		if self.matched_n != '':
-			return [luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.txt')), luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.txt.status')), luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.kmer_counts.txt')), luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.kmer_counts_filtered.txt'))]
+			return [luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.txt')), luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.txt.status')), luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.kmer_counts.txt')), luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.kmer_counts_filtered.txt')), luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msings.txt'))]
 		else:
-			return [luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msi.txt'))]
+			return [luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_msings.txt'))]
 
 	def run(self):
 		for output in self.output():
