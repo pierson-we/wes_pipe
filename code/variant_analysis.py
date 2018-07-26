@@ -54,8 +54,8 @@ class fpfilter(luigi.Task):
 
 	fasta_file = luigi.Parameter()
 
-	def requires(self):
-		# return bam_processing.aggregate_variants(case=self.case, tumor=self.tumor, matched_n=self.matched_n, case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads)
+	# def requires(self):
+	# 	# return bam_processing.aggregate_variants(case=self.case, tumor=self.tumor, matched_n=self.matched_n, case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads)
 
 	def output(self):
 		# case_dir = os.path.join(self.project_dir, 'output', self.case)
