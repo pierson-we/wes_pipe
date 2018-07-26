@@ -497,17 +497,16 @@ class aggregate_variants(luigi.Task):
 	def output(self):
 		outputs = []
 		for variant_caller_output in self.input():
-			if not type(variant_caller_output) == list:
+			if not isisntance(variant_caller_output, list):
 				vcf_path = variant_caller_output.path.split('.vcf')
-				for vcf_filter in ['fpfilter', 'vep']:
-					outputs.append(luigi.LocalTarget(vcf_path + '_' + vcf_filter + '.vcf'))
+				outputs += [luigi.LocalTarget(vcf_path + '_' + vcf_filter + '.vcf') for vcf_filter in ['fpfilter', 'vep']]
 			else:
 				outputs += variant_caller_output
 		return outputs
 
 	def run(self):
 		for variant_caller in self.input():
-			if not type(variant_caller) == list:
+			if not isisntance(variant_caller, list):
 				vcf_path = variant_caller.path
 				if '.gz' in vcf_path:
 					with gzip.open(vcf_path, 'rb') as f:
