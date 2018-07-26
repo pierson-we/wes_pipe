@@ -119,6 +119,7 @@ class fastqc_launch(luigi.Task):
 	fastq_file = luigi.Parameter()
 
 	def requires(self):
+		print(self.fastq_file)
 		return [trim(fastq_file=self.fastq_file, sample=self.sample, project_dir=self.project_dir), 
 		fastqc(fastq_file=os.path.join(self.project_dir, 'output', self.sample[:-2], self.fastq_file.split('\t')[0].split('/')[-1].split('.')[0] + '_val_1.fq.gz'), sample=self.sample, project_dir=self.project_dir, both_fastq_files=self.fastq_file),
 		fastqc(fastq_file=os.path.join(self.project_dir, 'output', self.sample[:-2], self.fastq_file.split('\t')[1].split('/')[-1].split('.')[0] + '_val_2.fq.gz'), sample=self.sample, project_dir=self.project_dir, both_fastq_files=self.fastq_file)]
