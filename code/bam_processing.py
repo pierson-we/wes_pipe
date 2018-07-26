@@ -498,7 +498,7 @@ class aggregate_variants(luigi.Task):
 		outputs = []
 		for variant_caller_output in self.input():
 			if not isinstance(variant_caller_output, list):
-				vcf_path = variant_caller_output.path.split('.vcf')
+				vcf_path = variant_caller_output.path.split('.vcf')[0]
 				# print(vcf_path)
 				for vcf_filter in ['fpfilter', 'vep']:
 					outputs.append(luigi.LocalTarget(vcf_path + '_' + vcf_filter + '.vcf'))
