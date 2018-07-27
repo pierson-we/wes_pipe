@@ -168,7 +168,7 @@ class bowtie(luigi.Task):
 	def requires(self):
 		return [genome_index(max_threads=self.max_threads, cfg=self.cfg), #threads=self.threads, base_name=self.cfg['base_name'], fasta_path=self.fasta_path)
 		samtools_index(max_threads=self.max_threads, cfg=self.cfg),
-		picard_index(, cfg=self.cfg),
+		picard_index(cfg=self.cfg),
 		fastqc_launch(fastq_file=self.fastq_file, sample=self.sample, project_dir=self.project_dir, cfg=self.cfg)]
 		#fastqc(fastq_file=self.fastq_file.split('\t')[1], sample=self.sample, project_dir=self.project_dir)]
 
