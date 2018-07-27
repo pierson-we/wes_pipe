@@ -498,24 +498,24 @@ class cases(luigi.Task):
 
 	def requires(self):
 		cfg = {
-			'fasta_file': self.cfg['fasta_file'],
-			'library_bed': self.cfg['library_bed'],
-			'gatk4_location': self.cfg['gatk4_location'],
-			'gatk3_location': self.cfg['gatk3_location'],
-			'known_vcf': self.cfg['known_vcf'],
-			'germline_resource': self.cfg['germline_resource'],
-			'picard_location': self.cfg['picard_location'],
-			'vardict_location': self.cfg['vardict_location'],
-			'mills': self.cfg['mills'],
-			'kg': self.cfg['kg'],
-			'library_prep': self.cfg['library_prep'],
-			'platform': self.cfg['platform'],
-			'base_name': self.cfg['base_name'],
-			'samtools_location': self.cfg['samtools_location'],
-			'bowtie_build_location': self.cfg['bowtie_build_location'],
-			'bowtie_location': self.cfg['bowtie_location'],
-			'fastqc_location': self.cfg['fastqc_location'],
-			'trim_location': self.cfg['trim_location']
+			'fasta_file': self.fasta_file
+			'library_bed': self.library_bed
+			'gatk4_location': self.gatk4_location
+			'gatk3_location': self.gatk3_location
+			'known_vcf': self.known_vcf
+			'germline_resource': self.germline_resource
+			'picard_location': self.picard_location
+			'vardict_location': self.vardict_location
+			'mills': self.mills
+			'kg': self.kg
+			'library_prep': self.library_prep
+			'platform': self.platform
+			'base_name': self.base_name
+			'samtools_location': self.samtools_location
+			'bowtie_build_location': self.bowtie_build_location
+			'bowtie_location': self.bowtie_location
+			'fastqc_location': self.fastqc_location
+			'trim_location': self.trim_location
 		}
 
 		# return [aggregate_variants(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict) for case in self.sample_dict]
