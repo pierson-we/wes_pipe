@@ -498,23 +498,23 @@ class cases(luigi.Task):
 
 	def requires(self):
 		cfg = {
-			'fasta_file': self.fasta_file
-			'library_bed': self.library_bed
-			'gatk4_location': self.gatk4_location
-			'gatk3_location': self.gatk3_location
-			'known_vcf': self.known_vcf
-			'germline_resource': self.germline_resource
-			'picard_location': self.picard_location
-			'vardict_location': self.vardict_location
-			'mills': self.mills
-			'kg': self.kg
-			'library_prep': self.library_prep
-			'platform': self.platform
-			'base_name': self.base_name
-			'samtools_location': self.samtools_location
-			'bowtie_build_location': self.bowtie_build_location
-			'bowtie_location': self.bowtie_location
-			'fastqc_location': self.fastqc_location
+			'fasta_file': self.fasta_file,
+			'library_bed': self.library_bed,
+			'gatk4_location': self.gatk4_location,
+			'gatk3_location': self.gatk3_location,
+			'known_vcf': self.known_vcf,
+			'germline_resource': self.germline_resource,
+			'picard_location': self.picard_location,
+			'vardict_location': self.vardict_location,
+			'mills': self.mills,
+			'kg': self.kg,
+			'library_prep': self.library_prep,
+			'platform': self.platform,
+			'base_name': self.base_name,
+			'samtools_location': self.samtools_location,
+			'bowtie_build_location': self.bowtie_build_location,
+			'bowtie_location': self.bowtie_location,
+			'fastqc_location': self.fastqc_location,
 			'trim_location': self.trim_location
 		}
 
