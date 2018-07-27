@@ -431,7 +431,7 @@ class aggregate_variants(luigi.Task):
 		}
 		return [filter_mutect(**kwargs),
 		vardict(**kwargs),
-		freebayes(**kwargs),
+		# freebayes(**kwargs),
 		scalpel_export(**kwargs),
 		variant_analysis.msi(case_dict=self.case_dict, **kwargs)
 		# yield run_variant_caller(caller='VarDict', **kwargs)
