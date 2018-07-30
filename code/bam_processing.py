@@ -483,19 +483,19 @@ class filter_variants(luigi.Task):
 	cfg = luigi.DictParameter()
 	
 	def requires(self):
-		requirements = []
-		for variant_caller in self.input():
-			if not isinstance(variant_caller, list):
-				vcf_path = variant_caller.path
-				if '.gz' in vcf_path:
-					with gzip.open(vcf_path, 'rb') as f:
-						with open(vcf_path.split('.gz')[0], 'wb') as new_f:
-							new_f.write(f.read())
-					vcf_path = vcf_path.split('.gz')[0]
-				requirements.append(variant_analysis.vep(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=vcf_path, cfg=self.cfg))
+		# requirements = []
+		# for variant_caller in self.input():
+		# 	if not isinstance(variant_caller, list):
+		# 		vcf_path = variant_caller.path
+		# 		if '.gz' in vcf_path:
+		# 			with gzip.open(vcf_path, 'rb') as f:
+		# 				with open(vcf_path.split('.gz')[0], 'wb') as new_f:
+		# 					new_f.write(f.read())
+		# 			vcf_path = vcf_path.split('.gz')[0]
+		# 		requirements.append(variant_analysis.vep(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=vcf_path, cfg=self.cfg))
 
-		return [aggregate_variants(case=self.case, tumor=self.tumor, matched_n=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, case_dict=self.case_dict, cfg=self.cfg)] \
-		+ requirements
+		return aggregate_variants(case=self.case, tumor=self.tumor, matched_n=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, case_dict=self.case_dict, cfg=self.cfg)
+		# + requirements
 		
 		# yield run_variant_caller(caller='VarDict', **kwargs)
 		# yield run_variant_caller(caller='FreeBayes', **kwargs)
@@ -520,7 +520,19 @@ class filter_variants(luigi.Task):
 		# 	else:
 		# 		outputs += variant_caller_output
 		# return outputs
-		return self.input()
+
+		outputs = []
+		for variant_caller in self.input():
+			if not isinstance(variant_caller, list):
+				vcf_path = variant_caller.path
+				if '.gz' in vcf_path:
+					with gzip.open(vcf_path, 'rb') as f:
+						with open(vcf_path.split('.gz')[0], 'wb') as new_f:
+							new_f.write(f.read())
+					vcf_path = vcf_path.split('.gz')[0]
+				outputs.append(variant_analysis.vep(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=vcf_path, cfg=self.cfg))
+
+		return outputs
 
 	# def run(self):
 	# 	for variant_caller in self.input():
