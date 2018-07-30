@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import random
+import gzip
 import pipeline_utils
 import global_vars
 import variant_analysis
