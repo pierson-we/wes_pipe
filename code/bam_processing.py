@@ -469,7 +469,7 @@ class aggregate_variants(luigi.Task):
 						with open(vcf_path.split('.gz')[0], 'wb') as new_f:
 							new_f.write(f.read())
 					vcf_path = vcf_path.split('.gz')[0]
-				variant_analysis.vep(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=vcf_path)
+				variant_analysis.vep(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=vcf_path, cfg=self.cfg)
 
 class cases(luigi.Task):
 	# generated parameters
