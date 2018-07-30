@@ -472,78 +472,80 @@ class aggregate_variants(luigi.Task):
 	# 				vcf_path = vcf_path.split('.gz')[0]
 	# 			variant_analysis.vep(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=vcf_path, cfg=self.cfg)
 
-class filter_variants(luigi.Task):
-	max_threads = luigi.IntParameter()
-	project_dir = luigi.Parameter()
-	case = luigi.Parameter()
-	tumor = luigi.Parameter()
-	matched_n = luigi.Parameter()
-	case_dict = luigi.DictParameter()
+# class filter_variants(luigi.Task):
+# 	max_threads = luigi.IntParameter()
+# 	project_dir = luigi.Parameter()
+# 	case = luigi.Parameter()
+# 	tumor = luigi.Parameter()
+# 	matched_n = luigi.Parameter()
+# 	case_dict = luigi.DictParameter()
 
-	cfg = luigi.DictParameter()
+# 	cfg = luigi.DictParameter()
 	
-	def requires(self):
-		# requirements = []
-		# for variant_caller in self.input():
-		# 	if not isinstance(variant_caller, list):
-		# 		vcf_path = variant_caller.path
-		# 		if '.gz' in vcf_path:
-		# 			with gzip.open(vcf_path, 'rb') as f:
-		# 				with open(vcf_path.split('.gz')[0], 'wb') as new_f:
-		# 					new_f.write(f.read())
-		# 			vcf_path = vcf_path.split('.gz')[0]
-		# 		requirements.append(variant_analysis.vep(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=vcf_path, cfg=self.cfg))
+# 	def requires(self):
+# 		# requirements = []
+# 		# for variant_caller in self.input():
+# 		# 	if not isinstance(variant_caller, list):
+# 		# 		vcf_path = variant_caller.path
+# 		# 		if '.gz' in vcf_path:
+# 		# 			with gzip.open(vcf_path, 'rb') as f:
+# 		# 				with open(vcf_path.split('.gz')[0], 'wb') as new_f:
+# 		# 					new_f.write(f.read())
+# 		# 			vcf_path = vcf_path.split('.gz')[0]
+# 		# 		requirements.append(variant_analysis.vep(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=vcf_path, cfg=self.cfg))
 
-		return aggregate_variants(case=self.case, tumor=self.tumor, matched_n=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, case_dict=self.case_dict, cfg=self.cfg)
-		# + requirements
+# 		return aggregate_variants(case=self.case, tumor=self.tumor, matched_n=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, case_dict=self.case_dict, cfg=self.cfg)
+# 		# + requirements
 		
-		# yield run_variant_caller(caller='VarDict', **kwargs)
-		# yield run_variant_caller(caller='FreeBayes', **kwargs)
-		# yield run_variant_caller(caller='VarScan', **kwargs)
+# 		# yield run_variant_caller(caller='VarDict', **kwargs)
+# 		# yield run_variant_caller(caller='FreeBayes', **kwargs)
+# 		# yield run_variant_caller(caller='VarScan', **kwargs)
 
-		# yield run_variant_caller(caller='Scalpel', **kwargs)
+# 		# yield run_variant_caller(caller='Scalpel', **kwargs)
 
-		# yield run_variant_caller(caller='CNVkit', **kwargs)
+# 		# yield run_variant_caller(caller='CNVkit', **kwargs)
 
-		# yield run_variant_caller(caller='LUMPY', **kwargs)
-		# yield run_variant_caller(caller='DELLY', **kwargs)
-		# yield run_variant_caller(caller='WHAM', **kwargs)
+# 		# yield run_variant_caller(caller='LUMPY', **kwargs)
+# 		# yield run_variant_caller(caller='DELLY', **kwargs)
+# 		# yield run_variant_caller(caller='WHAM', **kwargs)
 
-	def output(self):
-		# outputs = []
-		# for variant_caller_output in self.input():
-		# 	if not isinstance(variant_caller_output, list):
-		# 		vcf_path = variant_caller_output.path.split('.vcf')[0]
-		# 		# print(vcf_path)
-		# 		for vcf_filter in ['fpfilter', 'vep']:
-		# 			outputs.append(luigi.LocalTarget(vcf_path + '_' + vcf_filter + '.vcf'))
-		# 	else:
-		# 		outputs += variant_caller_output
-		# return outputs
+# 	def output(self):
+# 		# outputs = []
+# 		# for variant_caller_output in self.input():
+# 		# 	if not isinstance(variant_caller_output, list):
+# 		# 		vcf_path = variant_caller_output.path.split('.vcf')[0]
+# 		# 		# print(vcf_path)
+# 		# 		for vcf_filter in ['fpfilter', 'vep']:
+# 		# 			outputs.append(luigi.LocalTarget(vcf_path + '_' + vcf_filter + '.vcf'))
+# 		# 	else:
+# 		# 		outputs += variant_caller_output
+# 		# return outputs
 
-		outputs = []
-		for variant_caller in self.input():
-			if not isinstance(variant_caller, list):
-				vcf_path = variant_caller.path
-				if '.gz' in vcf_path:
-					with gzip.open(vcf_path, 'rb') as f:
-						with open(vcf_path.split('.gz')[0], 'wb') as new_f:
-							new_f.write(f.read())
-					vcf_path = vcf_path.split('.gz')[0]
-				outputs.append(variant_analysis.vep(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=vcf_path, cfg=self.cfg))
+# 		# outputs = []
+# 		# for variant_caller in self.input():
+# 		# 	if not isinstance(variant_caller, list):
+# 		# 		vcf_path = variant_caller.path
+# 		# 		if '.gz' in vcf_path:
+# 		# 			with gzip.open(vcf_path, 'rb') as f:
+# 		# 				with open(vcf_path.split('.gz')[0], 'wb') as new_f:
+# 		# 					new_f.write(f.read())
+# 		# 			vcf_path = vcf_path.split('.gz')[0]
+# 		# 		outputs.append(variant_analysis.vep(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=vcf_path, cfg=self.cfg))
 
-		return outputs
+# 		return luigi.LocalTarget()
 
-	# def run(self):
-	# 	for variant_caller in self.input():
-	# 		if not isinstance(variant_caller, list):
-	# 			vcf_path = variant_caller.path
-	# 			if '.gz' in vcf_path:
-	# 				with gzip.open(vcf_path, 'rb') as f:
-	# 					with open(vcf_path.split('.gz')[0], 'wb') as new_f:
-	# 						new_f.write(f.read())
-	# 				vcf_path = vcf_path.split('.gz')[0]
-	# 			variant_analysis.vep(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=vcf_path, cfg=self.cfg)
+# 	def run(self):
+# 		for output in self.output():
+# 			pipeline_utils.confirm_path(output.path)
+# 		for variant_caller in self.input():
+# 			if not isinstance(variant_caller, list):
+# 				vcf_path = variant_caller.path
+# 				if '.gz' in vcf_path:
+# 					with gzip.open(vcf_path, 'rb') as f:
+# 						with open(vcf_path.split('.gz')[0], 'wb') as new_f:
+# 							new_f.write(f.read())
+# 					vcf_path = vcf_path.split('.gz')[0]
+# 				variant_analysis.vep(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=vcf_path, cfg=self.cfg, input_vcf=vcf_path, output_vcf=self.output.path ,output=self.output())
 
 class cases(luigi.Task):
 	# generated parameters
@@ -595,7 +597,7 @@ class cases(luigi.Task):
 
 		# return [aggregate_variants(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict) for case in self.sample_dict]
 
-		return [filter_variants(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict, cfg=cfg) for case in self.sample_dict] \
+		return [variant_analysis.vep(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict, cfg=cfg) for case in self.sample_dict] \
 		# [variant_analysis.vep(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict) for case in self.sample_dict] \
 		# + [variant_analysis.fpfilter(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict) for case in self.sample_dict] \
 		+ [cnvkit(case_dict=self.sample_dict, project_dir=self.project_dir, max_threads=self.sample_threads, cfg=cfg)]
