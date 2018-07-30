@@ -98,7 +98,7 @@ class fpfilter(luigi.Task):
 				input_vcf = variant_caller_output.path
 				output_vcf = input_vcf.split('.vcf')[0] + '_fpfilter.vcf'
 				cmd = ['./packages/fpfilter/fpfilter.pl', '--vcf-file', input_vcf, '--bam-file', tumor_bam, '--reference', self.cfg['fasta_file'], '--sample', self.case + '_T', '--output', output_vcf]
-				pipeline_utils.command_call(cmd, [luigi.LocalTarget()])
+				pipeline_utils.command_call(cmd, [luigi.LocalTarget(output_vcf)])
 
 class msings_baseline(luigi.Task):
 	max_threads = luigi.IntParameter()
