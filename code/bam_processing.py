@@ -154,7 +154,7 @@ class bowtie(luigi.Task):
 	# bowtie_location = luigi.Parameter()
 	# samtools_location = luigi.Parameter()
 	# fasta_file = luigi.Parameter()
-	base_name = luigi.Parameter()
+	# base_name = luigi.Parameter()
 	sample = luigi.Parameter()
 
 	cfg = luigi.DictParameter()

@@ -63,7 +63,7 @@ class mutect_pon(luigi.Task):
 
 
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'mutect', '%s_pon.vcf.gz' % len(self.input())))
+		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'mutect', 'pon.vcf.gz'))
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
