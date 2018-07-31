@@ -146,7 +146,6 @@ class filter_mutect(luigi.Task):
 
 class scalpel_discovery(luigi.Task):
 	max_threads = luigi.IntParameter()
-	matched_n = luigi.Parameter()
 	project_dir = luigi.Parameter()
 
 	case = luigi.Parameter()
@@ -182,7 +181,6 @@ class scalpel_discovery(luigi.Task):
 
 class scalpel_export(luigi.Task):
 	max_threads = luigi.IntParameter()
-	matched_n = luigi.Parameter()
 	project_dir = luigi.Parameter()
 
 	case = luigi.Parameter()
