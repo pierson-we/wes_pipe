@@ -110,7 +110,7 @@ class fastqc(luigi.Task):
 	project_dir = luigi.Parameter()
 	fastq_file = luigi.Parameter()
 	both_fastq_files = luigi.Parameter()
-	fastqc_location = luigi.Parameter()
+	# fastqc_location = luigi.Parameter()
 
 	cfg = luigi.DictParameter()
 
