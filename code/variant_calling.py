@@ -9,6 +9,73 @@ import pipeline_utils
 import global_vars
 import bam_processing
 
+class mutect_single_normal(luigi.Task):
+	max_threads = luigi.IntParameter()
+	project_dir = luigi.Parameter()
+
+	sample = luigi.Parameter()
+	fastq_file = luigi.Parameter()
+	# tumor = luigi.Parameter()
+	# matched_n = luigi.Parameter()
+	# vcf_path = luigi.Parameter()
+	# case_dict = luigi.DictParameter()
+
+	cfg = luigi.DictParameter()
+
+	def requires(self):
+		# if self.matched_n != '':
+		# 	return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads), bam_processing.recalibrated_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads)]
+		# else:
+		return bam_processing.recalibrated_bam(sample=self.sample, fastq_file=self.fastq_file, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)
+
+
+	def output(self):
+		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'mutect', self.sample + '.vcf.gz'))
+		
+	def run(self):
+		pipeline_utils.confirm_path(self.output().path)
+		# if self.matched_n:
+		# 	cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.cfg['fasta_file'], '-f', '0.01', '-N', self.case + '_T', '-b', '"%s|%s"' % (self.input()[0][0].path, self.input()[1][0].path), '-z', '-F', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.cfg['library_bed'], '|', './packages/VarDictJava/VarDict/testsomatic.R', '|', './packages/VarDictJava/VarDict/var2vcf_paired.pl', '-N', '"%s|%s"' % (self.case + '_T', self.case + '_N'), '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
+		# else:
+		cmd = [self.cfg['gatk4_location'], 'Mutect2', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '-tumor', self.sample, '-L', self.cfg['library_bed'], '-O', self.output().path]
+		pipeline_utils.command_call(cmd, [self.output()], threads_needed=4)
+
+class mutect_pon(luigi.Task):
+	max_threads = luigi.IntParameter()
+	project_dir = luigi.Parameter()
+
+	# case = luigi.Parameter()
+	# tumor = luigi.Parameter()
+	# matched_n = luigi.Parameter()
+	# vcf_path = luigi.Parameter()
+	case_dict = luigi.DictParameter()
+
+	# library_bed = luigi.Parameter()
+	# fasta_file = luigi.Parameter()
+
+	cfg = luigi.DictParameter()
+
+	def requires(self):
+		# if self.matched_n != '':
+		# 	return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads), bam_processing.recalibrated_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads)]
+		# else:
+		return [mutect_single_normal(sample=case_name + '_N', fastq_file=self.case_dict[case_name]['N'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg) for case_name in self.case_dict if self.case_dict[case_name]['N'] != '']
+
+
+	def output(self):
+		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'mutect', '%s_pon.vcf.gz' % len(self.input())))
+
+	def run(self):
+		pipeline_utils.confirm_path(self.output().path)
+		# if self.matched_n:
+		# 	cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.cfg['fasta_file'], '-f', '0.01', '-N', self.case + '_T', '-b', '"%s|%s"' % (self.input()[0][0].path, self.input()[1][0].path), '-z', '-F', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.cfg['library_bed'], '|', './packages/VarDictJava/VarDict/testsomatic.R', '|', './packages/VarDictJava/VarDict/var2vcf_paired.pl', '-N', '"%s|%s"' % (self.case + '_T', self.case + '_N'), '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
+		# else:
+		cmd = [self.cfg['gatk4_location'], 'CreateSomaticPanelOfNormals', '-O', self.output().path]
+		for normal_vcf in self.input():
+			cmd.append('--vcf')
+			cmd.append(normal_vcf.path)
+		pipeline_utils.command_call(cmd, [self.output()])
+
 class mutect(luigi.Task):
 	max_threads = luigi.IntParameter()
 	matched_n = luigi.Parameter()
@@ -18,6 +85,7 @@ class mutect(luigi.Task):
 	matched_n = luigi.Parameter()
 	vcf_path = luigi.Parameter()
 	project_dir = luigi.Parameter()
+	case_dict = luigi.DictParameter()
 
 	# gatk4_location = luigi.Parameter()
 	# gatk3_location = luigi.Parameter()
@@ -31,9 +99,9 @@ class mutect(luigi.Task):
 
 	def requires(self):
 		if self.matched_n != '':
-			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.recalibrated_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
+			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.recalibrated_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), mutect_pon(case_dict=self.sample_dict, project_dir=self.project_dir, max_threads=self.sample_threads, cfg=cfg)]
 		else:
-			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
+			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), mutect_pon(case_dict=self.sample_dict, project_dir=self.project_dir, max_threads=self.sample_threads, cfg=cfg)]
 
 
 	def output(self):
@@ -43,10 +111,10 @@ class mutect(luigi.Task):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 		if self.matched_n:
-			cmd = [self.cfg['gatk4_location'], 'Mutect2', '-R', self.cfg['fasta_file'], '-I', self.input()[0][0].path, '-tumor', self.case + '_T', '-I', self.input()[1][0].path, '-normal', self.case + '_N', '--germline-resource', self.cfg['germline_resource'], '--af-of-alleles-not-in-resource', '0.0000025', '-L', self.cfg['library_bed'], '-O', self.output()[0].path]
+			cmd = [self.cfg['gatk4_location'], 'Mutect2', '-R', self.cfg['fasta_file'], '-I', self.input()[0][0].path, '-tumor', self.case + '_T', '-I', self.input()[1][0].path, '-normal', self.case + '_N', '--germline-resource', self.cfg['germline_resource'], '--af-of-alleles-not-in-resource', '0.0000025', '-L', self.cfg['library_bed'], '-pon', self.input()[-1].path, '--native-pair-hmm-threads', '1', '-O', self.output()[0].path]
 		else:
-			cmd = [self.cfg['gatk4_location'], 'Mutect2', '-R', self.cfg['fasta_file'], '-I', self.input()[0][0].path, '-tumor', self.case + '_T', '--germline-resource', self.cfg['germline_resource'], '--af-of-alleles-not-in-resource', '0.0000025', '-L', self.cfg['library_bed'], '-O', self.output()[0].path]
-		pipeline_utils.command_call(cmd, self.output(), threads_needed=4)
+			cmd = [self.cfg['gatk4_location'], 'Mutect2', '-R', self.cfg['fasta_file'], '-I', self.input()[0][0].path, '-tumor', self.case + '_T', '--germline-resource', self.cfg['germline_resource'], '--af-of-alleles-not-in-resource', '0.0000025', '-L', self.cfg['library_bed'], '-pon', self.input()[-1].path, '--native-pair-hmm-threads', '1', '-O', self.output()[0].path]
+		pipeline_utils.command_call(cmd, self.output())
 
 class filter_mutect(luigi.Task):
 	max_threads = luigi.IntParameter()
@@ -259,8 +327,8 @@ class cnvkit(luigi.Task):
 	# vcf_path = luigi.Parameter()
 	case_dict = luigi.DictParameter()
 
-	library_bed = luigi.Parameter()
-	fasta_file = luigi.Parameter()
+	# library_bed = luigi.Parameter()
+	# fasta_file = luigi.Parameter()
 
 	cfg = luigi.DictParameter()
 

@@ -55,9 +55,13 @@ pass fastq params as a list
 incorporate clinvar sites in filtering
 look at best practices for all tools
 get MSI status running
+	research mSINGS and MANTIS and try to standardize comparison
 reintroduce variant_calling references (remove from variant_calling import *)
+make parameter passing much simpler: pass two dicts: global and case specific
+figure a way around hard-coded bam name in fpfilter
+remake bed/interval/baseline files for MANTIS/mSINGS
 
-
+#format outputs/inputs as dictionaries instead of lists - would make code much more sustainable
 #max threads/processes management
 #cleaner input/output file param passing
 #clean up file hierarchy/names

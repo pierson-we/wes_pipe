@@ -249,7 +249,7 @@ class mark_duplicates(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[0].path)
 		pipeline_utils.confirm_path(self.output()[1].path)
-		cmd = ['java', '-jar', self.cfg['picard_location'], 'MarkDuplicatesWithMateCigar', 'I=%s' % self.input().path, 'O=%s' % self.output()[0].path, 'M=%s' % self.output()[1].path]
+		cmd = ['java', '-jar', self.cfg['picard_location'], 'MarkDuplicates', 'I=%s' % self.input().path, 'O=%s' % self.output()[0].path, 'M=%s' % self.output()[1].path, 'REMOVE_DUPLICATES=true', 'ASSUME_SORT_ORDER=coordinate']
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.4)
 		# self.input().remove()
 
@@ -282,6 +282,7 @@ class index_bam(luigi.Task):
 		self.input()[1].remove()
 
 # ~20 mins w/2 cores
+# This might be useless: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5048557/
 class realigner_target(luigi.Task):
 	max_threads = luigi.IntParameter()
 	project_dir = luigi.Parameter()
@@ -313,6 +314,7 @@ class realigner_target(luigi.Task):
 
 # https://software.broadinstitute.org/gatk/documentation/tooldocs/3.8-0/org_broadinstitute_gatk_tools_walkers_indels_IndelRealigner.php
 # ~45 mins (no multiprocessing available)
+# This might be useless: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5048557/
 class indel_realignment(luigi.Task):
 	max_threads = luigi.IntParameter()
 	project_dir = luigi.Parameter()
@@ -345,6 +347,7 @@ class indel_realignment(luigi.Task):
 
 # https://software.broadinstitute.org/gatk/documentation/tooldocs/3.8-0/org_broadinstitute_gatk_tools_walkers_bqsr_BaseRecalibrator.php
 # ~45 mins (no multiprocessing available)
+# This might be useless: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5048557/
 class bqsr(luigi.Task):
 	max_threads = luigi.IntParameter()
 	project_dir = luigi.Parameter()
