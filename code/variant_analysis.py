@@ -51,7 +51,7 @@ class vep(luigi.Task):
 			fpfilter_path = fpfilter_vcf.path
 			vep_path = fpfilter_path.split('fpfilter.vcf')[0] + 'vep.vcf'
 
-			cmd = ['./packages/ensembl-vep/vep', '-i', fpfilter_path, '-o', vep_path, '--fasta', self.cfg['fasta_file'], '-fork', self.max_threads, '--cache', '--dir_cache', './packages/ensembl-vep/cache', '--protein', '--symbol', '--hgvs', '--force_overwrite', '--check_existing', '--offline'] #, '--buffer_size', '2500']
+			cmd = ['./packages/ensembl-vep/vep', '-i', fpfilter_path, '-o', vep_path, '--fasta', self.cfg['fasta_file'], '-fork', self.max_threads, '--cache', '--dir_cache', './packages/ensembl-vep/cache', '--protein', '--symbol', '--hgvs', '--force_overwrite', '--check_existing', '--offline', '--vcf'] #, '--buffer_size', '2500']
 			pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads)
 
 class fpfilter(luigi.Task):
