@@ -78,7 +78,6 @@ class mutect_pon(luigi.Task):
 
 class mutect(luigi.Task):
 	max_threads = luigi.IntParameter()
-	matched_n = luigi.Parameter()
 
 	case = luigi.Parameter()
 	tumor = luigi.Parameter()
@@ -118,7 +117,6 @@ class mutect(luigi.Task):
 
 class filter_mutect(luigi.Task):
 	max_threads = luigi.IntParameter()
-	matched_n = luigi.Parameter()
 
 	case = luigi.Parameter()
 	tumor = luigi.Parameter()
