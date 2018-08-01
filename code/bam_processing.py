@@ -187,7 +187,7 @@ class bowtie(luigi.Task):
 		# os.chdir(os.path.join(self.fasta_dir, 'index'))
 		# print(os.getcwd())
 		# cmd = [os.path.join(cwd, self.cfg['bowtie_location'], 'bowtie2'), '-x', self.cfg['base_name'], '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
-		fasta_dir = os.path.join(self.cfg['fasta_file'].split('/')[:-1])
+		fasta_dir = os.path.join(*self.cfg['fasta_file'].split('/')[:-1])
 
 		cmd = [self.cfg['bowtie_location'], '-x', os.path.join(fasta_dir, 'index', self.cfg['base_name']), '-1', self.input()[-1][0][0].path, '-2', self.input()[-1][1][0].path, '-p', self.max_threads, '|', self.cfg['samtools_location'], 'view', '-b', '-', '>', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], cwd=os.getcwd(), threads_needed=self.max_threads, sleep_time=0.2)
