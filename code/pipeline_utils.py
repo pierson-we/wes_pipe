@@ -41,7 +41,6 @@ def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 
 	cmd = [str(x) for x in cmd]
 
-	print('\n\n' + ' '.join(cmd) + '\n\n')
 	# print(global_vars.thread_file)
 	# print(global_vars.global_max_threads)
 	# print(global_vars.working_files)
@@ -50,11 +49,13 @@ def command_call(cmd, outputs, cwd=os.getcwd(), threads_needed=1, sleep_time=1):
 		# print('waiting for godot...')
 		time.sleep(sleep_time)
 	
-	add_working_files(global_vars.working_files, outputs)
+	# add_working_files(global_vars.working_files, outputs)
+	
+	print('\n\n' + ' '.join(cmd) + '\n\n')
 	
 	subprocess.call(' '.join(cmd), shell=True)
 	
-	rm_working_files(global_vars.working_files, outputs)
+	# rm_working_files(global_vars.working_files, outputs)
 
 	while not sub_thread_count(global_vars.thread_file, threads_needed):
 		# print('waiting for godot...')
