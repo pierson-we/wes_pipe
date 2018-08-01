@@ -647,7 +647,7 @@ def run_pipeline(args):
 	print(global_vars.thread_file)
 	pipeline_utils.init_thread_file(global_vars.thread_file)
 	global_vars.working_files = os.path.join(os.getcwd(), 'working_files_%s.pkl' % timestamp)
-	pipeline_utils.init_working_files(global_vars.working_files)
+	# pipeline_utils.init_working_files(global_vars.working_files)
 	global_vars.cwd = os.getcwd()
 
 	sample_dict = {}
