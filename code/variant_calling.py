@@ -98,9 +98,9 @@ class mutect(luigi.Task):
 
 	def requires(self):
 		if self.matched_n != '':
-			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.recalibrated_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), mutect_pon(case_dict=self.sample_dict, project_dir=self.project_dir, max_threads=self.sample_threads, cfg=cfg)]
+			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.recalibrated_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), mutect_pon(case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads, cfg=cfg)]
 		else:
-			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), mutect_pon(case_dict=self.sample_dict, project_dir=self.project_dir, max_threads=self.sample_threads, cfg=cfg)]
+			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), mutect_pon(case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads, cfg=cfg)]
 
 
 	def output(self):
