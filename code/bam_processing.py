@@ -218,13 +218,14 @@ class add_read_groups(luigi.Task):
 		return bowtie(fastq_file=self.fastq_file, sample=self.sample, max_threads=self.max_threads, project_dir=self.project_dir, cfg=self.cfg)
 
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_preprocessed.bam'))
+		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_preprocessed.bam')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_preprocessed.bai'))]
 
 	def run(self):
-		pipeline_utils.confirm_path(self.output().path)
-		cmd = ['java', '-Xmx8g', '-XX:+UseSerialGC', '-jar', self.cfg['picard_location'], 'AddOrReplaceReadGroups', 'I=%s' % self.input().path, 'O=%s' % self.output().path, 'SORT_ORDER=coordinate', 'RGID=%s' % self.sample, 'RGLB=%s' % self.cfg['library_prep'], 'RGPL=%s' % self.cfg['platform'], 'RGPU=%s' % self.sample + '_barcode', 'RGSM=%s' % self.sample]
-		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.3)
-		self.input().remove()
+		for output in self.output():
+			pipeline_utils.confirm_path(output.path)
+		cmd = ['java', '-Xmx1g', '-XX:+UseSerialGC', '-jar', self.cfg['picard_location'], 'AddOrReplaceReadGroups', 'I=%s' % self.input().path, 'O=%s' % self.output().path, 'CREATE_INDEX=true', 'SORT_ORDER=coordinate', 'RGID=%s' % self.sample, 'RGLB=%s' % self.cfg['library_prep'], 'RGPL=%s' % self.cfg['platform'], 'RGPU=%s' % self.sample + '_barcode', 'RGSM=%s' % self.sample]
+		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.3)
+		# self.input().remove()
 
 # https://broadinstitute.github.io/picard/command-line-overview.html#MarkDuplicates
 class mark_duplicates(luigi.Task):
@@ -249,7 +250,7 @@ class mark_duplicates(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[0].path)
 		pipeline_utils.confirm_path(self.output()[1].path)
-		cmd = ['java', '-jar', self.cfg['picard_location'], 'MarkDuplicates', 'I=%s' % self.input().path, 'O=%s' % self.output()[0].path, 'M=%s' % self.output()[1].path, 'REMOVE_DUPLICATES=true', 'ASSUME_SORT_ORDER=coordinate']
+		cmd = ['java', '-Xmx1g', '-XX:+UseSerialGC', '-jar', self.cfg['picard_location'], 'MarkDuplicates', 'I=%s' % self.input()[0].path, 'O=%s' % self.output()[0].path, 'M=%s' % self.output()[1].path, 'REMOVE_DUPLICATES=true', 'ASSUME_SORT_ORDER=coordinate']
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.4)
 		# self.input().remove()
 
@@ -300,7 +301,8 @@ class realigner_target(luigi.Task):
 	cfg = luigi.DictParameter()
 
 	def requires(self):
-		return index_bam(fastq_file=self.fastq_file, project_dir=self.project_dir, sample=self.sample, max_threads=self.max_threads, cfg=self.cfg)
+		# return index_bam(fastq_file=self.fastq_file, project_dir=self.project_dir, sample=self.sample, max_threads=self.max_threads, cfg=self.cfg)
+		return mark_duplicates(fastq_file=self.fastq_file, project_dir=self.project_dir, sample=self.sample, max_threads=self.max_threads, cfg=self.cfg)
 
 	def output(self):
 		return self.input() + [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_forIndelRealigner.intervals'))]
