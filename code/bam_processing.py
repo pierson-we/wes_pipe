@@ -433,7 +433,7 @@ class aggregate_variants(luigi.Task):
 		'max_threads': self.max_threads,
 		'cfg': self.cfg
 		}
-		return [filter_mutect(**kwargs),
+		return [filter_mutect(case_dict=self.case_dict, **kwargs),
 		vardict(**kwargs),
 		# freebayes(**kwargs),
 		scalpel_export(**kwargs),

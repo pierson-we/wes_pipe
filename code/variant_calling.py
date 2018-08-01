@@ -123,6 +123,7 @@ class filter_mutect(luigi.Task):
 	matched_n = luigi.Parameter()
 	vcf_path = luigi.Parameter()
 	project_dir = luigi.Parameter()
+	case_dict = luigi.Parameter()
 
 	# gatk4_location = luigi.Parameter()
 	# fasta_file = luigi.Parameter()
