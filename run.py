@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 
-	print('args have been parsed')
+	# make sure we're in the correct working directory so relative references work. If not, change to the correct directory
 	if not os.path.exists(os.path.join(os.getcwd(), 'code')):
 		os.chdir('/'.join(sys.argv[0].split('/')[:-1]))
 		sys.path.append(os.getcwd())
