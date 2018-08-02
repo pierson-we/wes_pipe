@@ -192,6 +192,9 @@ class bowtie(luigi.Task):
 		cmd = [self.cfg['bowtie_location'], '-x', os.path.join(fasta_dir, 'index', self.cfg['base_name']), '-1', self.input()[-1][0][0].path, '-2', self.input()[-1][1][0].path, '-p', self.max_threads, '|', self.cfg['samtools_location'], 'view', '-b', '-', '>', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], cwd=os.getcwd(), threads_needed=self.max_threads, sleep_time=0.2)
 
+		for input_file in self.input()[-1][0]:
+			input_file.remove()
+
 		# os.chdir(global_vars.cwd)
 		# print(os.getcwd())
 		# except KeyboardInterrupt:
@@ -225,7 +228,7 @@ class add_read_groups(luigi.Task):
 			pipeline_utils.confirm_path(output.path)
 		cmd = ['java', '-Xmx4g', '-XX:+UseSerialGC', '-Djava.io.tmpdir=%s' % cfg['tmp_dir'], '-jar', self.cfg['picard_location'], 'AddOrReplaceReadGroups', 'I=%s' % self.input().path, 'O=%s' % self.output()[0].path, 'CREATE_INDEX=true', 'SORT_ORDER=coordinate', 'RGID=%s' % self.sample, 'RGLB=%s' % self.cfg['library_prep'], 'RGPL=%s' % self.cfg['platform'], 'RGPU=%s' % self.sample + '_barcode', 'RGSM=%s' % self.sample]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.3)
-		# self.input().remove()
+		self.input().remove()
 
 # https://broadinstitute.github.io/picard/command-line-overview.html#MarkDuplicates
 class mark_duplicates(luigi.Task):
@@ -252,7 +255,8 @@ class mark_duplicates(luigi.Task):
 		pipeline_utils.confirm_path(self.output()[1].path)
 		cmd = ['java', '-Xmx4g', '-XX:+UseSerialGC', '-Djava.io.tmpdir=%s' % cfg['tmp_dir'], '-jar', self.cfg['picard_location'], 'MarkDuplicates', 'I=%s' % self.input()[0].path, 'O=%s' % self.output()[0].path, 'M=%s' % self.output()[1].path, 'CREATE_INDEX=true', 'REMOVE_DUPLICATES=true', 'ASSUME_SORT_ORDER=coordinate']
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.4)
-		# self.input().remove()
+		for input_file in self.input():
+			input_file.remove()
 
 class index_bam(luigi.Task):
 	max_threads = luigi.IntParameter()

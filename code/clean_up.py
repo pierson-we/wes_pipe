@@ -44,9 +44,10 @@ if __name__ == '__main__':
 				relative_path = relative_path[1:]
 			
 			confirm_path(os.path.join(old_dir, relative_path))
-			print(os.path.join(old_dir, relative_path))
+			
+			print('\n***Moving "%s" to "%s"***' % (file, os.path.join(old_dir, relative_path)))
 
-			subprocess.call('mv %s %s' % (file, os.path.join(old_dir, relative_path))
+			subprocess.call('mv %s %s' % (file, os.path.join(old_dir, relative_path)), shell=True)
 			# os.rename(file, os.path.join(old_dir, relative_path))
 
 	shutil.rmtree(new_dir)
