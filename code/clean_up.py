@@ -1,6 +1,7 @@
 import sys
 import os
 import shutil
+import subprocess
 
 def retrieve_filenames(directory):
 	f = []
@@ -45,6 +46,7 @@ if __name__ == '__main__':
 			confirm_path(os.path.join(old_dir, relative_path))
 			print(os.path.join(old_dir, relative_path))
 
-			os.rename(file, os.path.join(old_dir, relative_path))
+			subprocess.call('mv %s %s' % (file, os.path.join(old_dir, relative_path))
+			# os.rename(file, os.path.join(old_dir, relative_path))
 
 	shutil.rmtree(new_dir)
