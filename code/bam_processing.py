@@ -411,7 +411,7 @@ class recalibrated_bam(luigi.Task):
 			pipeline_utils.confirm_path(output.path)
 		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'ApplyBQSR', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '--bqsr-recal-file', self.input()[2].path, '-O',  self.output()[0].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.9)
-		cmd = ['mv', luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_recalibrated.bai')), self.output()[1].path]
+		cmd = ['mv', luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_recalibrated.bai')).path, self.output()[1].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.9)
 		for input_file in self.input():
 			input_file.remove()
