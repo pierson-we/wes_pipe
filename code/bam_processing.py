@@ -231,6 +231,7 @@ class add_read_groups(luigi.Task):
 		self.input().remove()
 
 # https://broadinstitute.github.io/picard/command-line-overview.html#MarkDuplicates
+# ~35 minutes
 class mark_duplicates(luigi.Task):
 	max_threads = luigi.IntParameter()
 	project_dir = luigi.Parameter()
@@ -379,7 +380,7 @@ class bqsr(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[2].path)
-		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'BaseRecalibrator', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '--known-sites', self.dbsnp, '--known-sites', self.cfg['mills'], '--known-sites', self.cfg['kg'], '-O',  self.output()[2].path]
+		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'BaseRecalibrator', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '--known-sites', self.cfg['known_vcf'], '--known-sites', self.cfg['mills'], '--known-sites', self.cfg['kg'], '-O',  self.output()[2].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.8)
 		# self.input().remove()
 
