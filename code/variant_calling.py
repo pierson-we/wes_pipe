@@ -112,9 +112,9 @@ class mutect(luigi.Task):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 		if self.matched_n:
-			cmd = [self.cfg['gatk4_location'], 'Mutect2', '-R', self.cfg['fasta_file'], '-I', self.input()[0][0].path, '-tumor', self.case + '_T', '-I', self.input()[1][0].path, '-normal', self.case + '_N', '--germline-resource', self.cfg['germline_resource'], '--af-of-alleles-not-in-resource', '0.0000025', '-L', self.cfg['library_bed'], '-pon', self.input()[-1].path, '--native-pair-hmm-threads', '1', '-O', self.output()[0].path]
+			cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'Mutect2', '-R', self.cfg['fasta_file'], '-I', self.input()[0][0].path, '-tumor', self.case + '_T', '-I', self.input()[1][0].path, '-normal', self.case + '_N', '--germline-resource', self.cfg['germline_resource'], '--af-of-alleles-not-in-resource', '0.0000025', '-L', self.cfg['library_bed'], '-pon', self.input()[-1].path, '--native-pair-hmm-threads', '1', '-O', self.output()[0].path]
 		else:
-			cmd = [self.cfg['gatk4_location'], 'Mutect2', '-R', self.cfg['fasta_file'], '-I', self.input()[0][0].path, '-tumor', self.case + '_T', '--germline-resource', self.cfg['germline_resource'], '--af-of-alleles-not-in-resource', '0.0000025', '-L', self.cfg['library_bed'], '-pon', self.input()[-1].path, '--native-pair-hmm-threads', '1', '-O', self.output()[0].path]
+			cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'Mutect2', '-R', self.cfg['fasta_file'], '-I', self.input()[0][0].path, '-tumor', self.case + '_T', '--germline-resource', self.cfg['germline_resource'], '--af-of-alleles-not-in-resource', '0.0000025', '-L', self.cfg['library_bed'], '-pon', self.input()[-1].path, '--native-pair-hmm-threads', '1', '-O', self.output()[0].path]
 		pipeline_utils.command_call(cmd, self.output())
 
 class filter_mutect(luigi.Task):
@@ -141,7 +141,7 @@ class filter_mutect(luigi.Task):
 	
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
-		cmd = [self.cfg['gatk4_location'], 'FilterMutectCalls', '-V', self.input()[0].path, '-O', self.output().path]
+		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'FilterMutectCalls', '-V', self.input()[0].path, '-O', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=1.1)
 		# for input_file in self.input():
 		# 	input_file.remove()
