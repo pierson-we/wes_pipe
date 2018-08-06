@@ -72,7 +72,7 @@ class mutect_pon(luigi.Task):
 		# else:
 		cmd = [self.cfg['gatk4_location'], 'CreateSomaticPanelOfNormals']
 		for normal_vcf in self.input():
-			cmd.append('--vcf')
+			cmd.append('--vcfs')
 			cmd.append(normal_vcf.path)
 		cmd.append('--output')
 		cmd.append(self.output().path)
@@ -354,6 +354,6 @@ class cnvkit(luigi.Task):
 		# if self.matched_n:
 		# 	cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.cfg['fasta_file'], '-f', '0.01', '-N', self.case + '_T', '-b', '"%s|%s"' % (self.input()[0][0].path, self.input()[1][0].path), '-z', '-F', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.cfg['library_bed'], '|', './packages/VarDictJava/VarDict/testsomatic.R', '|', './packages/VarDictJava/VarDict/var2vcf_paired.pl', '-N', '"%s|%s"' % (self.case + '_T', self.case + '_N'), '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
 		# else:
-		cmd = ['python3', './packages/cnvkit/cnvkit.py', 'batch', os.path.join(self.project_dir, 'output', '*', 'alignment', '*T*recalibrated.bam'), '--normal', os.path.join(self.project_dir, 'output', '*', 'alignment', '*N*recalibrated.bam'), '--targets', self.cfg['library_bed'], '--fasta', self.cfg['fasta_file'], '--output-reference', self.output()[0].path, '--output-dir', os.path.join(self.project_dir, 'output', 'cnvkit', 'variants'), '--diagram', '--scatter', '--heatmap', '--rlibpath', './packages/R', '--annotate', './packages/cnvkit/data/refFlat.txt', '-p', self.max_threads]
+		cmd = ['python3', './packages/cnvkit/cnvkit.py', 'batch', os.path.join(self.project_dir, 'output', '*', 'alignment', '*T*recalibrated.bam'), '--normal', os.path.join(self.project_dir, 'output', '*', 'alignment', '*N*recalibrated.bam'), '--targets', self.cfg['library_bed'], '--fasta', self.cfg['fasta_file'], '--output-reference', self.output()[0].path, '--output-dir', os.path.join(self.project_dir, 'output', 'cnvkit', 'variants'), '--diagram', '--scatter', '--rlibpath', './packages/R', '--annotate', './packages/cnvkit/data/refFlat.txt', '-p', self.max_threads]
 		pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads)
 
