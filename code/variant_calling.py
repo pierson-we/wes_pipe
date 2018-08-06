@@ -70,10 +70,12 @@ class mutect_pon(luigi.Task):
 		# if self.matched_n:
 		# 	cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.cfg['fasta_file'], '-f', '0.01', '-N', self.case + '_T', '-b', '"%s|%s"' % (self.input()[0][0].path, self.input()[1][0].path), '-z', '-F', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.cfg['library_bed'], '|', './packages/VarDictJava/VarDict/testsomatic.R', '|', './packages/VarDictJava/VarDict/var2vcf_paired.pl', '-N', '"%s|%s"' % (self.case + '_T', self.case + '_N'), '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
 		# else:
-		cmd = [self.cfg['gatk4_location'], 'CreateSomaticPanelOfNormals', '-O', self.output().path]
+		cmd = [self.cfg['gatk4_location'], 'CreateSomaticPanelOfNormals']
 		for normal_vcf in self.input():
 			cmd.append('--vcf')
 			cmd.append(normal_vcf.path)
+		cmd.append('--output')
+		cmd.append(self.output().path)
 		pipeline_utils.command_call(cmd, [self.output()])
 
 class mutect(luigi.Task):
@@ -211,9 +213,9 @@ class scalpel_export(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
 		if self.matched_n:
-			cmd = ['./scalpel-0.5.4/scalpel-export', '--somatic', '--db', self.input().path[:-4], '--bed', self.cfg['library_bed'], '--ref', self.cfg['fasta_file']]
+			cmd = ['./packages/scalpel-0.5.4/scalpel-export', '--somatic', '--db', self.input().path[:-4], '--bed', self.cfg['library_bed'], '--ref', self.cfg['fasta_file']]
 		else:
-			cmd = ['./scalpel-0.5.4/scalpel-export', '--single', '--db', self.input().path[:-4], '--bed', self.cfg['library_bed'], '--ref', self.cfg['fasta_file']]
+			cmd = ['./packages/scalpel-0.5.4/scalpel-export', '--single', '--db', self.input().path[:-4], '--bed', self.cfg['library_bed'], '--ref', self.cfg['fasta_file']]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=1.1)
 
 # not yet tested - need to install GNU Parallel on cluster... but might be able to run local install http://git.savannah.gnu.org/cgit/parallel.git/tree/README
