@@ -37,7 +37,7 @@ class mutect_single_normal(luigi.Task):
 		# if self.matched_n:
 		# 	cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.cfg['fasta_file'], '-f', '0.01', '-N', self.case + '_T', '-b', '"%s|%s"' % (self.input()[0][0].path, self.input()[1][0].path), '-z', '-F', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.cfg['library_bed'], '|', './packages/VarDictJava/VarDict/testsomatic.R', '|', './packages/VarDictJava/VarDict/var2vcf_paired.pl', '-N', '"%s|%s"' % (self.case + '_T', self.case + '_N'), '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
 		# else:
-		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'Mutect2', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '-tumor', self.sample, '-L', self.cfg['library_bed'], '-O', self.output().path]
+		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -Xms4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'Mutect2', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '-tumor', self.sample, '-L', self.cfg['library_bed'], '--native-pair-hmm-threads', '1', '-O', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], threads_needed=4)
 
 class mutect_pon(luigi.Task):
@@ -112,9 +112,9 @@ class mutect(luigi.Task):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 		if self.matched_n:
-			cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'Mutect2', '-R', self.cfg['fasta_file'], '-I', self.input()[0][0].path, '-tumor', self.case + '_T', '-I', self.input()[1][0].path, '-normal', self.case + '_N', '--germline-resource', self.cfg['germline_resource'], '--af-of-alleles-not-in-resource', '0.0000025', '-L', self.cfg['library_bed'], '-pon', self.input()[-1].path, '--native-pair-hmm-threads', '1', '-O', self.output()[0].path]
+			cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -Xms4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'Mutect2', '-R', self.cfg['fasta_file'], '-I', self.input()[0][0].path, '-tumor', self.case + '_T', '-I', self.input()[1][0].path, '-normal', self.case + '_N', '--germline-resource', self.cfg['germline_resource'], '--af-of-alleles-not-in-resource', '0.0000025', '-L', self.cfg['library_bed'], '-pon', self.input()[-1].path, '--native-pair-hmm-threads', '1', '-O', self.output()[0].path]
 		else:
-			cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'Mutect2', '-R', self.cfg['fasta_file'], '-I', self.input()[0][0].path, '-tumor', self.case + '_T', '--germline-resource', self.cfg['germline_resource'], '--af-of-alleles-not-in-resource', '0.0000025', '-L', self.cfg['library_bed'], '-pon', self.input()[-1].path, '--native-pair-hmm-threads', '1', '-O', self.output()[0].path]
+			cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -Xms4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'Mutect2', '-R', self.cfg['fasta_file'], '-I', self.input()[0][0].path, '-tumor', self.case + '_T', '--germline-resource', self.cfg['germline_resource'], '--af-of-alleles-not-in-resource', '0.0000025', '-L', self.cfg['library_bed'], '-pon', self.input()[-1].path, '--native-pair-hmm-threads', '1', '-O', self.output()[0].path]
 		pipeline_utils.command_call(cmd, self.output())
 
 class filter_mutect(luigi.Task):
@@ -141,7 +141,7 @@ class filter_mutect(luigi.Task):
 	
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
-		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'FilterMutectCalls', '-V', self.input()[0].path, '-O', self.output().path]
+		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -Xms4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'FilterMutectCalls', '-V', self.input()[0].path, '-O', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=1.1)
 		# for input_file in self.input():
 		# 	input_file.remove()

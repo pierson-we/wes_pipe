@@ -226,7 +226,7 @@ class add_read_groups(luigi.Task):
 	def run(self):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
-		cmd = ['java', '-Xmx4g', '-XX:+UseSerialGC', '-Djava.io.tmpdir=%s' % self.cfg['tmp_dir'], '-jar', self.cfg['picard_location'], 'AddOrReplaceReadGroups', 'I=%s' % self.input().path, 'O=%s' % self.output()[0].path, 'CREATE_INDEX=true', 'SORT_ORDER=coordinate', 'RGID=%s' % self.sample, 'RGLB=%s' % self.cfg['library_prep'], 'RGPL=%s' % self.cfg['platform'], 'RGPU=%s' % self.sample + '_barcode', 'RGSM=%s' % self.sample]
+		cmd = ['java', '-Xmx4g', 'Xms4g', '-XX:+UseSerialGC', '-Djava.io.tmpdir=%s' % self.cfg['tmp_dir'], '-jar', self.cfg['picard_location'], 'AddOrReplaceReadGroups', 'I=%s' % self.input().path, 'O=%s' % self.output()[0].path, 'CREATE_INDEX=true', 'SORT_ORDER=coordinate', 'RGID=%s' % self.sample, 'RGLB=%s' % self.cfg['library_prep'], 'RGPL=%s' % self.cfg['platform'], 'RGPU=%s' % self.sample + '_barcode', 'RGSM=%s' % self.sample]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.3)
 		self.input().remove()
 
@@ -254,7 +254,7 @@ class mark_duplicates(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[0].path)
 		pipeline_utils.confirm_path(self.output()[1].path)
-		cmd = ['java', '-Xmx4g', '-XX:+UseSerialGC', '-Djava.io.tmpdir=%s' % self.cfg['tmp_dir'], '-jar', self.cfg['picard_location'], 'MarkDuplicates', 'I=%s' % self.input()[0].path, 'O=%s' % self.output()[0].path, 'M=%s' % self.output()[1].path, 'CREATE_INDEX=true', 'REMOVE_DUPLICATES=true', 'ASSUME_SORT_ORDER=coordinate']
+		cmd = ['java', '-Xmx4g', 'Xms4g', '-XX:+UseSerialGC', '-Djava.io.tmpdir=%s' % self.cfg['tmp_dir'], '-jar', self.cfg['picard_location'], 'MarkDuplicates', 'I=%s' % self.input()[0].path, 'O=%s' % self.output()[0].path, 'M=%s' % self.output()[1].path, 'CREATE_INDEX=true', 'REMOVE_DUPLICATES=true', 'ASSUME_SORT_ORDER=coordinate']
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.4)
 		for input_file in self.input():
 			input_file.remove()
@@ -314,7 +314,7 @@ class realigner_target(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[2].path)
-		cmd = ['java', '-Xmx4g', '-XX:+UseSerialGC', '-Djava.io.tmpdir=%s' % self.cfg['tmp_dir'], '-jar', self.cfg['gatk3_location'], '-T', 'RealignerTargetCreator', '-nt', str(self.max_threads), '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '--known', self.cfg['mills'], '--known', self.cfg['kg'], '-o', self.output()[2].path]
+		cmd = ['java', '-Xmx4g', 'Xms4g', '-XX:+UseSerialGC', '-Djava.io.tmpdir=%s' % self.cfg['tmp_dir'], '-jar', self.cfg['gatk3_location'], '-T', 'RealignerTargetCreator', '-nt', str(self.max_threads), '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '--known', self.cfg['mills'], '--known', self.cfg['kg'], '-o', self.output()[2].path]
 		pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads, sleep_time=0.6)
 		# for input_file in self.input():
 		# 	input_file.remove()
@@ -347,7 +347,7 @@ class indel_realignment(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[0].path)
 		pipeline_utils.confirm_path(self.output()[1].path)
-		cmd = ['java', '-Xmx4g', '-XX:+UseSerialGC', '-Djava.io.tmpdir=%s' % self.cfg['tmp_dir'], '-jar', self.cfg['gatk3_location'], '-T', 'IndelRealigner', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '-known', self.cfg['mills'], '-known', self.cfg['kg'], '-targetIntervals', self.input()[2].path, '-o', self.output()[0].path]
+		cmd = ['java', '-Xmx4g', 'Xms4g', '-XX:+UseSerialGC', '-Djava.io.tmpdir=%s' % self.cfg['tmp_dir'], '-jar', self.cfg['gatk3_location'], '-T', 'IndelRealigner', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '-known', self.cfg['mills'], '-known', self.cfg['kg'], '-targetIntervals', self.input()[2].path, '-o', self.output()[0].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.7)
 		for input_file in self.input():
 			input_file.remove()
@@ -373,15 +373,17 @@ class bqsr(luigi.Task):
 	cfg = luigi.DictParameter()
 
 	def requires(self):
-		return indel_realignment(fastq_file=self.fastq_file, project_dir=self.project_dir, sample=self.sample, max_threads=self.max_threads, cfg=self.cfg)
+		return mark_duplicates(fastq_file=self.fastq_file, project_dir=self.project_dir, sample=self.sample, max_threads=self.max_threads, cfg=self.cfg)
 
 	def output(self):
 		return self.input() + [luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_recalibrated.table'))]
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[2].path)
-		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'BaseRecalibrator', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '--known-sites', self.cfg['known_vcf'], '--known-sites', self.cfg['mills'], '--known-sites', self.cfg['kg'], '-O',  self.output()[2].path]
+		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -Xms4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'BaseRecalibrator', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '--known-sites', self.cfg['known_vcf'], '--known-sites', self.cfg['mills'], '--known-sites', self.cfg['kg'], '-O',  self.output()[2].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.8)
+		for input_file in self.input():
+			input_file.remove()
 		# self.input().remove()
 
 # ~75 mins (no multiprocessing available)
@@ -409,7 +411,7 @@ class recalibrated_bam(luigi.Task):
 	def run(self):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
-		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'ApplyBQSR', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '--bqsr-recal-file', self.input()[2].path, '-O',  self.output()[0].path]
+		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -Xms4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'ApplyBQSR', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '--bqsr-recal-file', self.input()[2].path, '-O',  self.output()[0].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.9)
 		cmd = ['mv', luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_recalibrated.bai')).path, self.output()[1].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.9)
