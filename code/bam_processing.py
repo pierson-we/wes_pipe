@@ -254,7 +254,7 @@ class mark_duplicates(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[0].path)
 		pipeline_utils.confirm_path(self.output()[1].path)
-		cmd = ['java', '-Xmx4g', 'Xms4g', '-XX:+UseSerialGC', '-Djava.io.tmpdir=%s' % self.cfg['tmp_dir'], '-jar', self.cfg['picard_location'], 'MarkDuplicates', 'I=%s' % self.input()[0].path, 'O=%s' % self.output()[0].path, 'M=%s' % self.output()[1].path, 'CREATE_INDEX=true', 'REMOVE_DUPLICATES=true', 'ASSUME_SORT_ORDER=coordinate']
+		cmd = ['java', '-Xmx4g', '-Xms4g', '-XX:+UseSerialGC', '-Djava.io.tmpdir=%s' % self.cfg['tmp_dir'], '-jar', self.cfg['picard_location'], 'MarkDuplicates', 'I=%s' % self.input()[0].path, 'O=%s' % self.output()[0].path, 'M=%s' % self.output()[1].path, 'CREATE_INDEX=true', 'REMOVE_DUPLICATES=true', 'ASSUME_SORT_ORDER=coordinate']
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.4)
 		for input_file in self.input():
 			input_file.remove()
@@ -314,7 +314,7 @@ class realigner_target(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[2].path)
-		cmd = ['java', '-Xmx4g', 'Xms4g', '-XX:+UseSerialGC', '-Djava.io.tmpdir=%s' % self.cfg['tmp_dir'], '-jar', self.cfg['gatk3_location'], '-T', 'RealignerTargetCreator', '-nt', str(self.max_threads), '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '--known', self.cfg['mills'], '--known', self.cfg['kg'], '-o', self.output()[2].path]
+		cmd = ['java', '-Xmx4g', '-Xms4g', '-XX:+UseSerialGC', '-Djava.io.tmpdir=%s' % self.cfg['tmp_dir'], '-jar', self.cfg['gatk3_location'], '-T', 'RealignerTargetCreator', '-nt', str(self.max_threads), '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '--known', self.cfg['mills'], '--known', self.cfg['kg'], '-o', self.output()[2].path]
 		pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads, sleep_time=0.6)
 		# for input_file in self.input():
 		# 	input_file.remove()
@@ -347,7 +347,7 @@ class indel_realignment(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[0].path)
 		pipeline_utils.confirm_path(self.output()[1].path)
-		cmd = ['java', '-Xmx4g', 'Xms4g', '-XX:+UseSerialGC', '-Djava.io.tmpdir=%s' % self.cfg['tmp_dir'], '-jar', self.cfg['gatk3_location'], '-T', 'IndelRealigner', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '-known', self.cfg['mills'], '-known', self.cfg['kg'], '-targetIntervals', self.input()[2].path, '-o', self.output()[0].path]
+		cmd = ['java', '-Xmx4g', '-Xms4g', '-XX:+UseSerialGC', '-Djava.io.tmpdir=%s' % self.cfg['tmp_dir'], '-jar', self.cfg['gatk3_location'], '-T', 'IndelRealigner', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '-known', self.cfg['mills'], '-known', self.cfg['kg'], '-targetIntervals', self.input()[2].path, '-o', self.output()[0].path]
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.7)
 		# for input_file in self.input():
 		# 	input_file.remove()
