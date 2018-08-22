@@ -345,8 +345,8 @@ class cnvkit(luigi.Task):
 		+ [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'variants', '%s_T_recalibrated.cns' % case_name)) for case_name in self.case_dict] \
 		+ [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'variants', '%s_T_recalibrated.targetcoverage.cnn' % case_name)) for case_name in self.case_dict] \
 		+ [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'variants', '%s_T_recalibrated.antitargetcoverage.cnn' % case_name)) for case_name in self.case_dict] \
-		+ [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'variants', '%s_N_recalibrated.targetcoverage.cnn' % case_name)) for case_name in self.case_dict] \
-		+ [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'variants', '%s_N_recalibrated.antitargetcoverage.cnn' % case_name)) for case_name in self.case_dict]
+		+ [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'variants', '%s_N_recalibrated.targetcoverage.cnn' % case_name)) for case_name in self.case_dict if self.case_dict[case_name]['N'] != ''] \
+		+ [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'variants', '%s_N_recalibrated.antitargetcoverage.cnn' % case_name)) for case_name in self.case_dict if self.case_dict[case_name]['N'] != '']
 	
 	def run(self):
 		for output in self.output():
