@@ -123,7 +123,6 @@ class msings_baseline(luigi.Task):
 		+ list(itertools.chain(*[[luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', case_name + '_N_recalibrated', case_name + '_N_recalibrated.%s' % file_ext)) for file_ext in ['mpileup', 'msi_output', 'msi.txt']] for case_name in self.case_dict if self.case_dict[case_name]['N'] != '']))
 	
 	def run(self):
-		print(self.output())
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 		# cmd = ['./packages/msings/scripts/create_intervals.sh', './packages/MANTIS/b37_exome_microsatellites.bed']
@@ -167,7 +166,7 @@ class msi(luigi.Task):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 		if self.matched_n != '':
-			cmd = ['python3', './packages/MANTIS/mantis.py', '-b', './packages/MANTIS/b37_1000_ms_loci_annotated.sorted.bed', '--genome', self.cfg['fasta_file'], '-t', self.input()[0][0].path, '-n', self.input()[1][0].path, '-mrq', '20.0', '-mlq', '25.0', '-mlc', '20', '-mrr', '1', '-o', self.output()[0].path]
+			cmd = ['python3', './packages/MANTIS/mantis.py', '-b', './packages/MANTIS/b37_1000_ms_loci_annotated_mono.bed', '--genome', self.cfg['fasta_file'], '-t', self.input()[0][0].path, '-n', self.input()[1][0].path, '-mrq', '20.0', '-mlq', '25.0', '-mlc', '20', '-mrr', '1', '-o', self.output()[0].path]
 			pipeline_utils.command_call(cmd, self.output())
 		# else:
 		# tumor_bams_file = os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'tumor_bams.txt')
