@@ -443,10 +443,10 @@ class aggregate_variants(luigi.Task):
 		'cfg': self.cfg
 		}
 		return [filter_mutect(case_dict=self.case_dict, **kwargs),
-		vardict(**kwargs),
+		vardict(**kwargs)
 		# freebayes(**kwargs),
 		# scalpel_export(**kwargs),
-		variant_analysis.msi(case_dict=self.case_dict, **kwargs)
+		#variant_analysis.msi(case_dict=self.case_dict, **kwargs)
 		# yield run_variant_caller(caller='VarDict', **kwargs)
 		# yield run_variant_caller(caller='FreeBayes', **kwargs)
 		# yield run_variant_caller(caller='VarScan', **kwargs)
@@ -610,7 +610,9 @@ class cases(luigi.Task):
 		pipeline_utils.confirm_path(cfg['tmp_dir'])
 		# return [aggregate_variants(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict) for case in self.sample_dict]
 
-		return [variant_analysis.vep(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict, cfg=cfg) for case in self.sample_dict] + [cnvkit(case_dict=self.sample_dict, project_dir=self.project_dir, max_threads=self.sample_threads, cfg=cfg)]
+		return [variant_analysis.vep(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict, cfg=cfg) for case in self.sample_dict] /
+		+ [variant_calling.msi(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict, cfg=cfg, vcf_path=os.path.join(self.project_dir, 'output', case, 'variants')) for case in self.sample_dict]/
+		+ [cnvkit(case_dict=self.sample_dict, project_dir=self.project_dir, max_threads=self.sample_threads, cfg=cfg)]
 		# [variant_analysis.vep(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict) for case in self.sample_dict] \
 		# + [variant_analysis.fpfilter(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict) for case in self.sample_dict] \
 		# # global global_max_threads, thread_count
