@@ -174,7 +174,7 @@ class msi(luigi.Task):
 		# 	tumor_bams_list = [os.path.join(self.project_dir, 'output', self.case, 'alignment', case_name + '_T_recalibrated.bam') for case_name in self.case_dict if self.case_dict[case_name]['N'] == '']
 		# 	f.write('\n'.join(tumor_bams_list))
 	
-		cmd = ['./packages/msings/scripts/run_msings_single_sample.sh', self.input()[0][0].path, './packages/msings/doc/mSINGS_TCGA.msi_intervals', './packages/msings/doc/mSINGS_TCGA.bed', self.cfg['fasta_file'], os.path.join(self.project_dir, 'output', 'msings', 'baseline', './packages/msings/doc/mSINGS_TCGA.baseline'), os.path.join(self.project_dir, 'output', 'msings', 'tumor')]
+		cmd = ['./packages/msings/scripts/run_msings_single_sample.sh', self.input()[0][0].path, './packages/msings/doc/mSINGS_TCGA.msi_intervals', './packages/msings/doc/mSINGS_TCGA.bed', self.cfg['fasta_file'], './packages/msings/doc/mSINGS_TCGA.baseline', os.path.join(self.project_dir, 'output', 'msings', 'tumor')]
 		pipeline_utils.command_call(cmd, self.output())
 		os.rename(os.path.join(self.project_dir, 'output', 'msings', 'tumor', self.case + '_T_recalibrated', self.case + '_T_recalibrated.MSI_Analysis.txt'), os.path.join(self.vcf_path, self.case + '_msings.txt'))
 		# cmd = ['echo', '"mSINGS still needs to be set up for tumor-only samples"', '>', self.output()[0].path] # this will be a pain to get up and going: https://bitbucket.org/uwlabmed/msings/src/8269e0e01acfc5e01d0de9d63ffc1e399996ce8a/Recommendations_for_custom_assays?at=master&fileviewer=file-view-default
