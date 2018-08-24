@@ -132,7 +132,7 @@ class msings_baseline(luigi.Task):
 		with open(normal_bams_file, 'w') as f:
 			normal_bams_list = [os.path.join(self.project_dir, 'output', case_name, 'alignment', case_name + '_N_recalibrated.bam') for case_name in self.case_dict if self.case_dict[case_name]['N'] != '']
 			f.write('\n'.join(normal_bams_list))
-		cmd = ['./packages/msings/scripts/create_baseline.sh', normal_bams_file, './packages/MANTIS/b37_1000_ms_loci_annotated_mono.msi_intervals', './packages/MANTIS/b37_1000_ms_loci_annotated_mono.bed', self.cfg['fasta_file'], os.path.join(self.project_dir, 'output', 'msings', 'baseline')]
+		cmd = ['./packages/msings/scripts/create_baseline.sh', normal_bams_file, './packages/msings/doc/mSINGS_TCGA.msi_intervals', './packages/msings/doc/mSINGS_TCGA.bed', self.cfg['fasta_file'], os.path.join(self.project_dir, 'output', 'msings', 'baseline')]
 		pipeline_utils.command_call(cmd, self.output())
 
 class msi(luigi.Task):
