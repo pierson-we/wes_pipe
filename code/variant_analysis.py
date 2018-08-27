@@ -166,7 +166,7 @@ class msi(luigi.Task):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 		if self.matched_n != '':
-			cmd = ['python3', './packages/MANTIS/mantis.py', '-b', './packages/msings/doc/mSINGS_TCGA.bed', '--genome', self.cfg['fasta_file'], '-t', self.input()[0][0].path, '-n', self.input()[1][0].path, '-mrq', '20.0', '-mlq', '25.0', '-mlc', '20', '-mrr', '1', '-o', self.output()[0].path]
+			cmd = ['python3', './packages/MANTIS/mantis.py', '-b', './packages/msings/doc/mSINGS_TCGA_MANTIS.bed', '--genome', self.cfg['fasta_file'], '-t', self.input()[0][0].path, '-n', self.input()[1][0].path, '-mrq', '20.0', '-mlq', '25.0', '-mlc', '20', '-mrr', '1', '-o', self.output()[0].path]
 			pipeline_utils.command_call(cmd, self.output())
 		# else:
 		# tumor_bams_file = os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'tumor_bams.txt')
