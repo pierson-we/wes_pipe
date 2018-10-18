@@ -6,6 +6,7 @@ import time
 import random
 import luigi
 import multiprocessing
+import bam_processing
 import pipeline_utils
 import global_vars
 
