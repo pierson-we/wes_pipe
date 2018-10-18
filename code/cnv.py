@@ -103,7 +103,7 @@ class reference(luigi.Task):
 		pipeline_utils.confirm_path(self.output().path)
 		cmd = 'python3 %s reference %s --fasta %s -o %s' % (self.cfg['cnvkit_location'], os.path.join(self.project_dir, 'cnvkit', 'coverage', '*N.{,anti}targetcoverage.cnn'), self.cfg['fasta_file'], self.output().path)
 		cmd = cmd.split(' ')
-			pipeline_utils.command_call(cmd, self.output())
+		pipeline_utils.command_call(cmd, self.output())
 
 class fix(luigi.Task):
 	case = luigi.Parameter()
