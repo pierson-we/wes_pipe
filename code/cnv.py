@@ -7,6 +7,7 @@ import random
 import luigi
 import multiprocessing
 import bam_processing
+import variant_calling
 import pipeline_utils
 import global_vars
 
@@ -56,9 +57,9 @@ class coverage(luigi.Task):
 	def requires(self):
 		requirements = [cnvkit_prep(max_threads=self.max_threads, project_dir=self.project_dir, cfg=self.cfg, case_dict=self.case_dict)]
 		if self.case_dict[self.case]['N']:
-			return requirements + [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.case_dict[self.case]['T'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.index_bam(sample=self.case + '_N', fastq_file=self.case_dict[self.case]['N'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), mutect_pon(case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
+			return requirements + [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.case_dict[self.case]['T'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.index_bam(sample=self.case + '_N', fastq_file=self.case_dict[self.case]['N'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), variant_calling.mutect_pon(case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
 		else:
-			return requirements + [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.case_dict[self.case]['T'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), mutect_pon(case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
+			return requirements + [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.case_dict[self.case]['T'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), variant_calling.mutect_pon(case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
 	
 	def outputs(self):
 		tumor_out = [luigi.LocalTarget(os.path.join(self.project_dir, 'cnvkit', 'coverage', '%s_T.targetcoverage.cnn' % self.case)),
