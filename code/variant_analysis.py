@@ -281,6 +281,8 @@ class cases(luigi.Task):
 	vardict_location = luigi.Parameter()
 	mills = luigi.Parameter()
 	kg = luigi.Parameter()
+	omni = luigi.Parameter()
+	hapmap = luigi.Parameter()
 	library_prep = luigi.Parameter()
 	platform = luigi.Parameter()
 	base_name = luigi.Parameter()
@@ -307,6 +309,8 @@ class cases(luigi.Task):
 			'vardict_location': self.vardict_location,
 			'mills': self.mills,
 			'kg': self.kg,
+			'omni': self.omni,
+			'hapmap': self.hapmap,
 			'library_prep': self.library_prep,
 			'platform': self.platform,
 			'base_name': self.base_name,
