@@ -40,7 +40,7 @@ class genome_index(luigi.Task):
 
 	def output(self):
 		# fasta_dir = os.path.join(*self.cfg['fasta_file'].split('/')[:-1])
-		'/'.join(self.cfg['fasta_file'].split('/')[:-1])
+		fasta_dir = '/'.join(self.cfg['fasta_file'].split('/')[:-1])
 		return luigi.LocalTarget(os.path.join(fasta_dir, 'index', self.cfg['base_name'] + '.1.bt2'))
 	
 	def run(self):

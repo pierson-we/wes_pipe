@@ -93,7 +93,7 @@ class fpfilter(luigi.Task):
 	cfg = luigi.DictParameter()
 
 	def requires(self):
-		return [somatic_vcf_intersection(case=self.case, tumor=self.tumor, matched_n=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, case_dict=self.case_dict, cfg=self.cfg),
+		return [somatic_vcf_intersection(case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=self.vcf_path, project_dir=self.project_dir, max_threads=self.max_threads, case_dict=self.case_dict, cfg=self.cfg),
 		bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
 		
 	def output(self):
