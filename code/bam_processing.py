@@ -53,7 +53,8 @@ class genome_index(luigi.Task):
 		# 	os.mkdir('./index')
 		# os.chdir('./index')
 		# cmd = [cwd + self.cfg['bowtie_location'] + 'bowtie2-build', '--threads=%s' % self.max_threads, self.cfg['fasta_file'], self.cfg['base_name']]
-		fasta_dir = os.path.join(self.cfg['fasta_file'].split('/')[:-1])
+		# fasta_dir = os.path.join(self.cfg['fasta_file'].split('/')[:-1])
+		fasta_dir = '/'.join(self.cfg['fasta_file'].split('/')[:-1])
 
 		cmd = [self.cfg['bowtie_location'], '--threads=%s' % self.max_threads, self.cfg['fasta_file'], os.path.join(fasta_dir, 'index', self.cfg['base_name'])]
 		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads, sleep_time=0.1)
