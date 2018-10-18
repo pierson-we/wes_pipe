@@ -54,7 +54,7 @@ class coverage(luigi.Task):
 
 	def requires(self):
 		requirements = [cnvkit_prep(max_threads=self.max_threads, project_dir=self.project_dir, cfg=self.cfg, case_dict=self.case_dict)]
-		if self.matched_n != '':
+		if self.case_dicrt[self.case]['N']:
 			return requirements + [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.index_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), mutect_pon(case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
 		else:
 			return requirements + [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), mutect_pon(case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
@@ -62,7 +62,7 @@ class coverage(luigi.Task):
 	def outputs(self):
 		tumor_out = [luigi.LocalTarget(os.path.join(self.project_dir, 'cnvkit', 'coverage', '%s_T.targetcoverage.cnn' % self.case)),
 		luigi.LocalTarget(os.path.join(self.project_dir, 'cnvkit', 'coverage', '%s_T.antitargetcoverage.cnn' % self.case))]
-		if self.matched_n != '':
+		if self.case_dicrt[self.case]['N'] != '':
 			return tumor_out + [luigi.LocalTarget(os.path.join(self.project_dir, 'cnvkit', 'coverage', '%s_N.targetcoverage.cnn' % self.case)),
 			luigi.LocalTarget(os.path.join(self.project_dir, 'cnvkit', 'coverage', '%s_N.antitargetcoverage.cnn' % self.case))]
 	
