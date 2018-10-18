@@ -32,4 +32,4 @@ def combine_cnvs(cnvs, samples, output):
 	all_cnvs.to_csv(output, sep='\t', header=True, index=False)
 
 def create_mut_mats(muts, cnvs, mut_mat, cnv_mat):
-	
+	return 'hello'

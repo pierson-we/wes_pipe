@@ -255,12 +255,13 @@ class create_mut_mats(luigi.Task):
 		return [combine_mafs(max_threads=self.max_threads, project_dir=self.project_dir, cfg=self.cfg, case_dict=self.case_dict), combine_cnvs(max_threads=self.max_threads, project_dir=self.project_dir, cfg=self.cfg, case_dict=self.case_dict)]
 
 	def output(self):
-		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'mut_mat.tsv')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'cnv_mat.tsv'))]
+		# return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'mut_mat.tsv')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'cnv_mat.tsv'))]
+		return self.input()
 
-	def run(self):
-		for output in self.output():
-			pipeline_utils.confirm_path(output.path)
-		misc_utils.create_mut_mats(self.input()[0].path, self.input()[1].path, self.output()[0].path, self.output()[1].path)
+	# def run(self):
+	# 	for output in self.output():
+	# 		pipeline_utils.confirm_path(output.path)
+	# 	misc_utils.create_mut_mats(self.input()[0].path, self.input()[1].path, self.output()[0].path, self.output()[1].path)
 
 class cases(luigi.Task):
 	# generated parameters
