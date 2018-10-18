@@ -351,7 +351,7 @@ class pindel(luigi.Task):
 
 		os.remove('___pindel_bams___.txt')
 
-def pindel2vcf(luigi.Task):
+class pindel2vcf(luigi.Task):
 	max_threads = luigi.IntParameter()
 	project_dir = luigi.Parameter()
 
