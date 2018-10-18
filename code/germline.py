@@ -52,7 +52,7 @@ class consolidate_gvcfs(luigi.Task):
 				sample = gvcf[0].path.split('/')[-1].split('.g.vcf')[0]
 				f.write('%s\t%s\n' % (sample, gvcf[0].path))
 		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx8g -Xms8g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'GenomicsDBImport', '--genomicsdb-workspace-path', os.path.join(self.project_dir, 'output', 'haplotype_caller', 'genomicsdb'), '--batch-size', '50', '-L', self.cfg['library_bed'], '--sample-name-map', 'gvcf_sample_map', '--tmp-dir=%s' % self.cfg['tmp_dir'], '--reader-threads', str(self.max_threads)]
-		pipeline_utils.command_call(cmd, [self.output()])
+		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads)
 
 		os.remove('gvcf_sample_map')
 
@@ -129,6 +129,8 @@ class filter_indels(luigi.Task):
 
 		os.remove(os.path.join(self.project_dir, 'output', 'haplotype_caller', 'all_germline_indels.vcf.gz'))
 
+# https://gatkforums.broadinstitute.org/gatk/discussion/2806/howto-apply-hard-filters-to-a-call-set
+# https://software.broadinstitute.org/gatk/best-practices/workflow?id=11145
 class filter_germline(luigi.Task):
 	max_threads = luigi.IntParameter()
 	project_dir = luigi.Parameter()
