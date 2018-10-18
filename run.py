@@ -9,6 +9,7 @@ import luigi
 
 def run_pipeline(args):
 	import variant_analysis
+	import global_vars
 	timestamp = str(int(time.time()))
 
 	global_vars.global_max_threads = args.max_threads
