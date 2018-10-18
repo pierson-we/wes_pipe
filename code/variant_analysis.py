@@ -12,6 +12,7 @@ import misc_utils
 import global_vars
 import bam_processing
 import variant_calling
+import cnv
 
 class somatic_vcf_intersection(luigi.Task):
 	max_threads = luigi.IntParameter()
