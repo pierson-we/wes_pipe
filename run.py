@@ -4,7 +4,53 @@ import sys
 import argparse
 import subprocess
 import time
+import luigi
 # from code import pipeline_utils, global_vars
+
+def run_pipeline(args):
+	import variant_analysis
+	timestamp = str(int(time.time()))
+
+	global_vars.global_max_threads = args.max_threads
+	global_vars.thread_file = os.path.join(os.getcwd(), 'thread_count_temp_%s.txt' % timestamp)
+	print(global_vars.thread_file)
+	pipeline_utils.init_thread_file(global_vars.thread_file)
+	global_vars.working_files = os.path.join(os.getcwd(), 'working_files_%s.pkl' % timestamp)
+	# pipeline_utils.init_working_files(global_vars.working_files)
+	global_vars.cwd = os.getcwd()
+
+	sample_dict = {}
+	# try:
+	for sample in os.listdir(args.sample_dir):
+		if os.path.isdir(os.path.join(args.sample_dir, sample)):
+			sample_dict[sample] = {'T': '', 'N': ''}
+			tumor_list = [filename for filename in os.listdir(os.path.join(args.sample_dir, sample, 'tumor')) if 'fastq' in filename]
+			tumor_fastq = os.path.join(args.sample_dir, sample, 'tumor', tumor_list[0]) + '\t' + os.path.join(args.sample_dir, sample, 'tumor', tumor_list[1])
+			sample_dict[sample]['T'] = tumor_fastq
+			if os.path.exists(os.path.join(args.sample_dir, sample, 'normal')):
+				if len(os.listdir(os.path.join(args.sample_dir, sample, 'normal'))) > 0:
+					normal_list = [filename for filename in os.listdir(os.path.join(args.sample_dir, sample, 'normal')) if 'fastq' in filename]
+					normal_fastq = os.path.join(args.sample_dir, sample, 'normal', normal_list[0]) + '\t' + os.path.join(args.sample_dir, sample, 'normal', normal_list[1])
+					sample_dict[sample]['N'] = normal_fastq
+	# except:
+	# 	raise ValueError("Error in parsing fastq directory.")
+	# print('\n\n\n\n')
+	# print(self.sample_dir)
+	# print(sample_dict)
+	if args.threads_per_sample:
+		sample_threads = args.threads_per_sample
+	else:
+		sample_threads = max(1, args.max_threads//len(sample_dict.keys()))
+
+	worker_scheduler_factory = luigi.interface._WorkerSchedulerFactory()
+	# for case in sample_dict:
+	# 	tumor = sample_dict[case]['T']
+	# 	matched_n = sample_dict[case]['N']
+	# luigi.build([bam_processing.aggregate_variants(case=case, tumor=sample_dict[case]['T'], matched_n=sample_dict[case]['N'], project_dir=args.project_dir, max_threads=sample_threads, case_dict=sample_dict) for case in sample_dict], workers=args.workers, local_scheduler=args.local_scheduler, worker_scheduler_factory=worker_scheduler_factory) #, scheduler_port=int(args.port)) # workers=sample_threads
+	luigi.build([variant_analysis.cases(sample_dict=sample_dict, project_dir=args.project_dir, sample_threads=sample_threads)], workers=args.workers, local_scheduler=args.local_scheduler, worker_scheduler_factory=worker_scheduler_factory) #, scheduler_port=int(args.port)) # workers=sample_threads
+
+		# [(max_threads=args.max_threads, project_dir=args.project_dir, sample_dir=args.sample_dir, threads_per_sample=args.threads_per_sample, timestamp=timestamp)], workers=args.workers, local_scheduler=args.local_scheduler)
+		# yield aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=self.project_dir, max_threads=sample_threads, case_dict=sample_dict)
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='wes pipeline parser')
@@ -38,7 +84,6 @@ if __name__ == '__main__':
 	sys.path.append('./packages')
 	#sys.path.append('./packages/lib/python3.6/site-packages')
 	# import luigi
-	import bam_processing
 	# sample_csv = sys.argv[1]
 	# sample_df = pd.read_csv(sample_csv, header=True, index_col='sample_id')
 	# sample_dict = {}
@@ -65,7 +110,7 @@ if __name__ == '__main__':
 		# sys.stdout.flush()
 		# time.sleep(2)
 
-	bam_processing.run_pipeline(args)
+	run_pipeline(args)
 	# luigi.build([bam_processing.cases(max_threads=args.max_threads, project_dir=args.project_dir, sample_dir=args.sample_dir, threads_per_sample=args.threads_per_sample, timestamp=timestamp)], workers=args.workers, local_scheduler=args.local_scheduler)
 		
 	# luigi.build([bowtie(fastq_path=fastq_path, sam_path=sam_path, threads=threads, fasta_path=fasta_path), convert_bam(sam_path=sam_path, bam_path=bam_path)], workers=1, local_scheduler=False)

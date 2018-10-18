@@ -8,9 +8,38 @@ import time
 import itertools
 import gzip
 import pipeline_utils
+import misc_utils
 import global_vars
 import bam_processing
 import variant_calling
+
+class somatic_vcf_intersection(luigi.Task):
+	max_threads = luigi.IntParameter()
+
+	case = luigi.Parameter()
+	tumor = luigi.Parameter()
+	matched_n = luigi.Parameter()
+	vcf_path = luigi.Parameter()
+	project_dir = luigi.Parameter()
+	case_dict = luigi.DictParameter()
+
+	cfg = luigi.DictParameter()
+
+	def requires(self):
+		return [variant_calling.filter_mutect(project_dir=self.project_dir, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n, max_threads=self.max_threads, case_dict=self.case_dict, cfg=self.cfg),
+		variant_calling.vardict(project_dir=self.project_dir, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n, max_threads=self.max_threads, cfg=self.cfg)] 
+
+	def output(self):
+		return [luigi.LocalTarget(os.path.join(self.vcf_path, '%s_T_intersect.vcf' % self.case)), luigi.LocalTarget(os.path.join(self.vcf_path, '%s_T_union.vcf' % self.case))]
+
+	def run(self):
+		for output in self.output():
+			pipeline_utils.confirm_path(output.path)
+		cmd = ['java', '-Xmx2g', '-jar', self.cfg['gatk3_location'], '-T', 'CombineVariants', '-R', self.cfg['fasta_file'], '--variant:mutect', self.input()[0].path, '--variant:vardict', self.input()[1].path, '-o', self.output()[1].path, '-genotypeMergeOptions', 'PRIORITIZE', '-priority', 'mutect,vardict', '-minimumN', '2']
+		pipeline_utils.command_call(cmd, self.output())
+
+		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx2g -Xms2g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'SelectVariants', '-R', self.cfg['fasta_file'], '-V', self.output()[1].path, '-O', self.output()[0].path, '-select', """'set == "Intersection";'"""]
+		pipeline_utils.command_call(cmd, self.output())
 
 class vep(luigi.Task):
 	max_threads = luigi.IntParameter()
@@ -21,9 +50,6 @@ class vep(luigi.Task):
 	tumor = luigi.Parameter()
 	matched_n = luigi.Parameter()
 	case_dict = luigi.DictParameter()
-	# vcf_path = luigi.Parameter()
-
-	# fasta_file = luigi.Parameter()
 
 	cfg = luigi.DictParameter()
 
@@ -58,47 +84,26 @@ class fpfilter(luigi.Task):
 	max_threads = luigi.IntParameter()
 	project_dir = luigi.Parameter()
 
-	# vcf_path = luigi.Parameter()
+	vcf_path = luigi.Parameter()
 	case = luigi.Parameter()
 	tumor = luigi.Parameter()
 	matched_n = luigi.Parameter()
 	case_dict = luigi.DictParameter()
-	# vcf_path = luigi.Parameter()
-
-	# fasta_file = luigi.Parameter()
 
 	cfg = luigi.DictParameter()
 
 	def requires(self):
-		# return bam_processing.aggregate_variants(case=self.case, tumor=self.tumor, matched_n=self.matched_n, case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads)
-		return bam_processing.aggregate_variants(case=self.case, tumor=self.tumor, matched_n=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, case_dict=self.case_dict, cfg=self.cfg)
+		return [somatic_vcf_intersection(case=self.case, tumor=self.tumor, matched_n=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, case_dict=self.case_dict, cfg=self.cfg),
+		bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
 		
 	def output(self):
-		# case_dir = os.path.join(self.project_dir, 'output', self.case)
-		# vcf_path = os.path.join(case_dir, 'variants')
-		# return luigi.LocalTarget(os.path.join(vcf_path, self.case + '_fpfilter' + '.vcf'))
-		# return luigi.LocalTarget(self.vcf_path.split('.vcf')[0] + '_fpfilter.vcf')
-
-		outputs = []
-		for variant_caller_output in self.input():
-			if not isinstance(variant_caller_output, list):
-				vcf_path = variant_caller_output.path.split('.vcf')[0]
-				# print(vcf_path)
-				outputs.append(luigi.LocalTarget(vcf_path + '_fpfilter' + '.vcf'))
-		return outputs
+		return luigi.LocalTarget(os.path.join(self.vcf_path, '%s_T_fpfilter.vcf' % self.case))
 
 	def run(self):
-		for output in self.output():
-			pipeline_utils.confirm_path(output.path)
-		
-		tumor_bam = os.path.join(self.project_dir, 'output', self.case, 'alignment', self.case + '_T_recalibrated.bam')
+		pipeline_utils.confirm_path(self.output().path)
 
-		for variant_caller_output in self.input():
-			if not isinstance(variant_caller_output, list):
-				input_vcf = variant_caller_output.path
-				output_vcf = input_vcf.split('.vcf')[0] + '_fpfilter.vcf'
-				cmd = ['./packages/fpfilter/fpfilter.pl', '--vcf-file', input_vcf, '--bam-file', tumor_bam, '--reference', self.cfg['fasta_file'], '--sample', self.case + '_T', '--output', output_vcf]
-				pipeline_utils.command_call(cmd, [luigi.LocalTarget(output_vcf)])
+		cmd = ['./packages/fpfilter/fpfilter.pl', '--vcf-file', self.input()[0].path, '--bam-file', self.input()[1].path, '--reference', self.cfg['fasta_file'], '--sample', self.case + '_T', '--output', self.output().path]
+		pipeline_utils.command_call(cmd, [self.output()])
 
 class msings_baseline(luigi.Task):
 	max_threads = luigi.IntParameter()
@@ -115,8 +120,8 @@ class msings_baseline(luigi.Task):
 	cfg = luigi.DictParameter()
 
 	def requires(self):
-		# return bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads)
-		return [bam_processing.recalibrated_bam(sample=case_name + '_N', fastq_file=self.case_dict[case_name]['N'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg) for case_name in self.case_dict if self.case_dict[case_name]['N'] != '']
+		# return bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads)
+		return [bam_processing.index_bam(sample=case_name + '_N', fastq_file=self.case_dict[case_name]['N'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg) for case_name in self.case_dict if self.case_dict[case_name]['N'] != '']
 
 	def output(self):
 		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'normal_bams.txt')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'msings', 'baseline', 'MSI_BASELINE.txt'))] \
@@ -151,9 +156,9 @@ class msi(luigi.Task):
 
 	def requires(self):
 		if self.matched_n != '':
-			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.recalibrated_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), msings_baseline(project_dir=self.project_dir, max_threads=self.max_threads, case_dict=self.case_dict, cfg=self.cfg)]
+			return [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.index_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), msings_baseline(project_dir=self.project_dir, max_threads=self.max_threads, case_dict=self.case_dict, cfg=self.cfg)]
 		else:
-			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), msings_baseline(project_dir=self.project_dir, max_threads=self.max_threads, case_dict=self.case_dict, cfg=self.cfg)]
+			return [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), msings_baseline(project_dir=self.project_dir, max_threads=self.max_threads, case_dict=self.case_dict, cfg=self.cfg)]
 			# return [msings_baseline(project_dir=self.project_dir, max_threads=self.max_threads, case_dict=self.case_dict)] #, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n)]
 
 	def output(self):
@@ -180,3 +185,180 @@ class msi(luigi.Task):
 		# cmd = ['echo', '"mSINGS still needs to be set up for tumor-only samples"', '>', self.output()[0].path] # this will be a pain to get up and going: https://bitbucket.org/uwlabmed/msings/src/8269e0e01acfc5e01d0de9d63ffc1e399996ce8a/Recommendations_for_custom_assays?at=master&fileviewer=file-view-default
 		# pipeline_utils.command_call(cmd, self.output())
 
+class vcf2maf(luigi.Task):
+	max_threads = luigi.IntParameter()
+	project_dir = luigi.Parameter()
+
+	vcf_path = luigi.Parameter()
+	case = luigi.Parameter()
+	tumor = luigi.Parameter()
+	matched_n = luigi.Parameter()
+	case_dict = luigi.DictParameter()
+
+	cfg = luigi.DictParameter()
+
+	def requires(self):
+		return fpfilter(max_threads=self.max_threads, project_dir=self.project_dir, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n, case_dict=self.case_dict, cfg=self.cfg)
+
+	def output(self):
+		return luigi.LocalTarget(os.path.join(self.vcf_path, '%s_T.maf' % self.case))
+
+	def run(self):
+		if self.matched_n != '':
+			cmd = ['./packages/misc/mskcc-vcf2maf-decbf60/vcf2maf.pl', '--input-vcf', self.input().path, '--output-maf', self.output().path, '--tumor-id', self.case + '_T', '--vcf-tumor-id', self.case + '_T', '--normal-id', self.case + '_N', '--vcf-normal-id', self.case + '_N', '--vep-path', './packages/ensembl-vep', '--vep-data', './packages/ensembl-vep/cache', '--ref-fasta', self.cfg['fasta_file'], '--species', 'homo_sapiens', '--ncbi-build', 'GRCh38', '--cache-version', '94', '--filter-vcf', '0']
+		else:
+			cmd = ['./packages/misc/mskcc-vcf2maf-decbf60/vcf2maf.pl', '--input-vcf', self.input().path, '--output-maf', self.output().path, '--tumor-id', self.case + '_T', '--vcf-tumor-id', self.case + '_T', '--vep-path', './packages/ensembl-vep', '--vep-data', './packages/ensembl-vep/cache', '--ref-fasta', self.cfg['fasta_file'], '--species', 'homo_sapiens', '--ncbi-build', 'GRCh38', '--cache-version', '94', '--filter-vcf', '0']
+		pipeline_utils.command_call(cmd, [self.output()])
+
+class combine_mafs(luigi.Task):
+	max_threads = luigi.IntParameter()
+	project_dir = luigi.Parameter()
+
+	case_dict = luigi.DictParameter()
+	cfg = luigi.DictParameter()
+
+	def requires(self):
+		return [vcf2maf(max_threads=self.max_threads, project_dir=self.project_dir, case=case, tumor=self.case_dict[case]['T'], matched_n=self.case_dict[case]['N'], case_dict=self.case_dict, cfg=self.cfg, vcf_path=os.path.join(self.project_dir, 'output', case, 'variants')) for case in self.case_dict]
+
+	def output(self):
+		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'all_samples.maf'))
+
+	def run(self):
+		pipeline_utils.confirm_path(self.output().path)
+		misc_utils.combine_mafs([maf_input.path for maf_input in self.input()], self.output().path)
+
+class combine_cnvs(luigi.Task):
+	max_threads = luigi.IntParameter()
+	project_dir = luigi.Parameter()
+
+	case_dict = luigi.DictParameter()
+	cfg = luigi.DictParameter()
+
+	def requires(self):
+		return [cnv.refine_cnv(case=case, max_threads=self.max_threads, project_dir=self.project_dir, cfg=self.cfg, case_dict=self.case_dict) for case in self.case_dict]
+
+	def output(self):
+		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'all_samples_cnv.tsv'))
+
+	def run(self):
+		pipeline_utils.confirm_path(self.output().path)
+		misc_utils.combine_cnvs([cnv_input[-1].path for cnv_input in self.input()], [case for case in self.case_dict], self.output().path)
+
+class create_mut_mats(luigi.Task):
+	max_threads = luigi.IntParameter()
+	project_dir = luigi.Parameter()
+
+	case_dict = luigi.DictParameter()
+	cfg = luigi.DictParameter()
+
+	def requires(self):
+		return [combine_mafs(max_threads=self.max_threads, project_dir=self.project_dir, cfg=self.cfg, case_dict=self.case_dict), combine_cnvs(max_threads=self.max_threads, project_dir=self.project_dir, cfg=self.cfg, case_dict=self.case_dict)]
+
+	def output(self):
+		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'mut_mat.tsv')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'cnv_mat.tsv'))]
+
+	def run(self):
+		for output in self.output():
+			pipeline_utils.confirm_path(output.path)
+		misc_utils.create_mut_mats(self.input()[0].path, self.input()[1].path, self.output()[0].path, self.output()[1].path)
+
+class cases(luigi.Task):
+	# generated parameters
+	sample_dict = luigi.DictParameter()
+	project_dir = luigi.Parameter()
+	sample_threads = luigi.IntParameter()
+
+	# cfg parameters
+	fasta_file = luigi.Parameter()
+	library_bed = luigi.Parameter()
+	gatk4_location = luigi.Parameter()
+	gatk3_location = luigi.Parameter()
+	known_vcf = luigi.Parameter()
+	germline_resource = luigi.Parameter()
+	picard_location = luigi.Parameter()
+	vardict_location = luigi.Parameter()
+	mills = luigi.Parameter()
+	kg = luigi.Parameter()
+	library_prep = luigi.Parameter()
+	platform = luigi.Parameter()
+	base_name = luigi.Parameter()
+	samtools_location = luigi.Parameter()
+	bowtie_build_location = luigi.Parameter()
+	bowtie_location = luigi.Parameter()
+	fastqc_location = luigi.Parameter()
+	trim_location = luigi.Parameter()
+	insert_size = luigi.Parameter()
+	cnvkit_location = luigi.Parameter()
+	cnvkit_seg_method = luigi.Parameter()
+	cnvkit_genemetrics_threshold = luigi.Parameter()
+	cnvkit_genemetrics_minprobes = luigi.Parameter()
+
+	def requires(self):
+		cfg = {
+			'fasta_file': self.fasta_file,
+			'library_bed': self.library_bed,
+			'gatk4_location': self.gatk4_location,
+			'gatk3_location': self.gatk3_location,
+			'known_vcf': self.known_vcf,
+			'germline_resource': self.germline_resource,
+			'picard_location': self.picard_location,
+			'vardict_location': self.vardict_location,
+			'mills': self.mills,
+			'kg': self.kg,
+			'library_prep': self.library_prep,
+			'platform': self.platform,
+			'base_name': self.base_name,
+			'samtools_location': self.samtools_location,
+			'bowtie_build_location': self.bowtie_build_location,
+			'bowtie_location': self.bowtie_location,
+			'fastqc_location': self.fastqc_location,
+			'trim_location': self.trim_location,
+			'insert_size': self.insert_size,
+			'cnvkit_location': self.cnvkit_location,
+			'cnvkit_seg_method': self.cnvkit_seg_method,
+			'cnvkit_genemetrics_threshold': self.cnvkit_genemetrics_threshold,
+			'cnvkit_genemetrics_minprobes': self.cnvkit_genemetrics_minprobes,
+			'tmp_dir': os.path.join(self.project_dir, 'tmp')
+		}
+		pipeline_utils.confirm_path(cfg['tmp_dir'])
+		# return [aggregate_variants(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict) for case in self.sample_dict]
+
+		return [create_mut_mats(max_threads=self.max_threads, project_dir=self.project_dir, cfg=cfg, case_dict=self.case_dict)] + \
+		[msi(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict, cfg=cfg, vcf_path=os.path.join(self.project_dir, 'output', case, 'variants')) for case in self.sample_dict]
+
+		# [variant_analysis.vep(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict, cfg=cfg) for case in self.sample_dict] + \
+		
+	def output(self):
+		# outputs = []
+		# for variant_caller_output in self.input():
+		# 	if not isinstance(variant_caller_output, list):
+		# 		vcf_path = variant_caller_output.path.split('.vcf')[0]
+		# 		# print(vcf_path)
+		# 		for vcf_filter in ['fpfilter', 'vep']:
+		# 			outputs.append(luigi.LocalTarget(vcf_path + '_' + vcf_filter + '.vcf'))
+		# 	else:
+		# 		outputs += variant_caller_output
+		# return outputs
+		# return luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples.vcf.gz'))
+		return self.input()
+
+	# def run(self):
+	# 	input_vcfs = []
+	# 	for variant_caller in self.input():
+	# 		if not isinstance(variant_caller, list):
+	# 			vcf_path = variant_caller.path
+	# 			if vcf_path[-3:] != '.gz':
+	# 				# with gzip.open(vcf_path, 'rb') as f:
+	# 				# 	with open(vcf_path.split('.gz')[0], 'wb') as new_f:
+	# 				# 		new_f.write(f.read())
+	# 				# vcf_path = vcf_path.split('.gz')[0]
+	# 				cmd = ['bgzip', vcf_path]
+	# 				pipeline_utils.command_call(cmd, [vcf_path + '.gz'], sleep_time=0.05)
+	# 				vcf_path = vcf_path + '.gz'
+	# 			if not os.path.exists(vcf_path + '.tbi'):
+	# 				cmd = ['tabix', vcf_path]
+	# 				pipeline_utils.command_call(cmd, [vcf_path], sleep_time=0.05)
+	# 			input_vcfs.append(vcf_path)
+	# 	cmd = ['bcftools merge %s | bgzip -c > %s' % (' '.join(input_vcfs), self.output().path)]
+	# 	pipeline_utils.command_call(cmd, [self.output()], sleep_time=1)
+	# 			variant_analysis.vep(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=vcf_path, cfg=self.cfg)

@@ -24,20 +24,20 @@ class mutect_single_normal(luigi.Task):
 
 	def requires(self):
 		# if self.matched_n != '':
-		# 	return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads), bam_processing.recalibrated_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads)]
+		# 	return [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads), bam_processing.index_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads)]
 		# else:
-		return bam_processing.recalibrated_bam(sample=self.sample, fastq_file=self.fastq_file, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)
+		return bam_processing.index_bam(sample=self.sample, fastq_file=self.fastq_file, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)
 
 
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'mutect', self.sample + '.vcf.gz'))
+		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'mutect', self.sample + '.vcf.gz')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'mutect', self.sample + '.vcf.gz.tbi'))]
 		
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
 		# if self.matched_n:
 		# 	cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.cfg['fasta_file'], '-f', '0.01', '-N', self.case + '_T', '-b', '"%s|%s"' % (self.input()[0][0].path, self.input()[1][0].path), '-z', '-F', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.cfg['library_bed'], '|', './packages/VarDictJava/VarDict/testsomatic.R', '|', './packages/VarDictJava/VarDict/var2vcf_paired.pl', '-N', '"%s|%s"' % (self.case + '_T', self.case + '_N'), '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
 		# else:
-		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx8g -Xms8g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'Mutect2', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '-tumor', self.sample, '-L', self.cfg['library_bed'], '--native-pair-hmm-threads', '1', '-O', self.output().path]
+		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx8g -Xms8g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'Mutect2', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '-tumor', self.sample, '-L', self.cfg['library_bed'], '--native-pair-hmm-threads', '1', '-O', self.output()[0].path]
 		pipeline_utils.command_call(cmd, [self.output()])
 
 class mutect_pon(luigi.Task):
@@ -57,7 +57,7 @@ class mutect_pon(luigi.Task):
 
 	def requires(self):
 		# if self.matched_n != '':
-		# 	return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads), bam_processing.recalibrated_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads)]
+		# 	return [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads), bam_processing.index_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads)]
 		# else:
 		return [mutect_single_normal(sample=case_name + '_N', fastq_file=self.case_dict[case_name]['N'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg) for case_name in self.case_dict if self.case_dict[case_name]['N'] != '']
 
@@ -73,7 +73,7 @@ class mutect_pon(luigi.Task):
 		cmd = [self.cfg['gatk4_location'], 'CreateSomaticPanelOfNormals']
 		for normal_vcf in self.input():
 			cmd.append('--vcfs')
-			cmd.append(normal_vcf.path)
+			cmd.append(normal_vcf[0].path)
 		cmd.append('--output')
 		cmd.append(self.output().path)
 		pipeline_utils.command_call(cmd, [self.output()])
@@ -100,9 +100,9 @@ class mutect(luigi.Task):
 
 	def requires(self):
 		if self.matched_n != '':
-			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.recalibrated_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), mutect_pon(case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
+			return [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.index_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), mutect_pon(case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
 		else:
-			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), mutect_pon(case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
+			return [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), mutect_pon(case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
 
 
 	def output(self):
@@ -163,9 +163,9 @@ class scalpel_discovery(luigi.Task):
 
 	def requires(self):
 		if self.matched_n != '':
-			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.recalibrated_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
+			return [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.index_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
 		else:
-			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
+			return [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
 
 
 	def output(self):
@@ -235,9 +235,9 @@ class freebayes(luigi.Task):
 
 	def requires(self):
 		if self.matched_n != '':
-			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.recalibrated_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
+			return [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.index_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
 		else:
-			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
+			return [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
 
 
 	def output(self):
@@ -260,16 +260,13 @@ class vardict(luigi.Task):
 	matched_n = luigi.Parameter()
 	vcf_path = luigi.Parameter()
 
-	# library_bed = luigi.Parameter()
-	# fasta_file = luigi.Parameter()
-
 	cfg = luigi.DictParameter()
 
 	def requires(self):
 		if self.matched_n != '':
-			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.recalibrated_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
+			return [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.index_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
 		else:
-			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
+			return [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
 
 
 	def output(self):
@@ -300,9 +297,9 @@ class varscan(luigi.Task):
 
 	def requires(self):
 		if self.matched_n != '':
-			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.recalibrated_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
+			return [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg), bam_processing.index_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
 		else:
-			return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
+			return [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
 
 
 	def output(self):
@@ -315,6 +312,71 @@ class varscan(luigi.Task):
 		else:
 			cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.cfg['fasta_file'], '-f', '0.01', '-N', self.case + '_T', '-b', self.input()[0][0].path, '-z', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.cfg['library_bed'], '|', './packages/VarDictJava/VarDict/teststrandbias.R', '|', './packages/VarDictJava/VarDict/var2vcf_valid.pl', '-N', self.case + '_T', 'E', '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
 		pipeline_utils.command_call(cmd, [self.output()])
+
+class pindel(luigi.Task):
+	max_threads = luigi.IntParameter()
+	project_dir = luigi.Parameter()
+
+	# case = luigi.Parameter()
+	# tumor = luigi.Parameter()
+	# matched_n = luigi.Parameter()
+	# vcf_path = luigi.Parameter()
+	case_dict = luigi.DictParameter()
+
+	# library_bed = luigi.Parameter()
+	# fasta_file = luigi.Parameter()
+
+	cfg = luigi.DictParameter()
+
+	def requires(self):
+		return [bam_processing.index_bam(sample=case_name + '_N', fastq_file=self.case_dict[case_name]['N'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg) for case_name in self.case_dict if self.case_dict[case_name]['N'] != ''] \
+		+ [bam_processing.index_bam(sample=case_name + '_T', fastq_file=self.case_dict[case_name]['T'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg) for case_name in self.case_dict]
+
+	def output(self):
+		pindel_files = ['_D', '_SI', '_LI', '_INV', '_TD', '_BP']
+		return [luigi.LocalTarget(os.path.join(self.project_dir, 'pindel', 'pindel_all_samples', ext)) for ext in pindel_files]
+
+	def run(self):
+		for output in self.output():
+			pipeline_utils.confirm_path(output.path)
+		with open('___pindel_bams___.txt', 'w') as f:
+			for output in self.outputs():
+				case = output.path.split('/')[-1].split('_')[0]
+				if '_N' in output.path:
+					f.write('%s %s %s\n' % (output.path, self.cfg['insert_size'], case + '_N'))
+				else:
+					f.write('%s %s %s\n' % (output.path, self.cfg['insert_size'], case + '_T'))
+		cmd = ['./packages/pindel/pindel', '-f', self.cfg['fasta_file'], '-i', '___pindel_bams___.txt', '-c', 'ALL', '-o', os.path.join(self.project_dir, 'pindel', 'pindel_all_samples')]
+		pipeline_utils.command_call(cmd, self.output())
+
+		os.remove('___pindel_bams___.txt')
+
+def pindel2vcf(luigi.Task):
+	max_threads = luigi.IntParameter()
+	project_dir = luigi.Parameter()
+
+	# case = luigi.Parameter()
+	# tumor = luigi.Parameter()
+	# matched_n = luigi.Parameter()
+	# vcf_path = luigi.Parameter()
+	case_dict = luigi.DictParameter()
+
+	# library_bed = luigi.Parameter()
+	# fasta_file = luigi.Parameter()
+
+	cfg = luigi.DictParameter()
+
+	def requires(self):
+		return pindel(case_dict=self.sample_dict, project_dir=self.project_dir, max_threads=self.sample_threads, cfg=cfg)
+
+	def output(self):
+		return luigi.LocalTarget(os.path.join(self.project_dir, 'pindel', 'pindel_all_samples.vcf'))
+
+	def run(self):
+		pindel_input = '_'.join(self.input()[0].path.split('_')[:-1])
+		cmd = ['./packages/pindel/pindel2vcf', '-r', self.cfg['fasta_file'], '-G', '-R', 'b37', '-d', 'idk', '-p', pindel_input, '-v', self.output().path]
+		pipeline_utils.command_call(cmd, [self.output()])
+
 
 class cnvkit(luigi.Task):
 	max_threads = luigi.IntParameter()
@@ -333,10 +395,10 @@ class cnvkit(luigi.Task):
 
 	def requires(self):
 		# if self.matched_n != '':
-		# 	return [bam_processing.recalibrated_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads), bam_processing.recalibrated_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads)]
+		# 	return [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads), bam_processing.index_bam(sample=self.case + '_N', fastq_file=self.matched_n, project_dir=self.project_dir, max_threads=self.max_threads)]
 		# else:
-		return [bam_processing.recalibrated_bam(sample=case_name + '_N', fastq_file=self.case_dict[case_name]['N'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg) for case_name in self.case_dict if self.case_dict[case_name]['N'] != ''] \
-		+ [bam_processing.recalibrated_bam(sample=case_name + '_T', fastq_file=self.case_dict[case_name]['T'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg) for case_name in self.case_dict]
+		return [bam_processing.index_bam(sample=case_name + '_N', fastq_file=self.case_dict[case_name]['N'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg) for case_name in self.case_dict if self.case_dict[case_name]['N'] != ''] \
+		+ [bam_processing.index_bam(sample=case_name + '_T', fastq_file=self.case_dict[case_name]['T'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg) for case_name in self.case_dict]
 
 
 	def output(self):

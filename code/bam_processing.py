@@ -88,6 +88,16 @@ class picard_index(luigi.Task):
 		cmd = ['java', '-jar', self.cfg['picard_location'], 'CreateSequenceDictionary', 'R=%s' % self.cfg['fasta_file'], 'O=%s' % self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.1)
 
+class bwa_index(luigi.Task):
+	cfg = luigi.DictParameter()
+
+	def output(self):
+		return [luigi.LocalTarget(self.cfg['fasta_file'] + '.amb'), luigi.LocalTarget(self.cfg['fasta_file'] + '.ann'), luigi.LocalTarget(self.cfg['fasta_file'] + '.bwt'), luigi.LocalTarget(self.cfg['fasta_file'] + '.pac'), luigi.LocalTarget(self.cfg['fasta_file'] + '.sa')]
+	
+	def run(self):
+		cmd = ['bwa', 'index', '-a', 'bwtsw', self.cfg['fasta_file']]
+		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.1)
+
 class trim(luigi.Task):
 	fastq_file = luigi.Parameter()
 	project_dir = luigi.Parameter()
@@ -189,7 +199,7 @@ class bowtie(luigi.Task):
 		# cmd = [os.path.join(cwd, self.cfg['bowtie_location'], 'bowtie2'), '-x', self.cfg['base_name'], '--threads=%s' % self.max_threads, '-U', self.fastq_file, '-S', self.sample + '_raw.sam']
 		fasta_dir = os.path.join(*self.cfg['fasta_file'].split('/')[:-1])
 
-		cmd = [self.cfg['bowtie_location'], '-x', os.path.join(fasta_dir, 'index', self.cfg['base_name']), '-1', self.input()[-1][0][0].path, '-2', self.input()[-1][1][0].path, '-p', self.max_threads, '|', self.cfg['samtools_location'], 'view', '-b', '-', '>', self.output().path]
+		cmd = [self.cfg['bowtie_location'], '-x', os.path.join(fasta_dir, 'index', self.cfg['base_name']), '-1', self.input()[-1][0][0].path, '-2', self.input()[-1][1][0].path, '-p', self.max_threads, '--very-sensitive-local' '|', self.cfg['samtools_location'], 'view', '-bh', '-', '>', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], cwd=os.getcwd(), threads_needed=self.max_threads, sleep_time=0.2)
 
 		# for input_file in self.input()[-1][0]:
@@ -202,6 +212,50 @@ class bowtie(luigi.Task):
 		# 	os.chdir(cwd)
 		# 	self.output().remove()
 		# 	sys.exit()
+
+class bwa(luigi.Task):
+	max_threads = luigi.IntParameter()
+	fastq_file = luigi.Parameter()
+	# sam_file = luigi.Parameter()
+	# threads = luigi.Parameter()
+	project_dir = luigi.Parameter()
+	# bowtie_location = luigi.Parameter()
+	# samtools_location = luigi.Parameter()
+	# fasta_file = luigi.Parameter()
+	# base_name = luigi.Parameter()
+	sample = luigi.Parameter()
+
+	cfg = luigi.DictParameter()
+
+	# def on_failure(self, exception):
+	# 	error_handling(self, exception)
+
+	# fasta_dir = os.path.join('/', *luigi.Parameter().task_value('bowtie', 'fasta_file').split('/')[:-1])
+
+	def requires(self):
+		return [bwa_index(cfg=self.cfg), #threads=self.threads, base_name=self.cfg['base_name'], fasta_path=self.fasta_path)
+		samtools_index(max_threads=self.max_threads, cfg=self.cfg),
+		picard_index(cfg=self.cfg),
+		fastqc_launch(fastq_file=self.fastq_file, sample=self.sample, project_dir=self.project_dir, cfg=self.cfg)]
+		#fastqc(fastq_file=self.fastq_file.split('\t')[1], sample=self.sample, project_dir=self.project_dir)]
+
+	def output(self):
+		# print(os.path.join(os.path.join('/', *self.cfg['fasta_file'].split('/')[:-1]), 'index', self.sample + '_raw.sam'))
+		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', self.sample[:-2], 'alignment', self.sample + '_raw.bam'))
+
+	def run(self):
+		pipeline_utils.confirm_path(self.output().path)
+		r1 = self.fastq_file.split('\t')[0]
+		r2 = self.fastq_file.split('\t')[1]
+		sai1 = self.sample + '_1.sai'
+		sai2 = self.sample + '_2.sai'
+		cmd = ['bwa aln %s %s > %s' % (self.cfg['fasta_file'], r1, sai1)]
+		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads, sleep_time=0.2)
+		cmd = ['bwa aln %s %s > %s' % (self.cfg['fasta_file'], r2, sai2)]
+		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads, sleep_time=0.2)
+		cmd = ['bwa sampe %s %s %s | samtools view -bh | samtools sort -o %s' % (self.cfg['fasta_file'], sai1, sai2, self.output().path)]
+		
+
 # ~45 mins
 class add_read_groups(luigi.Task):
 	max_threads = luigi.IntParameter()
@@ -471,17 +525,21 @@ class aggregate_variants(luigi.Task):
 		# 	else:
 		# 		outputs += variant_caller_output
 		# return outputs
-		return self.input()
+		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples.vcf'))
 
-	# def run(self):
-	# 	for variant_caller in self.input():
-	# 		if not isinstance(variant_caller, list):
-	# 			vcf_path = variant_caller.path
-	# 			if '.gz' in vcf_path:
-	# 				with gzip.open(vcf_path, 'rb') as f:
-	# 					with open(vcf_path.split('.gz')[0], 'wb') as new_f:
-	# 						new_f.write(f.read())
-	# 				vcf_path = vcf_path.split('.gz')[0]
+	def run(self):
+		input_vcfs = []
+		for variant_caller in self.input():
+			if not isinstance(variant_caller, list):
+				vcf_path = variant_caller.path
+				if '.gz' in vcf_path:
+					with gzip.open(vcf_path, 'rb') as f:
+						with open(vcf_path.split('.gz')[0], 'wb') as new_f:
+							new_f.write(f.read())
+					vcf_path = vcf_path.split('.gz')[0]
+				input_vcfs.append(vcf_path)
+		cmd = ['java', '-jar', self.cfg['gatk3_location'], '-T', 'CombineVariants', '-R', self.cfg['fasta_file', '-o', self.output().path]] + ['--variant']
+		
 	# 			variant_analysis.vep(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=vcf_path, cfg=self.cfg)
 
 # class filter_variants(luigi.Task):
@@ -559,142 +617,8 @@ class aggregate_variants(luigi.Task):
 # 					vcf_path = vcf_path.split('.gz')[0]
 # 				variant_analysis.vep(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=vcf_path, cfg=self.cfg, input_vcf=vcf_path, output_vcf=self.output.path ,output=self.output())
 
-class cases(luigi.Task):
-	# generated parameters
-	sample_dict = luigi.DictParameter()
-	project_dir = luigi.Parameter()
-	sample_threads = luigi.IntParameter()
 
-	# cfg parameters
-	fasta_file = luigi.Parameter()
-	library_bed = luigi.Parameter()
-	gatk4_location = luigi.Parameter()
-	gatk3_location = luigi.Parameter()
-	known_vcf = luigi.Parameter()
-	germline_resource = luigi.Parameter()
-	picard_location = luigi.Parameter()
-	vardict_location = luigi.Parameter()
-	mills = luigi.Parameter()
-	kg = luigi.Parameter()
-	library_prep = luigi.Parameter()
-	platform = luigi.Parameter()
-	base_name = luigi.Parameter()
-	samtools_location = luigi.Parameter()
-	bowtie_build_location = luigi.Parameter()
-	bowtie_location = luigi.Parameter()
-	fastqc_location = luigi.Parameter()
-	trim_location = luigi.Parameter()
-
-	def requires(self):
-		cfg = {
-			'fasta_file': self.fasta_file,
-			'library_bed': self.library_bed,
-			'gatk4_location': self.gatk4_location,
-			'gatk3_location': self.gatk3_location,
-			'known_vcf': self.known_vcf,
-			'germline_resource': self.germline_resource,
-			'picard_location': self.picard_location,
-			'vardict_location': self.vardict_location,
-			'mills': self.mills,
-			'kg': self.kg,
-			'library_prep': self.library_prep,
-			'platform': self.platform,
-			'base_name': self.base_name,
-			'samtools_location': self.samtools_location,
-			'bowtie_build_location': self.bowtie_build_location,
-			'bowtie_location': self.bowtie_location,
-			'fastqc_location': self.fastqc_location,
-			'trim_location': self.trim_location,
-			'tmp_dir': os.path.join(self.project_dir, 'tmp')
-		}
-		pipeline_utils.confirm_path(cfg['tmp_dir'])
-		# return [aggregate_variants(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict) for case in self.sample_dict]
-
-		return [variant_analysis.vep(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict, cfg=cfg) for case in self.sample_dict] + \
-		[variant_analysis.msi(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict, cfg=cfg, vcf_path=os.path.join(self.project_dir, 'output', case, 'variants')) for case in self.sample_dict] + \
-		[cnvkit(case_dict=self.sample_dict, project_dir=self.project_dir, max_threads=self.sample_threads, cfg=cfg)]
-		# [variant_analysis.vep(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict) for case in self.sample_dict] \
-		# + [variant_analysis.fpfilter(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict) for case in self.sample_dict] \
-		# # global global_max_threads, thread_count
-		
-		# global_vars.global_max_threads = self.max_threads
-		# global_vars.thread_file = os.path.join(os.getcwd(), 'thread_count_temp_%s.txt' % timestamp)
-		# print(global_vars.thread_file)
-		# pipeline_utils.init_thread_file(global_vars.thread_file)
-		# global_vars.working_files = os.path.join(os.getcwd(), 'working_files_%s.pkl' % timestamp)
-		# pipeline_utils.init_working_files(global_vars.working_files)
-		# global_vars.cwd = os.getcwd()
-
-		# sample_dict = {}
-		# # try:
-		# for sample in os.listdir(self.sample_dir):
-		# 	if os.path.isdir(os.path.join(self.sample_dir, sample)):
-		# 		sample_dict[sample] = {'T': '', 'N': ''}
-		# 		tumor_fastq = os.path.join(self.sample_dir, sample, 'tumor', os.listdir(os.path.join(self.sample_dir, sample, 'tumor'))[0]) + '\t' + os.path.join(self.sample_dir, sample, 'tumor', os.listdir(os.path.join(self.sample_dir, sample, 'tumor'))[1])
-		# 		sample_dict[sample]['T'] = tumor_fastq
-		# 		if os.path.exists(os.path.join(self.sample_dir, sample, 'normal')):
-		# 			if len(os.listdir(os.path.join(self.sample_dir, sample, 'normal'))) > 0:
-		# 				normal_fastq = os.path.join(self.sample_dir, sample, 'normal', os.listdir(os.path.join(self.sample_dir, sample, 'normal'))[0]) + '\t' + os.path.join(self.sample_dir, sample, 'normal', os.listdir(os.path.join(self.sample_dir, sample, 'normal'))[1])
-		# 				sample_dict[sample]['N'] = normal_fastq
-		# # except:
-		# # 	raise ValueError("Error in parsing fastq directory.")
-		# # print('\n\n\n\n')
-		# # print(self.sample_dir)
-		# # print(sample_dict)
-		# if self.threads_per_sample:
-		# 	sample_threads = self.threads_per_sample
-		# else:
-		# 	sample_threads = max(1, self.max_threads//len(sample_dict.keys()))
-		# for case in sample_dict:
-		# 	tumor = sample_dict[case]['T']
-		# 	matched_n = sample_dict[case]['N']
-		# 	yield aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=self.project_dir, max_threads=sample_threads, case_dict=sample_dict)
-
-def run_pipeline(args):
-	timestamp = str(int(time.time()))
-
-	global_vars.global_max_threads = args.max_threads
-	global_vars.thread_file = os.path.join(os.getcwd(), 'thread_count_temp_%s.txt' % timestamp)
-	print(global_vars.thread_file)
-	pipeline_utils.init_thread_file(global_vars.thread_file)
-	global_vars.working_files = os.path.join(os.getcwd(), 'working_files_%s.pkl' % timestamp)
-	# pipeline_utils.init_working_files(global_vars.working_files)
-	global_vars.cwd = os.getcwd()
-
-	sample_dict = {}
-	# try:
-	for sample in os.listdir(args.sample_dir):
-		if os.path.isdir(os.path.join(args.sample_dir, sample)):
-			sample_dict[sample] = {'T': '', 'N': ''}
-			tumor_list = [filename for filename in os.listdir(os.path.join(args.sample_dir, sample, 'tumor')) if 'fastq' in filename]
-			tumor_fastq = os.path.join(args.sample_dir, sample, 'tumor', tumor_list[0]) + '\t' + os.path.join(args.sample_dir, sample, 'tumor', tumor_list[1])
-			sample_dict[sample]['T'] = tumor_fastq
-			if os.path.exists(os.path.join(args.sample_dir, sample, 'normal')):
-				if len(os.listdir(os.path.join(args.sample_dir, sample, 'normal'))) > 0:
-					normal_list = [filename for filename in os.listdir(os.path.join(args.sample_dir, sample, 'normal')) if 'fastq' in filename]
-					normal_fastq = os.path.join(args.sample_dir, sample, 'normal', normal_list[0]) + '\t' + os.path.join(args.sample_dir, sample, 'normal', normal_list[1])
-					sample_dict[sample]['N'] = normal_fastq
-	# except:
-	# 	raise ValueError("Error in parsing fastq directory.")
-	# print('\n\n\n\n')
-	# print(self.sample_dir)
-	# print(sample_dict)
-	if args.threads_per_sample:
-		sample_threads = args.threads_per_sample
-	else:
-		sample_threads = max(1, args.max_threads//len(sample_dict.keys()))
-
-	worker_scheduler_factory = luigi.interface._WorkerSchedulerFactory()
-	# for case in sample_dict:
-	# 	tumor = sample_dict[case]['T']
-	# 	matched_n = sample_dict[case]['N']
-	# luigi.build([bam_processing.aggregate_variants(case=case, tumor=sample_dict[case]['T'], matched_n=sample_dict[case]['N'], project_dir=args.project_dir, max_threads=sample_threads, case_dict=sample_dict) for case in sample_dict], workers=args.workers, local_scheduler=args.local_scheduler, worker_scheduler_factory=worker_scheduler_factory) #, scheduler_port=int(args.port)) # workers=sample_threads
-	luigi.build([cases(sample_dict=sample_dict, project_dir=args.project_dir, sample_threads=sample_threads)], workers=args.workers, local_scheduler=args.local_scheduler, worker_scheduler_factory=worker_scheduler_factory) #, scheduler_port=int(args.port)) # workers=sample_threads
-
-		# [(max_threads=args.max_threads, project_dir=args.project_dir, sample_dir=args.sample_dir, threads_per_sample=args.threads_per_sample, timestamp=timestamp)], workers=args.workers, local_scheduler=args.local_scheduler)
-		# yield aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=self.project_dir, max_threads=sample_threads, case_dict=sample_dict)
-
-
+	
 
 	
 	
