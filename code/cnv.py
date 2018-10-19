@@ -28,7 +28,7 @@ class cnvkit_prep(luigi.Task):
 		return [luigi.LocalTarget(os.path.join(self.project_dir, 'cnvkit', 'ref', 'targets.bed')), luigi.LocalTarget(os.path.join(self.project_dir, 'cnvkit', 'ref', 'antitargets.bed')), luigi.LocalTarget(os.path.join(self.project_dir, 'cnvkit', 'ref', 'access.bed'))]
 
 	def run(self):
-		for output in self.outputs():
+		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 		cmd = 'python3 %s target %s --annotate %s -o %s' % (self.cfg['cnvkit_location'], self.cfg['library_bed'], self.cfg['refFlat'], os.path.join(self.project_dir, 'cnvkit', 'ref', 'targets.bed'))
 		cmd = cmd.split(' ')

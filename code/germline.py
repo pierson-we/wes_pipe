@@ -23,11 +23,11 @@ class haplotype_caller(luigi.Task):
 
 
 	def output(self):
-		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'haplotype_caller', self.sample + '.g.vcf.gz')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'mutect', self.sample + '.g.vcf.gz.tbi'))]
+		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'haplotype_caller', self.sample + '.g.vcf.gz'))
 		
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
-		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -Xms4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'HaplotypeCaller', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '-L', self.cfg['library_bed'], '--native-pair-hmm-threads', '1', '-ERC', 'GVCF', '-G', 'Standard', '-G', 'AS_Standard', '-O', self.output()[0].path]
+		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -Xms4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'HaplotypeCaller', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '-L', self.cfg['library_bed'], '--native-pair-hmm-threads', '1', '-ERC', 'GVCF', '-G', 'Standard', '-G', 'AS_Standard', '-O', self.output().path]
 		pipeline_utils.command_call(cmd, self.output())
 
 class consolidate_gvcfs(luigi.Task):
@@ -49,7 +49,7 @@ class consolidate_gvcfs(luigi.Task):
 		pipeline_utils.confirm_path(self.output().path)
 		with open('gvcf_sample_map', 'w') as f:
 			for gvcf in self.input():
-				sample = gvcf[0].path.split('/')[-1].split('.g.vcf')[0]
+				sample = gvcf.path.split('/')[-1].split('.g.vcf')[0]
 				f.write('%s\t%s\n' % (sample, gvcf[0].path))
 		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx8g -Xms8g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'GenomicsDBImport', '--genomicsdb-workspace-path', os.path.join(self.project_dir, 'output', 'haplotype_caller', 'genomicsdb'), '--batch-size', '50', '-L', self.cfg['library_bed'], '--sample-name-map', 'gvcf_sample_map', '--tmp-dir=%s' % self.cfg['tmp_dir'], '--reader-threads', str(self.max_threads)]
 		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads)

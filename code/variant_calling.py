@@ -33,12 +33,13 @@ class mutect_single_normal(luigi.Task):
 		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'mutect', self.sample + '.vcf.gz')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'mutect', self.sample + '.vcf.gz.tbi'))]
 		
 	def run(self):
-		pipeline_utils.confirm_path(self.output().path)
+		for output in self.output():
+			pipeline_utils.confirm_path(output.path)
 		# if self.matched_n:
 		# 	cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.cfg['fasta_file'], '-f', '0.01', '-N', self.case + '_T', '-b', '"%s|%s"' % (self.input()[0][0].path, self.input()[1][0].path), '-z', '-F', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.cfg['library_bed'], '|', './packages/VarDictJava/VarDict/testsomatic.R', '|', './packages/VarDictJava/VarDict/var2vcf_paired.pl', '-N', '"%s|%s"' % (self.case + '_T', self.case + '_N'), '-f', '0.01', '>%s' % os.path.join(self.vcf_path, 'vardict')]
 		# else:
 		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx8g -Xms8g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'Mutect2', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '-tumor', self.sample, '-L', self.cfg['library_bed'], '--native-pair-hmm-threads', '1', '-O', self.output()[0].path]
-		pipeline_utils.command_call(cmd, [self.output()])
+		pipeline_utils.command_call(cmd, self.output())
 
 class mutect_pon(luigi.Task):
 	max_threads = luigi.IntParameter()
