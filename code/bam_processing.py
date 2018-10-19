@@ -310,7 +310,7 @@ class mark_duplicates(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[0].path)
 		pipeline_utils.confirm_path(self.output()[1].path)
-		cmd = ['java', '-Xmx8g', '-Xms8g', '-XX:+UseSerialGC', '-Djava.io.tmpdir=%s' % self.cfg['tmp_dir'], '-jar', self.cfg['picard_location'], 'MarkDuplicates', 'I=%s' % self.input()[0].path, 'O=%s' % self.output()[0].path, 'M=%s' % self.output()[1].path, 'CREATE_INDEX=true', 'REMOVE_DUPLICATES=true', 'ASSUME_SORT_ORDER=coordinate']
+		cmd = ['java', '-Xmx8g', '-Xms8g', '-XX:+UseSerialGC', '-Djava.io.tmpdir=%s' % self.cfg['tmp_dir'], '-jar', self.cfg['picard_location'], 'MarkDuplicates', 'I=%s' % self.input()[0].path, 'O=%s' % self.output()[0].path, 'M=%s' % self.output()[1].path, 'CREATE_INDEX=true', 'ASSUME_SORT_ORDER=coordinate'] # , 'REMOVE_DUPLICATES=true'
 		pipeline_utils.command_call(cmd, self.output(), sleep_time=0.4)
 		# for input_file in self.input():
 		# 	input_file.remove()
