@@ -294,6 +294,7 @@ class cases(luigi.Task):
 	trim_location = luigi.Parameter()
 	insert_size = luigi.Parameter()
 	cnvkit_location = luigi.Parameter()
+	refFlat = luigi.Parameter()
 	cnvkit_seg_method = luigi.Parameter()
 	cnvkit_genemetrics_threshold = luigi.Parameter()
 	cnvkit_genemetrics_minprobes = luigi.Parameter()
@@ -322,6 +323,7 @@ class cases(luigi.Task):
 			'trim_location': self.trim_location,
 			'insert_size': self.insert_size,
 			'cnvkit_location': self.cnvkit_location,
+			'refFlat': self.refFlat,
 			'cnvkit_seg_method': self.cnvkit_seg_method,
 			'cnvkit_genemetrics_threshold': self.cnvkit_genemetrics_threshold,
 			'cnvkit_genemetrics_minprobes': self.cnvkit_genemetrics_minprobes,
