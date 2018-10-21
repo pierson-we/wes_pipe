@@ -3,6 +3,7 @@ import subprocess
 import luigi
 import luigi.interface
 import os
+import shutil
 import sys
 import time
 import random
@@ -89,6 +90,8 @@ class picard_index(luigi.Task):
 	def run(self):
 		cmd = ['java', '-jar', self.cfg['picard_location'], 'CreateSequenceDictionary', 'R=%s' % self.cfg['fasta_file'], 'O=%s' % self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], sleep_time=0.1)
+		shutil.copyfile(self.output().path, self.cfg['fasta_file'].split('.fa')[0] + '.dict')
+
 
 class bwa_index(luigi.Task):
 	cfg = luigi.DictParameter()

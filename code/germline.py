@@ -50,7 +50,7 @@ class consolidate_gvcfs(luigi.Task):
 		with open('gvcf_sample_map', 'w') as f:
 			for gvcf in self.input():
 				sample = gvcf.path.split('/')[-1].split('.g.vcf')[0]
-				f.write('%s\t%s\n' % (sample, gvcf[0].path))
+				f.write('%s\t%s\n' % (sample, gvcf.path))
 		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx8g -Xms8g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'GenomicsDBImport', '--genomicsdb-workspace-path', os.path.join(self.project_dir, 'output', 'haplotype_caller', 'genomicsdb'), '--batch-size', '50', '-L', self.cfg['library_bed'], '--sample-name-map', 'gvcf_sample_map', '--tmp-dir=%s' % self.cfg['tmp_dir'], '--reader-threads', str(self.max_threads)]
 		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads)
 

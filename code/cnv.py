@@ -14,7 +14,7 @@ import global_vars
 
 
 class cnvkit_prep(luigi.Task):
-	max_threads = luigi.Parameter()
+	max_threads = luigi.IntParameter()
 
 	project_dir = luigi.Parameter()
 	case_dict = luigi.DictParameter()
@@ -49,7 +49,7 @@ class cnvkit_prep(luigi.Task):
 
 class coverage(luigi.Task):
 	case = luigi.Parameter()
-	max_threads = luigi.Parameter()
+	max_threads = luigi.IntParameter()
 
 	project_dir = luigi.Parameter()
 	case_dict = luigi.DictParameter()
@@ -91,7 +91,7 @@ class coverage(luigi.Task):
 			pipeline_utils.command_call(cmd, self.output())
 
 class reference(luigi.Task):
-	max_threads = luigi.Parameter()
+	max_threads = luigi.IntParameter()
 
 	project_dir = luigi.Parameter()
 	case_dict = luigi.DictParameter()
@@ -111,7 +111,7 @@ class reference(luigi.Task):
 
 class fix(luigi.Task):
 	case = luigi.Parameter()
-	max_threads = luigi.Parameter()
+	max_threads = luigi.IntParameter()
 
 	project_dir = luigi.Parameter()
 	case_dict = luigi.DictParameter()
@@ -131,7 +131,7 @@ class fix(luigi.Task):
 
 class refine_cnv(luigi.Task):
 	case = luigi.Parameter()
-	max_threads = luigi.Parameter()
+	max_threads = luigi.IntParameter()
 
 	project_dir = luigi.Parameter()
 	case_dict = luigi.DictParameter()
