@@ -43,7 +43,7 @@ class consolidate_gvcfs(luigi.Task):
 
 
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'haplotype_caller', 'genomicsdb'))
+		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'haplotype_caller', 'genomicsdb', 'file.txt'))
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
@@ -51,7 +51,7 @@ class consolidate_gvcfs(luigi.Task):
 			for gvcf in self.input():
 				sample = gvcf.path.split('/')[-1].split('.g.vcf')[0]
 				f.write('%s\t%s\n' % (sample, gvcf.path))
-		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx8g -Xms8g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'GenomicsDBImport', '--genomicsdb-workspace-path', os.path.join(self.project_dir, 'output', 'haplotype_caller', 'genomicsdb'), '--batch-size', '50', '-L', self.cfg['library_bed'], '--sample-name-map', 'gvcf_sample_map', '--tmp-dir=%s' % self.cfg['tmp_dir'], '--reader-threads', str(self.max_threads)]
+		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx8g -Xms8g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'GenomicsDBImport', '--genomicsdb-workspace-path', os.path.join(self.project_dir, 'output', 'haplotype_caller', 'genomicsdb'), '--batch-size', '50', '-L', self.cfg['library_bed'], '--sample-name-map', 'gvcf_sample_map', '--TMP_DIR=%s' % self.cfg['tmp_dir'], '--reader-threads', str(self.max_threads)]
 		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads)
 
 		os.remove('gvcf_sample_map')
@@ -74,7 +74,7 @@ class genotype_gvcfs(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
 		
-		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -Xms4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'GenotypeGVCFs', '-R', self.cfg['fasta_file'], '-V', 'gendb://' + os.path.join(self.project_dir, 'output', 'haplotype_caller', 'genomicsdb'), '-O', self.output().path, '--tmp-dir=%s' % self.cfg['tmp_dir']]
+		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -Xms4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'GenotypeGVCFs', '-R', self.cfg['fasta_file'], '-V', 'gendb://' + os.path.join(self.project_dir, 'output', 'haplotype_caller', 'genomicsdb'), '-O', self.output().path, '--TMP_DIR=%s' % self.cfg['tmp_dir']]
 		pipeline_utils.command_call(cmd, [self.output()])
 
 class filter_snps(luigi.Task):
