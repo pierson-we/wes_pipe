@@ -27,7 +27,7 @@ class haplotype_caller(luigi.Task):
 		
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
-		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -Xms4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'HaplotypeCaller', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '-L', self.cfg['library_bed'], '--native-pair-hmm-threads', '1', '-ERC', 'GVCF', '-G', 'Standard', '-G', 'AS_Standard', '-O', self.output().path]
+		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -Xms4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'HaplotypeCaller', '-R', self.cfg['fasta_file'], '-I', self.input()[0].path, '-L', self.cfg['library_bed'], '--native-pair-hmm-threads', '1', '-ERC', 'GVCF', '-O', self.output().path] # , '-G', 'Standard', '-G', 'AS_Standard'
 		pipeline_utils.command_call(cmd, self.output())
 
 class consolidate_gvcfs(luigi.Task):
