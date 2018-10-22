@@ -68,25 +68,27 @@ class coverage(luigi.Task):
 		if self.case_dict[self.case]['N'] != '':
 			return tumor_out + [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'coverage', '%s_N.targetcoverage.cnn' % self.case)),
 			luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'coverage', '%s_N.antitargetcoverage.cnn' % self.case))]
-	
+		else:
+			return tumor_out
+
 	def run(self):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 		
-		cmd = 'python3 %s coverage %s %s -o %s' % (self.cfg['cnvkit_location'], self.input()[1][0].path, self.input()[0].path, self.output()[0].path)
+		cmd = 'python3 %s coverage %s %s -o %s' % (self.cfg['cnvkit_location'], self.input()[1][0].path, self.input()[0][0].path, self.output()[0].path)
 		cmd = cmd.split(' ')
 		pipeline_utils.command_call(cmd, self.output())
 
-		cmd = 'python3 %s coverage %s %s -o %s' % (self.cfg['cnvkit_location'], self.input()[1][0].path, self.input()[1].path, self.output()[1].path)
+		cmd = 'python3 %s coverage %s %s -o %s' % (self.cfg['cnvkit_location'], self.input()[1][0].path, self.input()[0][1].path, self.output()[1].path)
 		cmd = cmd.split(' ')
 		pipeline_utils.command_call(cmd, self.output())
 
 		if self.case_dict[self.case]['N'] != '':
-			cmd = 'python3 %s coverage %s %s -o %s' % (self.cfg['cnvkit_location'], self.input()[2][0].path, self.input()[0].path, self.output()[2].path)
+			cmd = 'python3 %s coverage %s %s -o %s' % (self.cfg['cnvkit_location'], self.input()[2][0].path, self.input()[0][0].path, self.output()[2].path)
 			cmd = cmd.split(' ')
 			pipeline_utils.command_call(cmd, self.output())
 
-			cmd = 'python3 %s coverage %s %s -o %s' % (self.cfg['cnvkit_location'], self.input()[2][0].path, self.input()[1].path, self.output()[3].path)
+			cmd = 'python3 %s coverage %s %s -o %s' % (self.cfg['cnvkit_location'], self.input()[2][0].path, self.input()[0][1].path, self.output()[3].path)
 			cmd = cmd.split(' ')
 			pipeline_utils.command_call(cmd, self.output())
 
