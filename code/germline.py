@@ -148,7 +148,7 @@ class filter_germline(luigi.Task):
 
 
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'haplotype_caller', 'all_germline.vcf.gz'))
+		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'haplotype_caller', 'all_germline_final.vcf.gz'))
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
