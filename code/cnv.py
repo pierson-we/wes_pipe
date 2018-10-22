@@ -62,7 +62,7 @@ class coverage(luigi.Task):
 		else:
 			return requirements + [bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.case_dict[self.case]['T'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)] #, variant_calling.mutect_pon(case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)]
 	
-	def outputs(self):
+	def output(self):
 		tumor_out = [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'coverage', '%s_T.targetcoverage.cnn' % self.case)),
 		luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'coverage', '%s_T.antitargetcoverage.cnn' % self.case))]
 		if self.case_dict[self.case]['N'] != '':
