@@ -153,6 +153,6 @@ class filter_germline(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
 		
-		cmd = ['java', '-Xmxg', '-jar', self.cfg['gatk3_location'], '-T', 'CombineVariants', '-R', self.cfg['fasta_file'], '--variant', self.input()[0].path, '--variant', self.input()[1].path, '-o', self.output()[1].path, '-genotypeMergeOptions', 'UNIQUIFY']
+		cmd = ['java', '-Xmxg', '-jar', self.cfg['gatk3_location'], '-T', 'CombineVariants', '-R', self.cfg['fasta_file'], '--variant', self.input()[0].path, '--variant', self.input()[1].path, '-o', self.output().path, '-genotypeMergeOptions', 'UNIQUIFY']
 		pipeline_utils.command_call(cmd, [self.output()])
 
