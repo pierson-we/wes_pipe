@@ -37,7 +37,7 @@ class somatic_vcf_intersection(luigi.Task):
 	def run(self):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
-		cmd = ['java', '-Xmx2g', '-jar', self.cfg['gatk3_location'], '-T', 'CombineVariants', '-R', self.cfg['fasta_file'], '--variant:mutect', self.input()[0].path, '--variant:vardict', self.input()[1].path, '-o', self.output()[1].path, '-genotypeMergeOptions', 'PRIORITIZE', '-priority', 'mutect,vardict', '-minimumN', '2']
+		cmd = ['java', '-Xmx2g', '-jar', self.cfg['gatk3_location'], '-T', 'CombineVariants', '-R', self.cfg['fasta_file'], '--variant:mutect', self.input()[0].path, '--variant:vardict', self.input()[1].path, '-o', self.output()[1].path, '-genotypeMergeOptions', 'PRIORITIZE', '-priority', 'mutect,vardict', '--minimumN', '2']
 		pipeline_utils.command_call(cmd, self.output())
 
 		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx2g -Xms2g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'SelectVariants', '-R', self.cfg['fasta_file'], '-V', self.output()[1].path, '-O', self.output()[0].path, '-select', """'set == "Intersection";'"""]
