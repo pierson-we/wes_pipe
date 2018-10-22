@@ -104,7 +104,7 @@ class fpfilter(luigi.Task):
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
 
-		cmd = ['./packages/fpfilter/fpfilter.pl', '--vcf-file', self.input()[0].path, '--bam-file', self.input()[1].path, '--reference', self.cfg['fasta_file'], '--sample', self.case + '_T', '--output', self.output().path]
+		cmd = ['./packages/fpfilter/fpfilter.pl', '--vcf-file', self.input()[0].path, '--bam-file', self.input()[1][0].path, '--reference', self.cfg['fasta_file'], '--sample', self.case + '_T', '--output', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()])
 
 class msings_baseline(luigi.Task):
