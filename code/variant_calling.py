@@ -341,7 +341,7 @@ class pindel(luigi.Task):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 		with open('___pindel_bams___.txt', 'w') as f:
-			for output in self.outputs():
+			for output in self.output():
 				case = output.path.split('/')[-1].split('_')[0]
 				if '_N' in output.path:
 					f.write('%s %s %s\n' % (output.path, self.cfg['insert_size'], case + '_N'))
