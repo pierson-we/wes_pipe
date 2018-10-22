@@ -423,7 +423,7 @@ class msisensor(luigi.Task):
 		pipeline_utils.confirm_path(self.output().path)
 
 		cmd = ['./packages/msisensor/binary/msisensor.linux' 'msi', '-d', './packages/msisensor/microsatellites.list', '-t', self.input()[0].path, '-e', self.cfg['library_bed'], '-b', self.max_threads, '-o', self.output().path]
-		pipeline_utils.command_call(cmd, [self.output()])
+		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads)
 
 
 class cnvkit(luigi.Task):
