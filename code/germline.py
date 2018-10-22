@@ -102,7 +102,7 @@ class filter_snps(luigi.Task):
 		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -Xms4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'SelectVariants', '-R', self.cfg['fasta_file'], '-V', self.input().path, '--select-type-to-include', 'SNP', '-O', os.path.join(self.project_dir, 'output', 'haplotype_caller', 'all_germline_snps.vcf.gz')]
 		pipeline_utils.command_call(cmd, [self.output()])
 
-		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -Xms4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'VariantFiltration', '-R', self.cfg['fasta_file'], '-V', os.path.join(self.project_dir, 'output', 'haplotype_caller', 'all_germline_snps.vcf.gz'), '-O', self.output().path, '--filter-expression', '"QD < 2.0 || FS > 60.0 || MQ < 40.0 || MQRankSum < -12.5 || ReadPosRankSum < -8.0"', '--filter-name', '"generic_germline_snp_filter']
+		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -Xms4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'VariantFiltration', '-R', self.cfg['fasta_file'], '-V', os.path.join(self.project_dir, 'output', 'haplotype_caller', 'all_germline_snps.vcf.gz'), '-O', self.output().path, '--filter-expression', '"QD < 2.0 || FS > 60.0 || MQ < 40.0 || MQRankSum < -12.5 || ReadPosRankSum < -8.0"', '--filter-name', '"generic_germline_snp_filter"']
 		pipeline_utils.command_call(cmd, [self.output()])
 
 		os.remove(os.path.join(self.project_dir, 'output', 'haplotype_caller', 'all_germline_snps.vcf.gz'))
@@ -128,7 +128,7 @@ class filter_indels(luigi.Task):
 		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -Xms4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'SelectVariants', '-R', self.cfg['fasta_file'], '-V', self.input().path, '--select-type-to-include', 'INDEL', '-O', os.path.join(self.project_dir, 'output', 'haplotype_caller', 'all_germline_indels.vcf.gz')]
 		pipeline_utils.command_call(cmd, [self.output()])
 
-		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -Xms4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'VariantFiltration', '-R', self.cfg['fasta_file'], '-V', os.path.join(self.project_dir, 'output', 'haplotype_caller', 'all_germline_indels.vcf.gz'), '-O', self.output().path, '--filter-expression', '"QD < 2.0 || FS > 200.0 || ReadPosRankSum < -20.0"', '--filter-name', '"generic_germline_indel_filter']
+		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx4g -Xms4g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'VariantFiltration', '-R', self.cfg['fasta_file'], '-V', os.path.join(self.project_dir, 'output', 'haplotype_caller', 'all_germline_indels.vcf.gz'), '-O', self.output().path, '--filter-expression', '"QD < 2.0 || FS > 200.0 || ReadPosRankSum < -20.0"', '--filter-name', '"generic_germline_indel_filter"']
 		pipeline_utils.command_call(cmd, [self.output()])
 
 		os.remove(os.path.join(self.project_dir, 'output', 'haplotype_caller', 'all_germline_indels.vcf.gz'))
