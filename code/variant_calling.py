@@ -401,6 +401,30 @@ class pindel2vcf(luigi.Task):
 		cmd = ['./packages/pindel/pindel2vcf', '-r', self.cfg['fasta_file'], '-G', '-R', 'b37', '-d', 'idk', '-p', pindel_input, '-v', self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()])
 
+class msisensor(luigi.Task):
+	max_threads = luigi.IntParameter()
+	project_dir = luigi.Parameter()
+
+	case = luigi.Parameter()
+	tumor = luigi.Parameter()
+	matched_n = luigi.Parameter()
+	vcf_path = luigi.Parameter()
+
+	cfg = luigi.DictParameter()
+
+	def requires(self):
+		return bam_processing.index_bam(sample=self.case + '_T', fastq_file=self.tumor, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)
+
+
+	def output(self):
+		return luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_T.msisensor'))
+	
+	def run(self):
+		pipeline_utils.confirm_path(self.output().path)
+
+		cmd = ['./packages/msisensor/binary/msisensor.linux' 'msi', '-d', './packages/msisensor/microsatellites.list', '-t', self.input()[0].path, '-e', self.cfg['library_bed'], '-b', self.max_threads, '-o', self.output().path]
+		pipeline_utils.command_call(cmd, [self.output()])
+
 
 class cnvkit(luigi.Task):
 	max_threads = luigi.IntParameter()
