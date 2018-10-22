@@ -301,7 +301,7 @@ class sort_vardict(luigi.Task):
 	
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
-		cmd = ['java', '-jar', self.cfg['picard_location'], 'I=%s' % self.input()[0].path, 'O=%s', % self.output().path, 'SEQUENCE_DICTIONARY=%s' % self.input()[1].path]
+		cmd = ['java', '-jar', self.cfg['picard_location'], 'I=%s' % self.input()[0].path, 'O=%s' % self.output().path, 'SEQUENCE_DICTIONARY=%s' % self.input()[1].path]
 		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads)
 
 # this will be pretty annoying to get up and going
