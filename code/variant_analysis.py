@@ -29,7 +29,7 @@ class somatic_vcf_intersection(luigi.Task):
 
 	def requires(self):
 		return [variant_calling.filter_mutect(project_dir=self.project_dir, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n, max_threads=self.max_threads, case_dict=self.case_dict, cfg=self.cfg),
-		variant_calling.vardict(project_dir=self.project_dir, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n, max_threads=self.max_threads, cfg=self.cfg)] 
+		variant_calling.sort_vardict(project_dir=self.project_dir, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n, max_threads=self.max_threads, cfg=self.cfg)] 
 
 	def output(self):
 		return [luigi.LocalTarget(os.path.join(self.vcf_path, '%s_T_intersect.vcf' % self.case)), luigi.LocalTarget(os.path.join(self.vcf_path, '%s_T_union.vcf' % self.case))]

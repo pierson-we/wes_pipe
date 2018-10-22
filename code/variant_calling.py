@@ -281,6 +281,29 @@ class vardict(luigi.Task):
 			cmd = ['./packages/VarDictJava/build/install/VarDict/bin/VarDict', '-G', self.cfg['fasta_file'], '-f', '0.01', '-N', self.case + '_T', '-b', self.input()[0][0].path, '-th', self.max_threads, '-z', '-c', '1', '-S', '2', '-E', '3', '-g', '4', self.cfg['library_bed'], '|', './packages/VarDictJava/VarDict/teststrandbias.R', '|', './packages/VarDictJava/VarDict/var2vcf_valid.pl', '-N', self.case + '_T', '-E', '-f', '0.01', '>%s' % self.output().path]
 		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads)
 
+class sort_vardict(luigi.Task):
+	max_threads = luigi.IntParameter()
+	project_dir = luigi.Parameter()
+
+	case = luigi.Parameter()
+	tumor = luigi.Parameter()
+	matched_n = luigi.Parameter()
+	vcf_path = luigi.Parameter()
+
+	cfg = luigi.DictParameter()
+
+	def requires(self):
+		return [vardict(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=self.vcf_path, cfg=self.cfg),
+		bam_processing.picard_index(cfg=self.cfg)]
+
+	def output(self):
+		return luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_vardict_sorted' + '.vcf'))
+	
+	def run(self):
+		pipeline_utils.confirm_path(self.output().path)
+		cmd = ['java', '-jar', self.cfg['picard_location'], 'I=%s' % self.input()[0].path, 'O=%s', % self.output().path, 'SEQUENCE_DICTIONARY=%s' % self.input()[1].path]
+		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads)
+
 # this will be pretty annoying to get up and going
 class varscan(luigi.Task):
 	max_threads = luigi.IntParameter()
