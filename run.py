@@ -34,9 +34,8 @@ def run_pipeline(args):
 					normal_list = [filename for filename in os.listdir(os.path.join(args.sample_dir, sample, 'normal')) if 'fastq' in filename]
 					normal_fastq = os.path.join(args.sample_dir, sample, 'normal', normal_list[0]) + '\t' + os.path.join(args.sample_dir, sample, 'normal', normal_list[1])
 					sample_dict[sample]['N'] = normal_fastq
-	with open('size_of_dict.txt', 'w') as f:
-		f.write('sample_dict is %s' % sys.getsizeof(sample_dict))
-		f.write('global_vars is %s' % sys.getsizeof(global_vars))
+	with open('size_of_vars.txt', 'w') as f:
+		f.write('vars().values() is %s' % sys.getsizeof(vars().values()))
 	# except:
 	# 	raise ValueError("Error in parsing fastq directory.")
 	# print('\n\n\n\n')
