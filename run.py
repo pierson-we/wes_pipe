@@ -34,6 +34,9 @@ def run_pipeline(args):
 					normal_list = [filename for filename in os.listdir(os.path.join(args.sample_dir, sample, 'normal')) if 'fastq' in filename]
 					normal_fastq = os.path.join(args.sample_dir, sample, 'normal', normal_list[0]) + '\t' + os.path.join(args.sample_dir, sample, 'normal', normal_list[1])
 					sample_dict[sample]['N'] = normal_fastq
+	with open('size_of_dict.txt', 'w') as f:
+		f.write('sample_dict is %s' % sys.getsizeof(sample_dict))
+		f.write('global_vars is %s' % sys.getsizeof(global_vars))
 	# except:
 	# 	raise ValueError("Error in parsing fastq directory.")
 	# print('\n\n\n\n')
@@ -49,7 +52,7 @@ def run_pipeline(args):
 	# 	tumor = sample_dict[case]['T']
 	# 	matched_n = sample_dict[case]['N']
 	# luigi.build([bam_processing.aggregate_variants(case=case, tumor=sample_dict[case]['T'], matched_n=sample_dict[case]['N'], project_dir=args.project_dir, max_threads=sample_threads, case_dict=sample_dict) for case in sample_dict], workers=args.workers, local_scheduler=args.local_scheduler, worker_scheduler_factory=worker_scheduler_factory) #, scheduler_port=int(args.port)) # workers=sample_threads
-	luigi.build([variant_analysis.cases(sample_dict=sample_dict, project_dir=args.project_dir, sample_threads=sample_threads)], workers=args.workers, local_scheduler=args.local_scheduler, worker_scheduler_factory=worker_scheduler_factory) #, scheduler_port=int(args.port)) # workers=sample_threads
+	luigi.build([variant_analysis.cases(sample_dict=sample_dict, project_dir=args.project_dir, sample_threads=sample_threads)], local_scheduler=args.local_scheduler, worker_scheduler_factory=worker_scheduler_factory) # , workers=args.workers #, scheduler_port=int(args.port)) # workers=sample_threads
 
 		# [(max_threads=args.max_threads, project_dir=args.project_dir, sample_dir=args.sample_dir, threads_per_sample=args.threads_per_sample, timestamp=timestamp)], workers=args.workers, local_scheduler=args.local_scheduler)
 		# yield aggregate_variants(case=case, tumor=tumor, matched_n=matched_n, project_dir=self.project_dir, max_threads=sample_threads, case_dict=sample_dict)
