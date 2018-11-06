@@ -127,7 +127,7 @@ class fix(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
-		cmd = 'python3 %s fix %s %s %s -o %s' % (self.cfg['cnvkit_location'], os.path.join(self.project_dir, 'output', 'cnvkit', 'coverage', '%s_T.targetcoverage.cnn' % self.case), os.path.join(self.project_dir, 'output', 'cnvkit', 'coverage', '%s_T.antitargetcoverage.cnn' % self.case), self.input()[1].path, self.output().path)
+		cmd = ['python3', self.cfg['cnvkit_location'], 'fix', self.input()[0][0].path, self.input()[0][1].path, self.input()[1].path, '-o', self.output().path] # 'python3 %s fix %s %s %s -o %s' % (self.cfg['cnvkit_location'], os.path.join(self.project_dir, 'output', 'cnvkit', 'coverage', '%s_T.targetcoverage.cnn' % self.case), os.path.join(self.project_dir, 'output', 'cnvkit', 'coverage', '%s_T.antitargetcoverage.cnn' % self.case), self.input()[1].path, self.output().path)
 		cmd = cmd.split(' ')
 		pipeline_utils.command_call(cmd, self.output())
 

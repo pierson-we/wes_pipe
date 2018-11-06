@@ -290,7 +290,7 @@ class add_read_groups(luigi.Task):
 		# self.input().remove()
 
 # https://broadinstitute.github.io/picard/command-line-overview.html#MarkDuplicates
-# ~35 minutes, 10gb virtual RAM, 5+gb RES
+# ~35 minutes, 14gb virtual RAM, 8+gb RES
 class mark_duplicates(luigi.Task):
 	max_threads = luigi.IntParameter()
 	project_dir = luigi.Parameter()
