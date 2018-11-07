@@ -358,7 +358,7 @@ class pindel(luigi.Task):
 
 	def output(self):
 		pindel_files = ['_D', '_SI', '_LI', '_INV', '_TD', '_BP']
-		return [luigi.LocalTarget(os.path.join(self.project_dir, 'pindel', 'pindel_all_samples', ext)) for ext in pindel_files]
+		return [luigi.LocalTarget(os.path.join(self.project_dir, 'pindel', 'pindel_all_samples' + ext)) for ext in pindel_files]
 
 	def run(self):
 		for output in self.output():
