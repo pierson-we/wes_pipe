@@ -31,7 +31,7 @@ class cnvkit_prep(luigi.Task):
 	def run(self):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
-		cmd = ['python3', self.cfg['cnvkit_location'], 'target', self.cfg['library_bed'], '--annotate', self.cfg['refFlat'], '-o', os.path.join(self.project_dir, 'output', 'cnvkit', 'ref', 'targets.bed')] # '%s target %s --annotate %s -o %s' % (self.cfg['cnvkit_location'], self.cfg['library_bed'], self.cfg['refFlat'], os.path.join(self.project_dir, 'output', 'cnvkit', 'ref', 'targets.bed'))
+		cmd = ['python3', self.cfg['cnvkit_location'], 'target', '--annotate', self.cfg['refFlat'], '--split', '-o', os.path.join(self.project_dir, 'output', 'cnvkit', 'ref', 'targets.bed'), self.cfg['library_bed']] # '%s target %s --annotate %s -o %s' % (self.cfg['cnvkit_location'], self.cfg['library_bed'], self.cfg['refFlat'], os.path.join(self.project_dir, 'output', 'cnvkit', 'ref', 'targets.bed'))
 		# cmd = cmd.split(' ')
 		pipeline_utils.command_call(cmd, self.output())
 
@@ -76,22 +76,27 @@ class coverage(luigi.Task):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 		
-		cmd = 'python3 %s coverage %s %s -o %s' % (self.cfg['cnvkit_location'], self.input()[1][0].path, self.input()[0][0].path, self.output()[0].path)
-		cmd = cmd.split(' ')
-		pipeline_utils.command_call(cmd, self.output())
+		# cmd = 'python3 %s coverage %s %s -o %s' % (self.cfg['cnvkit_location'], self.input()[1][0].path, self.input()[0][0].path, self.output()[0].path)
+		cmd = ['python3', self.cfg['cnvkit_location'], 'coverage', '-o', self.output()[0].path, '-p', self.max_threads, self.input()[1][0].path, self.input()[0][0].path] # '%s coverage %s %s -o %s' % (self.cfg['cnvkit_location'], self.input()[1][0].path, self.input()[0][0].path, self.output()[0].path)
 
-		cmd = 'python3 %s coverage %s %s -o %s' % (self.cfg['cnvkit_location'], self.input()[1][0].path, self.input()[0][1].path, self.output()[1].path)
-		cmd = cmd.split(' ')
-		pipeline_utils.command_call(cmd, self.output())
+		# cmd = cmd.split(' ')
+		pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads)
+
+		# cmd = 'python3 %s coverage %s %s -o %s' % (self.cfg['cnvkit_location'], self.input()[1][0].path, self.input()[0][1].path, self.output()[1].path)
+		# cmd = cmd.split(' ')
+		cmd = ['python3', self.cfg['cnvkit_location'], 'coverage', '-o', self.output()[1].path, '-p', self.max_threads, self.input()[1][0].path, self.input()[0][1].path]
+		pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads)
 
 		if self.case_dict[self.case]['N'] != '':
-			cmd = 'python3 %s coverage %s %s -o %s' % (self.cfg['cnvkit_location'], self.input()[2][0].path, self.input()[0][0].path, self.output()[2].path)
-			cmd = cmd.split(' ')
-			pipeline_utils.command_call(cmd, self.output())
+			# cmd = 'python3 %s coverage %s %s -o %s' % (self.cfg['cnvkit_location'], self.input()[2][0].path, self.input()[0][0].path, self.output()[2].path)
+			# cmd = cmd.split(' ')
+			cmd = ['python3', self.cfg['cnvkit_location'], 'coverage', '-o', self.output()[2].path, '-p', self.max_threads, self.input()[2][0].path, self.input()[0][0].path]
+			pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads)
 
-			cmd = 'python3 %s coverage %s %s -o %s' % (self.cfg['cnvkit_location'], self.input()[2][0].path, self.input()[0][1].path, self.output()[3].path)
-			cmd = cmd.split(' ')
-			pipeline_utils.command_call(cmd, self.output())
+			# cmd = 'python3 %s coverage %s %s -o %s' % (self.cfg['cnvkit_location'], self.input()[2][0].path, self.input()[0][1].path, self.output()[3].path)
+			# cmd = cmd.split(' ')
+			cmd = ['python3', self.cfg['cnvkit_location'], 'coverage', '-o', self.output()[3].path, '-p', self.max_threads, self.input()[2][0].path, self.input()[0][1].path]
+			pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads)
 
 class reference(luigi.Task):
 	max_threads = luigi.IntParameter()
@@ -108,7 +113,7 @@ class reference(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output().path)
-		cmd = 'python3 %s reference %s --fasta %s -o %s' % (self.cfg['cnvkit_location'], os.path.join(self.project_dir, 'output', 'cnvkit', 'coverage', '*N.{,anti}targetcoverage.cnn'), self.cfg['fasta_file'], self.output().path)
+		cmd = 'python3 %s reference %s --fasta %s -o %s' % (self.cfg['cnvkit_location'], os.path.join(self.project_dir, 'output', 'cnvkit', 'coverage', '*N.*targetcoverage.cnn'), self.cfg['fasta_file'], self.output().path)
 		cmd = cmd.split(' ')
 		pipeline_utils.command_call(cmd, self.output())
 
