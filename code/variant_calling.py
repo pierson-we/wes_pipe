@@ -358,7 +358,7 @@ class pindel(luigi.Task):
 
 	def output(self):
 		pindel_files = ['_D', '_SI', '_LI', '_INV', '_TD', '_BP']
-		return [luigi.LocalTarget(os.path.join(self.project_dir, 'pindel', 'pindel_all_samples' + ext)) for ext in pindel_files]
+		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'pindel', 'pindel_all_samples' + ext)) for ext in pindel_files]
 
 	def run(self):
 		for output in self.output():
@@ -394,7 +394,7 @@ class pindel2vcf(luigi.Task):
 		return pindel(case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)
 
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.project_dir, 'pindel', 'pindel_all_samples.vcf'))
+		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'pindel', 'pindel_all_samples.vcf'))
 
 	def run(self):
 		pindel_input = '_'.join(self.input()[0].path.split('_')[:-1])
