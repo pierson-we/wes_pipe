@@ -391,7 +391,7 @@ class pindel2vcf(luigi.Task):
 	cfg = luigi.DictParameter()
 
 	def requires(self):
-		return pindel(case_dict=self.sample_dict, project_dir=self.project_dir, max_threads=self.sample_threads, cfg=cfg)
+		return pindel(case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)
 
 	def output(self):
 		return luigi.LocalTarget(os.path.join(self.project_dir, 'pindel', 'pindel_all_samples.vcf'))
