@@ -30,7 +30,7 @@ class cnvkit_prep(luigi.Task):
 	def run(self):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
-		cmd = 'python3 %s target %s --annotate %s -o %s' % (self.cfg['cnvkit_location'], self.cfg['library_bed'], self.cfg['refFlat'], os.path.join(self.project_dir, 'output', 'cnvkit', 'ref', 'targets.bed'))
+		cmd = ['python3', self.cfg['cnvkit_location'], 'target', self.cfg['library_bed'], '--annotate', self.cfg['refFlat'], '-o', os.path.join(self.project_dir, 'output', 'cnvkit', 'ref', 'targets.bed')] # '%s target %s --annotate %s -o %s' % (self.cfg['cnvkit_location'], self.cfg['library_bed'], self.cfg['refFlat'], os.path.join(self.project_dir, 'output', 'cnvkit', 'ref', 'targets.bed'))
 		cmd = cmd.split(' ')
 		pipeline_utils.command_call(cmd, self.output())
 
