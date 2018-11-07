@@ -364,12 +364,12 @@ class pindel(luigi.Task):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 		with open('___pindel_bams___.txt', 'w') as f:
-			for output in self.output():
-				case = output.path.split('/')[-1].split('_')[0]
-				if '_N' in output.path:
-					f.write('%s %s %s\n' % (output.path, self.cfg['insert_size'], case + '_N'))
+			for input_bam in self.input():
+				case = input_bam[0].path.split('/')[-1].split('_')[0]
+				if '_N' in input_bam[0].path:
+					f.write('%s %s %s\n' % (input_bam[0].path, self.cfg['insert_size'], case + '_N'))
 				else:
-					f.write('%s %s %s\n' % (output.path, self.cfg['insert_size'], case + '_T'))
+					f.write('%s %s %s\n' % (input_bam[0].path, self.cfg['insert_size'], case + '_T'))
 		cmd = ['./packages/pindel/pindel', '-f', self.cfg['fasta_file'], '-i', '___pindel_bams___.txt', '-T', self.max_threads, '-c', 'ALL', '-o', os.path.join(self.project_dir, 'pindel', 'pindel_all_samples')]
 		pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads)
 
