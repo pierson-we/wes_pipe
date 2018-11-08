@@ -150,9 +150,9 @@ class refine_cnv(luigi.Task):
 
 	def output(self):
 		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'segment', '%s_T.segment.cns' % self.case)),
+		luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'segment', '%s_T.segmetrics.cns' % self.case)),
 		luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'segment', '%s_T.call.cns' % self.case)),
 		luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'segment', '%s_T.scatter.png' % self.case)),
-		luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'segment', '%s_T.segmetrics.cns' % self.case)),
 		luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'segment', '%s_T.genemetrics.tsv' % self.case)),
 		luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'segment', '%s_T.trusted_genes.tsv' % self.case))]
 	
@@ -164,19 +164,19 @@ class refine_cnv(luigi.Task):
 		cmd = cmd.split(' ')
 		pipeline_utils.command_call(cmd, self.output())
 
-		cmd = 'python3 %s call %s -i %s_T -m threshold --ci --ampdel --sem -o %s_T.call.cns' % (self.cfg['cnvkit_location'], self.output()[0].path, self.case, self.output()[1].path)
+		cmd = 'python3 %s segmetrics %s -s %s --ci --std --mean -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[0].path, self.output()[1].path)
 		cmd = cmd.split(' ')
 		pipeline_utils.command_call(cmd, self.output())
 
-		cmd = 'python3 %s scatter %s -s %s -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[1].path, self.output()[2].path)
+		cmd = 'python3 %s call %s -i %s_T -m threshold --filter ci --filter ampdel --sample-sex female -o %s' % (self.cfg['cnvkit_location'], self.output()[1].path, self.case, self.output()[2].path)
 		cmd = cmd.split(' ')
 		pipeline_utils.command_call(cmd, self.output())
 
-		cmd = 'python3 %s segmetrics %s -s %s --ci --std --mean -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[1].path, self.output()[3].path)
+		cmd = 'python3 %s scatter %s -s %s -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[2].path, self.output()[3].path)
 		cmd = cmd.split(' ')
 		pipeline_utils.command_call(cmd, self.output())
 
-		cmd = 'python3 %s genemetrics %s -s %s -t %s -m %s -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[3].path, self.cfg['cnvkit_genemetrics_threshold'], self.cfg['cnvkit_genemetrics_minprobes'], self.output()[4].path)
+		cmd = 'python3 %s genemetrics %s -s %s -t %s -m %s -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[2].path, self.cfg['cnvkit_genemetrics_threshold'], self.cfg['cnvkit_genemetrics_minprobes'], self.output()[4].path)
 		cmd = cmd.split(' ')
 		pipeline_utils.command_call(cmd, self.output())
 
@@ -187,7 +187,7 @@ class refine_cnv(luigi.Task):
 		while not pipeline_utils.add_thread_count(global_vars.thread_file, 1):
 			time.sleep(sleep_time)
 		
-		cmd = 'python3 %s genemetrics %s_T.cnr -s %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[3].path)
+		cmd = 'python3 %s genemetrics %s_T.cnr -s %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[2].path)
 		cmd = cmd.split(' ')
 		p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE)
 		# outs, err = p.communicate()
