@@ -185,7 +185,7 @@ class refine_cnv(luigi.Task):
 		time.sleep(wait_time)
 		sys.stdout.flush()
 		while not pipeline_utils.add_thread_count(global_vars.thread_file, 1):
-			time.sleep(sleep_time)
+			time.sleep(1.2)
 		
 		cmd = 'python3 %s genemetrics %s_T.cnr -s %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[2].path)
 		cmd = cmd.split(' ')
@@ -235,7 +235,7 @@ class refine_cnv(luigi.Task):
 			trusted_genes = f.read().split('\n')
 		
 		while not pipeline_utils.sub_thread_count(global_vars.thread_file, 1):
-			time.sleep(sleep_time)
+			time.sleep(1.2)
 
 		seg = pd.read_csv(self.output()[4].path, sep='\t', header=0)
 
