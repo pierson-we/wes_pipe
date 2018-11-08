@@ -160,7 +160,7 @@ class refine_cnv(luigi.Task):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 
-		cmd = 'python3 %s segment %s -m %s --drop-low-coverage -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.cfg['cnv_seg_method'], self.output()[0].path)
+		cmd = 'python3 %s segment %s -m %s --drop-low-coverage -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.cfg['cnvkit_seg_method'], self.output()[0].path)
 		cmd = cmd.split(' ')
 		pipeline_utils.command_call(cmd, self.output())
 
