@@ -178,7 +178,6 @@ class refine_cnv(luigi.Task):
 
 		cmd = 'python3 %s genemetrics %s -s %s -t %s -m %s -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[3].path, self.cfg['cnvkit_genemetrics_threshold'], self.cfg['cnvkit_genemetrics_minprobes'], self.output()[4].path)
 		cmd = cmd.split(' ')
-		cmd = cmd.split(' ')
 		pipeline_utils.command_call(cmd, self.output())
 
 		#repurpose command call for pipe command calls
