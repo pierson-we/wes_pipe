@@ -397,9 +397,9 @@ class pindel2vcf(luigi.Task):
 		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'pindel', 'pindel_all_samples.vcf'))
 
 	def run(self):
-		pindel_input = '_'.join(self.input()[0].path.split('_')[:-1]) + '*'
+		pindel_input = '_'.join(self.input()[0].path.split('_')[:-1])
 		pipeline_utils.confirm_path(self.output().path)
-		cmd = ['./packages/pindel/pindel2vcf', '-r', self.cfg['fasta_file'], '-G', '-R', self.cfg['base_name'], '-d', 'idk', '-p', pindel_input, '-v', self.output().path]
+		cmd = ['./packages/pindel/pindel2vcf', '-r', self.cfg['fasta_file'], '-G', '-R', self.cfg['base_name'], '-d', 'idk', '-P', pindel_input, '-v', self.output()]
 		pipeline_utils.command_call(cmd, [self.output()])
 
 class msisensor(luigi.Task):
