@@ -187,7 +187,7 @@ class refine_cnv(luigi.Task):
 		while not pipeline_utils.add_thread_count(global_vars.thread_file, 1):
 			time.sleep(1.2)
 		
-		cmd = 'python3 %s genemetrics %s_T.cnr -s %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[2].path)
+		cmd = 'python3 %s genemetrics %s -s %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[2].path)
 		cmd = cmd.split(' ')
 		p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE)
 		# outs, err = p.communicate()
