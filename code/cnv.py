@@ -233,38 +233,40 @@ class refine_cnv(luigi.Task):
 			f.write(outs)
 		with open('%s_trusted_genes.txt' % self.case, 'r') as f:
 			trusted_genes = f.read().split('\n')
-		
-		while not pipeline_utils.sub_thread_count(global_vars.thread_file, 1):
-			time.sleep(1.2)
 
 		seg = pd.read_csv(self.output()[4].path, sep='\t', header=0)
+		if seg.shape[0] >= 1:
+			def filter_genes(row, genes):
+				if row.gene in genes:
+					return True
+				else:
+					return False
+			# # seg = seg[seg.apply(filter_ci, axis=1)]
+			# # seg = seg[seg.apply(filter_pten, axis=1)]
+			seg = seg[seg.apply(filter_genes, axis=1, genes=trusted_genes)]
+			if seg.shape[0] >= 1:
+				def assign_class(row):
+					if row.cn > 2:
+						return 'amp'
+					elif row.cn < 2:
+						return 'del'
+					else:
+						return 'wt'
+				seg['class'] = seg.apply(assign_class, axis=1)
+				seg['Tumor_Sample_Barcode'] = '%s_T' % self.case
+				seg['FILTER'] = 'PASS'
+				seg['Variant_Classification'] = 'SV'
+				seg.rename({'gene': 'Hugo_Symbol'}, axis='columns', inplace=True)
+				print('postfilter: %s' % seg.shape[0])
+				
+				seg.to_csv(self.output()[5].path, sep='\t', header=True, index=False)
 
-		def filter_genes(row, genes):
-			if row.gene in genes:
-				return True
-			else:
-				return False
-		# # seg = seg[seg.apply(filter_ci, axis=1)]
-		# # seg = seg[seg.apply(filter_pten, axis=1)]
-		seg = seg[seg.apply(filter_genes, axis=1, genes=trusted_genes)]
-		def assign_class(row):
-			if row.cn > 2:
-				return 'amp'
-			elif row.cn < 2:
-				return 'del'
-			else:
-				return 'wt'
-		seg['class'] = seg.apply(assign_class, axis=1)
-		seg['Tumor_Sample_Barcode'] = '%s_T' % self.case
-		seg['FILTER'] = 'PASS'
-		seg['Variant_Classification'] = 'SV'
-		seg.rename({'gene': 'Hugo_Symbol'}, axis='columns', inplace=True)
-		print('postfilter: %s' % seg.shape[0])
-		# # print(seg.head().to_string())
-		# # print('*****')
-
+		if seg.shape[0] < 1:
+			seg.columns = ['Hugo_Symbol', 'chromosome', 'start', 'end', 'log2', 'depth', 'weight', 'cn', 'n_bins', 'segment_weight', 'segment_probes', 'class', 'Tumor_Sample_Barcode', 'FILTER', 'Variant_Classification']
 		os.remove('%s_segment_genes.txt' % self.case)
 		os.remove('%s_ratio_genes.txt' % self.case)
 		os.remove('%s_trusted_genes.txt' % self.case)
-		
-		seg.to_csv(self.output()[5].path, sep='\t', header=True, index=False)
+
+		while not pipeline_utils.sub_thread_count(global_vars.thread_file, 1):
+			time.sleep(1.2)
+
