@@ -160,21 +160,21 @@ class refine_cnv(luigi.Task):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 
-		cmd = 'python3 %s segment %s -m %s --drop-low-coverage -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.cfg['cnvkit_seg_method'], self.output()[0].path)
-		cmd = cmd.split(' ')
-		pipeline_utils.command_call(cmd, self.output())
+		# cmd = 'python3 %s segment %s -m %s --drop-low-coverage -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.cfg['cnvkit_seg_method'], self.output()[0].path)
+		# cmd = cmd.split(' ')
+		# pipeline_utils.command_call(cmd, self.output())
 
-		cmd = 'python3 %s segmetrics %s -s %s --ci --std --mean -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[0].path, self.output()[1].path)
-		cmd = cmd.split(' ')
-		pipeline_utils.command_call(cmd, self.output())
+		# cmd = 'python3 %s segmetrics %s -s %s --ci --std --mean -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[0].path, self.output()[1].path)
+		# cmd = cmd.split(' ')
+		# pipeline_utils.command_call(cmd, self.output())
 
-		cmd = 'python3 %s call %s -i %s_T -m threshold --filter ci --sample-sex female -o %s' % (self.cfg['cnvkit_location'], self.output()[1].path, self.case, self.output()[2].path)
-		cmd = cmd.split(' ')
-		pipeline_utils.command_call(cmd, self.output())
+		# cmd = 'python3 %s call %s -i %s_T -m threshold --filter ci --sample-sex female -o %s' % (self.cfg['cnvkit_location'], self.output()[1].path, self.case, self.output()[2].path)
+		# cmd = cmd.split(' ')
+		# pipeline_utils.command_call(cmd, self.output())
 
-		cmd = 'python3 %s scatter %s -s %s -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[2].path, self.output()[3].path)
-		cmd = cmd.split(' ')
-		pipeline_utils.command_call(cmd, self.output())
+		# cmd = 'python3 %s scatter %s -s %s -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[2].path, self.output()[3].path)
+		# cmd = cmd.split(' ')
+		# pipeline_utils.command_call(cmd, self.output())
 
 		cmd = 'python3 %s genemetrics %s -s %s -t %s -m %s -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[2].path, self.cfg['cnvkit_genemetrics_threshold'], self.cfg['cnvkit_genemetrics_minprobes'], self.output()[4].path)
 		cmd = cmd.split(' ')
