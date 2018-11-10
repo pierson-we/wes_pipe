@@ -243,7 +243,7 @@ class refine_cnv(luigi.Task):
 					return False
 			# # seg = seg[seg.apply(filter_ci, axis=1)]
 			# # seg = seg[seg.apply(filter_pten, axis=1)]
-			seg = seg[seg.apply(filter_genes, axis=1, genes=trusted_genes)]
+			# seg = seg[seg.apply(filter_genes, axis=1, genes=trusted_genes)]
 			if seg.shape[0] >= 1:
 				def assign_class(row):
 					if row.cn > 2:
