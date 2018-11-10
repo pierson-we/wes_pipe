@@ -260,13 +260,17 @@ class refine_cnv(luigi.Task):
 				print('postfilter: %s' % seg.shape[0])
 				
 				seg.to_csv(self.output()[5].path, sep='\t', header=True, index=False)
+			else:
+				print('*****gene-filtered seg shape is 0*****')
+		else:
+			print('*****initial seg shape is 0*****')
 
 		if seg.shape[0] < 1:
 			with open(self.output()[5].path, 'w') as f:
 				f.write('\t'.join(['Hugo_Symbol', 'chromosome', 'start', 'end', 'log2', 'depth', 'weight', 'cn', 'n_bins', 'segment_weight', 'segment_probes', 'class', 'Tumor_Sample_Barcode', 'FILTER', 'Variant_Classification']))
 		os.remove('%s_segment_genes.txt' % self.case)
 		os.remove('%s_ratio_genes.txt' % self.case)
-		os.remove('%s_trusted_genes.txt' % self.case)
+		# os.remove('%s_trusted_genes.txt' % self.case)
 
 		while not pipeline_utils.sub_thread_count(global_vars.thread_file, 1):
 			time.sleep(1.2)
