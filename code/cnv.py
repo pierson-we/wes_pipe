@@ -160,25 +160,25 @@ class refine_cnv(luigi.Task):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 
-		cmd = 'python3 %s segment %s -m %s --drop-low-coverage -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.cfg['cnvkit_seg_method'], self.output()[0].path)
-		cmd = cmd.split(' ')
-		pipeline_utils.command_call(cmd, self.output())
+		# cmd = 'python3 %s segment %s -m %s --drop-low-coverage -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.cfg['cnvkit_seg_method'], self.output()[0].path)
+		# cmd = cmd.split(' ')
+		# pipeline_utils.command_call(cmd, self.output())
 
-		cmd = 'python3 %s segmetrics %s -s %s --ci --std --mean -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[0].path, self.output()[1].path)
-		cmd = cmd.split(' ')
-		pipeline_utils.command_call(cmd, self.output())
+		# cmd = 'python3 %s segmetrics %s -s %s --ci --std --mean -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[0].path, self.output()[1].path)
+		# cmd = cmd.split(' ')
+		# pipeline_utils.command_call(cmd, self.output())
 
-		cmd = 'python3 %s call %s -i %s_T -m threshold --filter ci --sample-sex female -o %s' % (self.cfg['cnvkit_location'], self.output()[1].path, self.case, self.output()[2].path)
-		cmd = cmd.split(' ')
-		pipeline_utils.command_call(cmd, self.output())
+		# cmd = 'python3 %s call %s -i %s_T -m threshold --filter ci --sample-sex female -o %s' % (self.cfg['cnvkit_location'], self.output()[1].path, self.case, self.output()[2].path)
+		# cmd = cmd.split(' ')
+		# pipeline_utils.command_call(cmd, self.output())
 
-		cmd = 'python3 %s scatter %s -s %s -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[2].path, self.output()[3].path)
-		cmd = cmd.split(' ')
-		pipeline_utils.command_call(cmd, self.output())
+		# cmd = 'python3 %s scatter %s -s %s -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[2].path, self.output()[3].path)
+		# cmd = cmd.split(' ')
+		# pipeline_utils.command_call(cmd, self.output())
 
-		cmd = 'python3 %s genemetrics %s -s %s -t %s -m %s -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[2].path, self.cfg['cnvkit_genemetrics_threshold'], self.cfg['cnvkit_genemetrics_minprobes'], self.output()[4].path)
-		cmd = cmd.split(' ')
-		pipeline_utils.command_call(cmd, self.output())
+		# cmd = 'python3 %s genemetrics %s -s %s -t %s -m %s -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[2].path, self.cfg['cnvkit_genemetrics_threshold'], self.cfg['cnvkit_genemetrics_minprobes'], self.output()[4].path)
+		# cmd = cmd.split(' ')
+		# pipeline_utils.command_call(cmd, self.output())
 
 		#repurpose command call for pipe command calls
 		wait_time = random.uniform(0,3)
@@ -187,52 +187,52 @@ class refine_cnv(luigi.Task):
 		while not pipeline_utils.add_thread_count(global_vars.thread_file, 1):
 			time.sleep(1.2)
 		
-		cmd = 'python3 %s genemetrics %s -s %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[2].path)
-		cmd = cmd.split(' ')
-		p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-		# outs, err = p.communicate()
-		cmd = 'tail -n+2'
-		cmd = cmd.split(' ')
-		p2 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p1.stdout)
-		# outs, err = p.communicate()
-		cmd = 'cut -f1'
-		cmd = cmd.split(' ')
-		p3 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p2.stdout)
-		# outs, err = p.communicate()
-		cmd = 'sort'
-		cmd = cmd.split(' ')
-		p4 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p3.stdout)
-		outs, err = p4.communicate()
-		with open('%s_segment_genes.txt' % self.case, 'wb') as f:
-			f.write(outs)
+		# cmd = 'python3 %s genemetrics %s -s %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[2].path)
+		# cmd = cmd.split(' ')
+		# p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+		# # outs, err = p.communicate()
+		# cmd = 'tail -n+2'
+		# cmd = cmd.split(' ')
+		# p2 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p1.stdout)
+		# # outs, err = p.communicate()
+		# cmd = 'cut -f1'
+		# cmd = cmd.split(' ')
+		# p3 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p2.stdout)
+		# # outs, err = p.communicate()
+		# cmd = 'sort'
+		# cmd = cmd.split(' ')
+		# p4 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p3.stdout)
+		# outs, err = p4.communicate()
+		# with open('%s_segment_genes.txt' % self.case, 'wb') as f:
+		# 	f.write(outs)
 
-		cmd = 'python3 %s genemetrics %s' % (self.cfg['cnvkit_location'], self.input().path)
-		cmd = cmd.split(' ')
-		p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-		# outs, err = p.communicate()
-		cmd = 'tail -n+2'
-		cmd = cmd.split(' ')
-		p2 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p1.stdout)
-		# outs, err = p.communicate()
-		cmd = 'cut -f1'
-		cmd = cmd.split(' ')
-		p3 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p2.stdout)
-		# outs, err = p.communicate()
-		cmd = 'sort'
-		cmd = cmd.split(' ')
-		p4 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p3.stdout)
-		outs, err = p4.communicate()
-		with open('%s_ratio_genes.txt' % self.case, 'wb') as f:
-			f.write(outs)
+		# cmd = 'python3 %s genemetrics %s' % (self.cfg['cnvkit_location'], self.input().path)
+		# cmd = cmd.split(' ')
+		# p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+		# # outs, err = p.communicate()
+		# cmd = 'tail -n+2'
+		# cmd = cmd.split(' ')
+		# p2 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p1.stdout)
+		# # outs, err = p.communicate()
+		# cmd = 'cut -f1'
+		# cmd = cmd.split(' ')
+		# p3 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p2.stdout)
+		# # outs, err = p.communicate()
+		# cmd = 'sort'
+		# cmd = cmd.split(' ')
+		# p4 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p3.stdout)
+		# outs, err = p4.communicate()
+		# with open('%s_ratio_genes.txt' % self.case, 'wb') as f:
+		# 	f.write(outs)
 
-		cmd = 'comm -12 %s_ratio_genes.txt %s_segment_genes.txt' % (self.case, self.case)
-		cmd = cmd.split(' ')
-		p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-		outs, err = p.communicate()
-		with open('%s_trusted_genes.txt' % self.case, 'wb') as f:
-			f.write(outs)
-		with open('%s_trusted_genes.txt' % self.case, 'r') as f:
-			trusted_genes = f.read().split('\n')
+		# cmd = 'comm -12 %s_ratio_genes.txt %s_segment_genes.txt' % (self.case, self.case)
+		# cmd = cmd.split(' ')
+		# p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+		# outs, err = p.communicate()
+		# with open('%s_trusted_genes.txt' % self.case, 'wb') as f:
+		# 	f.write(outs)
+		# with open('%s_trusted_genes.txt' % self.case, 'r') as f:
+		# 	trusted_genes = f.read().split('\n')
 
 		seg = pd.read_csv(self.output()[4].path, sep='\t', header=0)
 		if seg.shape[0] >= 1:
@@ -268,9 +268,9 @@ class refine_cnv(luigi.Task):
 		if seg.shape[0] < 1:
 			with open(self.output()[5].path, 'w') as f:
 				f.write('\t'.join(['Hugo_Symbol', 'chromosome', 'start', 'end', 'log2', 'depth', 'weight', 'cn', 'n_bins', 'segment_weight', 'segment_probes', 'class', 'Tumor_Sample_Barcode', 'FILTER', 'Variant_Classification']))
-		os.remove('%s_segment_genes.txt' % self.case)
-		os.remove('%s_ratio_genes.txt' % self.case)
-		os.remove('%s_trusted_genes.txt' % self.case)
+		# os.remove('%s_segment_genes.txt' % self.case)
+		# os.remove('%s_ratio_genes.txt' % self.case)
+		# os.remove('%s_trusted_genes.txt' % self.case)
 
 		while not pipeline_utils.sub_thread_count(global_vars.thread_file, 1):
 			time.sleep(1.2)
