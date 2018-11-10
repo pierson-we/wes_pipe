@@ -24,10 +24,10 @@ def combine_cnvs(cnvs, samples, output):
 	for i, file in enumerate(cnvs):
 		sample = samples[i]
 		try:
-			cnv_df = pd.read_csv(file, sep='\t', header=0, usecols=['Hugo_Symbol', 'class', 'depth', 'chromosome', 'start', 'end', 'weight', 'log2', 'ci_lo', 'ci_hi'])
+			cnv_df = pd.read_csv(file, sep='\t', header=0, usecols=['Hugo_Symbol', 'class', 'depth', 'chromosome', 'start', 'end', 'weight', 'log2']) #, 'ci_lo', 'ci_hi'])
 			cnv_df['sample'] = sample
 		except:
-			cnv_df = pd.DataFrame(columns=['Hugo_Symbol', 'class', 'depth', 'chromosome', 'start', 'end', 'weight', 'log2', 'ci_lo', 'ci_hi', 'sample'])
+			cnv_df = pd.DataFrame(columns=['Hugo_Symbol', 'class', 'depth', 'chromosome', 'start', 'end', 'weight', 'log2', 'sample']) #, 'ci_lo', 'ci_hi'])
 		cnv_dfs.append(cnv_df)
 	all_cnvs = pd.concat(cnv_dfs, ignore_index=True)
 	all_cnvs.to_csv(output, sep='\t', header=True, index=False)
