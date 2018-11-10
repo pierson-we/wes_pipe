@@ -153,8 +153,8 @@ class refine_cnv(luigi.Task):
 		luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'segment', '%s_T.segmetrics.cns' % self.case)),
 		luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'segment', '%s_T.call.cns' % self.case)),
 		luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'segment', '%s_T.scatter.png' % self.case)),
-		luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'segment', '%s_T.genemetrics.tsv' % self.case))] #,
-		# luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'segment', '%s_T.trusted_genes.tsv' % self.case))]
+		luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'segment', '%s_T.genemetrics.tsv' % self.case)),
+		luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'cnvkit', 'segment', '%s_T.trusted_genes.tsv' % self.case))]
 	
 	def run(self):
 		for output in self.output():
