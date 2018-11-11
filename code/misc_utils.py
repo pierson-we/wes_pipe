@@ -38,7 +38,7 @@ def format_pindel(pindel_files, sample_dict, project_dir, all_samples_output):
 	for file in pindel_files:
 		mut_type = file.split('.filtered.tsv')[0].split('_')[-1]
 		def parse(row, pindel_dict):
-			sample_count = row[28]
+			sample_count = int(row[28])
 			samples = [row[32+7*x] for x in range(0, sample_count)]
 			sample_reads = [int(row[34+7*x]) for x in range(0, sample_count)]
 			for i, reads in enumerate(sample_reads):
