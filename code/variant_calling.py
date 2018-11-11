@@ -409,8 +409,8 @@ class filter_pindel(luigi.Task):
 			time.sleep(1.2)
 
 		for i, input_file in enumerate(self.input()):
-			cmd = ['grep', '"ChrID"', input_file.path] #| awk '$17 >= 3' > $file_out
-			p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+			cmd = 'grep "ChrID" %s' % input_file.path #| awk '$17 >= 3' > $file_out
+			p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
 			# outs, err = p.communicate()
 			cmd = "awk '$17>=%s'" % self.cfg['pindel_min_reads']
 			p2 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p1.stdout, shell=True)
