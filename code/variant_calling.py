@@ -412,7 +412,7 @@ class filter_pindel(luigi.Task):
 			cmd = ['grep', '"ChrID"', input_file.path] #| awk '$17 >= 3' > $file_out
 			p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE)
 			# outs, err = p.communicate()
-			cmd = ["awk", "$17 >= %s" % self.cfg['pindel_min_reads']]
+			cmd = "awk '$17>=%s'" % self.cfg['pindel_min_reads']
 			p2 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p1.stdout)
 			# outs, err = p.communicate()
 			outs, err = p2.communicate()
