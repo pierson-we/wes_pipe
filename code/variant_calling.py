@@ -413,7 +413,7 @@ class filter_pindel(luigi.Task):
 			p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE)
 			# outs, err = p.communicate()
 			cmd = "awk '$17>=%s'" % self.cfg['pindel_min_reads']
-			p2 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p1.stdout)
+			p2 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p1.stdout, shell=True)
 			# outs, err = p.communicate()
 			outs, err = p2.communicate()
 			with open(self.output()[i].path, 'wb') as f:
