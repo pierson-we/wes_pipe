@@ -298,6 +298,7 @@ class cases(luigi.Task):
 	cnvkit_seg_method = luigi.Parameter()
 	cnvkit_genemetrics_threshold = luigi.Parameter()
 	cnvkit_genemetrics_minprobes = luigi.Parameter()
+	pindel_min_reads = luigi.IntParameter()
 
 	def requires(self):
 		cfg = {
@@ -327,6 +328,7 @@ class cases(luigi.Task):
 			'cnvkit_seg_method': self.cnvkit_seg_method,
 			'cnvkit_genemetrics_threshold': self.cnvkit_genemetrics_threshold,
 			'cnvkit_genemetrics_minprobes': self.cnvkit_genemetrics_minprobes,
+			'pindel_min_reads': self.pindel_min_reads,
 			'tmp_dir': os.path.join(self.project_dir, 'tmp')
 		}
 		pipeline_utils.confirm_path(cfg['tmp_dir'])
