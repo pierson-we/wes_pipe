@@ -223,11 +223,11 @@ class combine_mafs(luigi.Task):
 		return [vcf2maf(max_threads=self.max_threads, project_dir=self.project_dir, case=case, tumor=self.case_dict[case]['T'], matched_n=self.case_dict[case]['N'], case_dict=self.case_dict, cfg=self.cfg, vcf_path=os.path.join(self.project_dir, 'output', case, 'variants')) for case in self.case_dict]
 
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'all_samples.maf'))
+		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'all_samples.maf'))] + self.input()
 
 	def run(self):
-		pipeline_utils.confirm_path(self.output().path)
-		misc_utils.combine_mafs([maf_input.path for maf_input in self.input()], self.output().path)
+		pipeline_utils.confirm_path(self.output()[0].path)
+		misc_utils.combine_mafs([maf_input.path for maf_input in self.input()], self.output()[0].path)
 
 class combine_cnvs(luigi.Task):
 	max_threads = luigi.IntParameter()
@@ -240,11 +240,11 @@ class combine_cnvs(luigi.Task):
 		return [cnv.refine_cnv(case=case, max_threads=self.max_threads, project_dir=self.project_dir, cfg=self.cfg, case_dict=self.case_dict) for case in self.case_dict]
 
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'all_samples_cnv.tsv'))
+		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'all_samples_cnv.tsv'))] + self.input()
 
 	def run(self):
-		pipeline_utils.confirm_path(self.output().path)
-		misc_utils.combine_cnvs([cnv_input[-1].path for cnv_input in self.input()], [case for case in self.case_dict], self.output().path)
+		pipeline_utils.confirm_path(self.output()[0].path)
+		misc_utils.combine_cnvs([cnv_input[-1].path for cnv_input in self.input()], [case for case in self.case_dict], self.output()[0].path)
 
 class create_mut_mats(luigi.Task):
 	max_threads = luigi.IntParameter()
@@ -254,16 +254,21 @@ class create_mut_mats(luigi.Task):
 	cfg = luigi.DictParameter()
 
 	def requires(self):
-		return [combine_mafs(max_threads=self.max_threads, project_dir=self.project_dir, cfg=self.cfg, case_dict=self.case_dict), combine_cnvs(max_threads=self.max_threads, project_dir=self.project_dir, cfg=self.cfg, case_dict=self.case_dict)]
+		return [combine_mafs(max_threads=self.max_threads, project_dir=self.project_dir, cfg=self.cfg, case_dict=self.case_dict), 
+		combine_cnvs(max_threads=self.max_threads, project_dir=self.project_dir, cfg=self.cfg, case_dict=self.case_dict),
+		variant_calling.annotate_pindel(project_dir=self.project_dir, max_threads=self.sample_threads, cfg=cfg, case_dict=self.sample_dict)]
 
 	def output(self):
-		# return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'mut_mat.tsv')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'cnv_mat.tsv'))]
-		return self.input()
+		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'mut_mat.tsv')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'cnv_mat.tsv')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'mut_counts.tsv'))]
+		# return self.input()
 
-	# def run(self):
-	# 	for output in self.output():
-	# 		pipeline_utils.confirm_path(output.path)
-	# 	misc_utils.create_mut_mats(self.input()[0].path, self.input()[1].path, self.output()[0].path, self.output()[1].path)
+	def run(self):
+		for output in self.output():
+			pipeline_utils.confirm_path(output.path)
+		mafs = [input_file.path for input_file in self.input()[0][1:]]
+		cnvs = [input_files[-1].path for input_files in self.input()[0][1:]]
+		pindel = [input_file.path for input_file in self.input()[0]]
+		misc_utils.create_mut_mats(mafs=mafs, cnvs=cnvs, pindel=pindel, mut_mat=self.output()[0].path, cnv_mat=self.output()[1].path, mut_counts_file=self.output()[2].path)
 
 class cases(luigi.Task):
 	# generated parameters
@@ -344,8 +349,8 @@ class cases(luigi.Task):
 
 		return [create_mut_mats(max_threads=self.sample_threads, project_dir=self.project_dir, cfg=cfg, case_dict=self.sample_dict)] + \
 		[germline.filter_germline(project_dir=self.project_dir, max_threads=self.sample_threads, cfg=cfg, case_dict=self.sample_dict)] + \
-		[variant_calling.msisensor(max_threads=self.sample_threads, project_dir=self.project_dir, case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], cfg=cfg, vcf_path=os.path.join(self.project_dir, 'output', case, 'variants')) for case in self.sample_dict] + \
-		[variant_calling.annotate_pindel(project_dir=self.project_dir, max_threads=self.sample_threads, cfg=cfg, case_dict=self.sample_dict)]
+		[variant_calling.msisensor(max_threads=self.sample_threads, project_dir=self.project_dir, case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], cfg=cfg, vcf_path=os.path.join(self.project_dir, 'output', case, 'variants')) for case in self.sample_dict]
+		# [variant_calling.annotate_pindel(project_dir=self.project_dir, max_threads=self.sample_threads, cfg=cfg, case_dict=self.sample_dict)]
 		# [msi(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict, cfg=cfg, vcf_path=os.path.join(self.project_dir, 'output', case, 'variants')) for case in self.sample_dict]
 
 		# [variant_analysis.vep(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict, cfg=cfg) for case in self.sample_dict] + \

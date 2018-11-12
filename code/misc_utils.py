@@ -198,7 +198,7 @@ def format_pindel(pindel_files, sample_dict, project_dir, all_samples_output, mi
 	all_pindels.to_csv(all_samples_output, sep='\t', header=True, index=False)
 
 
-def create_mut_mats(mafs, cnvs, pindel, mut_mat, cnv_mat, mut_counts_file):
+def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_file):
 	mut_samples = []
 	mut_counts = []
 	mut_dfs = []
@@ -235,10 +235,25 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat, cnv_mat, mut_counts_file):
 		f.write('\n')
 		f.write('\t'.join([str(x) for x in mut_counts]))
 
+	mut_pindel_dfs = []
+	mut_pindel_samples = []
 	for file in pindel:
 		sample = file.split('/')[-1].split('.')[0]
-		pindel_df = pd.read_csv(file, skiprows=1, header=None, sep='\t')
-
+		pindel_df = pd.read_csv(file, skiprows=1, header=None, sep='\t', names=['chr', 'start', 'end', 'info', 'genes'])
+		def parse_pindel(row, new_rows):
+			mut_type = row.info.split(';')[0].split('=')[1]
+			length = mut_type = row.info.split(';')[1].split('=')[1]
+			genes = row.genes.split(';')
+			if int(length) > 3 and int(length) % 3 != 0:
+				for gene in genes:
+					new_rows.append({'Hugo_Symbol': gene, 'Variant_Classification': mut_type, 'FILTER': 'PASS', 'dbSNP_RS': ''})
+		pindel_data = []
+		pindel_df.apply(parse_pindel, new_rows=pindel_data)
+		parsed_pindel_df = pd.DataFrame(pindel_data, columns=['Hugo_Symbol', 'Variant_Classification', 'FILTER', 'dbSNP_RS'])
+		mut_df = mut_dfs[mut_samples.index(sample)]
+		mut_pindel_df = pd.concat([mut_df, parsed_pindel_df], ignore_index=True)
+		mut_pindel_dfs.append(mut_pindel_df)
+		mut_pindel_samples.append(sample)
 
 	cnv_samples = []
 	cnv_dfs = []
@@ -271,14 +286,14 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat, cnv_mat, mut_counts_file):
 			# cnv_df = cnv_df[['Hugo_Symbol', 'class']]
 		except:
 			cnv_df = pd.DataFrame(columns=['Hugo_Symbol', 'class', 'depth', 'chromosome', 'start', 'end', 'weight', 'log2', 'sample', 'depth_per_kb']) # , 'ci_lo', 'ci_hi'])
-		print(sample)
-		print(cnv_df.shape)
+		# print(sample)
+		# print(cnv_df.shape)
 		cnv_dfs.append(cnv_df)
 		cnv_samples.append(sample)
 	all_cnvs = pd.concat(cnv_dfs, ignore_index=True)
 	all_cnvs.to_csv(os.path.join(out_dir, 'all_cnvs.tsv'), sep='\t', header=True, index=False)
 	min_depth = np.percentile(all_cnvs.depth_per_kb, 25)
-	print('min depth/kb: %s' % min_depth)
+	# print('min depth/kb: %s' % min_depth)
 	cnv_dfs = [cnv_df[cnv_df['depth_per_kb'] > min_depth] for cnv_df in cnv_dfs]
 	assert mut_samples == cnv_samples
 
@@ -295,12 +310,15 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat, cnv_mat, mut_counts_file):
 	mut_mat = pd.DataFrame(columns=mut_samples, index=all_genes)
 	cnv_mat = pd.DataFrame(columns=cnv_samples, index=all_genes)
 
-	for i, mut_df in enumerate(mut_dfs):
+	for i, mut_df in enumerate(mut_pindel_dfs):
 		for gene in mut_df.Hugo_Symbol.unique().tolist():
 			gene_df = mut_df[mut_df['Hugo_Symbol'] == gene]
 			variant_types = gene_df.Variant_Classification.unique().tolist()
-			if 'Nonsense_Mutation' in variant_types or 'Frame_Shift_Ins' in variant_types or 'Frame_Shift_Del' in variant_types:
-				mut_mat.loc[gene, mut_samples[i]] = 1 # nonsense/frameshift = 1
+			lengths = 
+			if 'D' variant_types or 'INS' in variant_types or 'INV' in variant_types or 'TD' in variant_types:
+				mut_mat.loc[gene, mut_pindel_samples[i]] = 5 # SV = 5
+			elif 'Nonsense_Mutation' in variant_types or 'Frame_Shift_Ins' in variant_types or 'Frame_Shift_Del' in variant_types:
+				mut_mat.loc[gene, mut_pindel_samples[i]] = 1 # nonsense/frameshift = 1
 			else:
 				mut_mat.loc[gene, mut_samples[i]] = 2 # missense = 2
 	mut_mat.fillna(value=0, inplace=True)
@@ -326,5 +344,5 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat, cnv_mat, mut_counts_file):
 	# print(cnv_mat.head())
 	# print(cnv_mat.shape)
 
-	mut_mat.to_csv(os.path.join(out_dir, 'mut_mat.tsv'), header=True, index=True, sep='\t')
-	cnv_mat.to_csv(os.path.join(out_dir, 'cnv_mat.tsv'), header=True, index=True, sep='\t')
+	mut_mat.to_csv(mut_mat_file, header=True, index=True, sep='\t')
+	cnv_mat.to_csv(cnv_mat_file, header=True, index=True, sep='\t')
