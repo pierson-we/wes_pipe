@@ -242,7 +242,7 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 		sample = file.split('/')[-1].split('.')[0]
 		if sample in mut_samples:
 			pindel_df = pd.read_csv(file, skiprows=1, header=None, sep='\t', names=['chr', 'start', 'end', 'gffTag', 'genes'])
-			# print(pindel_df.head())
+			print(pindel_df.head())
 			def parse_pindel(row, new_rows):
 				mut_type = row['gffTag'].split(';')[0].split('=')[1]
 				length = mut_type = row['gffTag'].split(';')[1].split('=')[1]
