@@ -264,6 +264,7 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 			pindel_data = []
 			pindel_df.apply(parse_pindel, axis=1, new_rows=pindel_data)
 			parsed_pindel_df = pd.DataFrame(pindel_data, columns=['Hugo_Symbol', 'Variant_Classification', 'FILTER', 'dbSNP_RS'])
+			print(parsed_pindel_df.head())
 			mut_df = mut_dfs[mut_samples.index(sample)]
 			mut_pindel_df = pd.concat([mut_df, parsed_pindel_df], ignore_index=True)
 			mut_pindel_dfs.append(mut_pindel_df)
