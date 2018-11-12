@@ -247,9 +247,18 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 				mut_type = row['gffTag'].split(';')[0].split('=')[1]
 				length = mut_type = row['gffTag'].split(';')[1].split('=')[1]
 				genes = str(row.genes).split(';')
-				if int(length) > 3 and int(length) % 3 != 0 and len(genes) > 0:
-					for gene in genes:
-						new_rows.append({'Hugo_Symbol': gene, 'Variant_Classification': mut_type, 'FILTER': 'PASS', 'dbSNP_RS': ''})
+				if len(genes) > 0:
+					if int(length) > 3 and int(length) % 3 != 0:
+						for gene in genes:
+							new_rows.append({'Hugo_Symbol': gene, 'Variant_Classification': mut_type, 'FILTER': 'PASS', 'dbSNP_RS': ''})
+					elif int(length) < 3:
+						if mut_type == 'D':
+							mut_type = 'Frame_Shift_Del'
+						elif mut_type =='INS':
+							mut_type = 'Frame_Shift_Ins'
+						for gene in genes:
+							new_rows.append({'Hugo_Symbol': gene, 'Variant_Classification': mut_type, 'FILTER': 'PASS', 'dbSNP_RS': ''})
+
 			pindel_data = []
 			pindel_df.apply(parse_pindel, axis=1, new_rows=pindel_data)
 			parsed_pindel_df = pd.DataFrame(pindel_data, columns=['Hugo_Symbol', 'Variant_Classification', 'FILTER', 'dbSNP_RS'])
