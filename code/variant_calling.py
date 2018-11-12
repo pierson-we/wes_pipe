@@ -465,7 +465,7 @@ class annotate_pindel(luigi.Task):
 
 			outs, err = p2.communicate()
 			with open(self.output()[i].path, 'wb') as f:
-				f.write('#gffTags\n')
+				f.write(str.encode('#gffTags\n'))
 				f.write(outs)
 
 		while not pipeline_utils.sub_thread_count(global_vars.thread_file, 1):
