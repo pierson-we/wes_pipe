@@ -88,20 +88,25 @@ def filter_pindel(pindel_files, sample_dict, project_dir, all_samples_output, mi
 	def create_pon(row, pon):
 		variant_type = row.gffTag.split(';')[0].split('=')[-1]
 		variant_length = row.gffTag.split(';')[1].split('=')[-1]
-		variant_id = '_'.join([row.chr, row.start, row.end, variant_type, variant_length])
-		if variant_id not in pon:
-			pon.append(variant_id)
+		variant_id = '_'.join([row.start, row.end, variant_type, variant_length])
+		if row.chr not in pon:
+			pon[row.chr] = []
+		if variant_id not in pon[row.chr]:
+			pon[row.chr].append(variant_id)
 
 	def filter_pon(row, pon):
 		variant_type = row.gffTag.split(';')[0].split('=')[-1]
 		variant_length = row.gffTag.split(';')[1].split('=')[-1]
-		variant_id = '_'.join([row.chr, row.start, row.end, variant_type, variant_length])
-		if variant_id in pon:
-			return False
+		variant_id = '_'.join([row.start, row.end, variant_type, variant_length])
+		if row.chr in pon:
+			if variant_id in pon[row.chr]:
+				return False
+			else:
+				return False
 		else:
 			return True
 
-	pon = []
+	pon = {}
 
 	for sample in sample_dict:
 		if '_N' in sample:
