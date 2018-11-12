@@ -102,7 +102,7 @@ def filter_pindel(pindel_files, sample_dict, project_dir, all_samples_output, mi
 			if variant_id in pon[row.chr]:
 				return False
 			else:
-				return False
+				return True
 		else:
 			return True
 
@@ -198,5 +198,128 @@ def format_pindel(pindel_files, sample_dict, project_dir, all_samples_output, mi
 	all_pindels.to_csv(all_samples_output, sep='\t', header=True, index=False)
 
 
-def create_mut_mats(muts, cnvs, mut_mat, cnv_mat):
-	return 'hello'
+def create_mut_mats(mafs, cnvs, pindel, mut_mat, cnv_mat, mut_counts):
+	mut_samples = []
+	mut_counts = []
+	mut_dfs = []
+	for file in mafs:
+		sample = file.split('/')[-1].split('.')[0]
+		with open(file, 'r') as f:
+			count = 0
+			for line in f.readlines():
+				if line.startswith('Hugo'):
+					break
+				count += 1
+		mut_df = pd.read_csv(file, sep='\t', header=count, usecols=['Hugo_Symbol', 'Variant_Classification', 'FILTER', 'dbSNP_RS'])
+		mut_df = mut_df[mut_df['FILTER'] == 'PASS']
+		mut_counts.append(mut_df.shape[0])
+		mut_types = ['Missense_Mutation', 'Nonsense_Mutation', 'Frame_Shift_Ins', 'Frame_Shift_Ins']
+		def filter_mut_types(row, mut_types):
+			if row.Variant_Classification in mut_types:
+				if row.Variant_Classification == 'Missense_Mutation':
+					if row.dbSNP_RS != 'novel':
+						return True
+					else:
+						return False
+				else:
+					return True
+				# return True
+			else:
+				return False
+
+		mut_df = mut_df[mut_df.apply(filter_mut_types, axis=1, mut_types=mut_types)]
+		mut_dfs.append(mut_df)
+		mut_samples.append(sample)
+	with open(mut_counts, 'w') as f:
+		f.write('\t'.join(mut_samples))
+		f.write('\n')
+		f.write('\t'.join([str(x) for x in mut_counts]))
+
+	cnv_samples = []
+	cnv_dfs = []
+
+	def filter_ci(row):
+		if row['class'] == 'amp':
+			if row.log2 > row.ci_lo:
+				return True
+			else:
+				return False
+		elif row['class'] == 'del':
+			if row.log2 < row.ci_hi:
+				return True
+			else:
+				return False
+		else:
+			return False
+	for file in cnvs:
+		sample = file.split('/')[-1].split('.')[0]
+		try:
+			cnv_df = pd.read_csv(file, sep='\t', header=0, usecols=['Hugo_Symbol', 'class', 'depth', 'chromosome', 'start', 'end', 'weight', 'log2']) #, 'ci_lo', 'ci_hi'])
+			cnv_df = cnv_df[cnv_df['class'] != 'wt']
+			# cnv_df = cnv_df[cnv_df['depth'] >= 100]
+			cnv_df = cnv_df[cnv_df['chromosome'] != 'Y']
+			# cnv_df = cnv_df[cnv_df.apply(filter_ci, axis=1)]
+			cnv_df['sample'] = sample
+			cnv_df['depth_per_kb'] = cnv_df['depth'] / (cnv_df['end'] - cnv_df['start'])*1000
+			# min_depth = np.percentile(cnv_df.depth_per_kb, 25)
+			# cnv_df = cnv_df[cnv_df['depth_per_kb'] > min_depth]
+			# cnv_df = cnv_df[['Hugo_Symbol', 'class']]
+		except:
+			cnv_df = pd.DataFrame(columns=['Hugo_Symbol', 'class', 'depth', 'chromosome', 'start', 'end', 'weight', 'log2', 'sample', 'depth_per_kb']) # , 'ci_lo', 'ci_hi'])
+		print(sample)
+		print(cnv_df.shape)
+		cnv_dfs.append(cnv_df)
+		cnv_samples.append(sample)
+	all_cnvs = pd.concat(cnv_dfs, ignore_index=True)
+	all_cnvs.to_csv(os.path.join(out_dir, 'all_cnvs.tsv'), sep='\t', header=True, index=False)
+	min_depth = np.percentile(all_cnvs.depth_per_kb, 25)
+	print('min depth/kb: %s' % min_depth)
+	cnv_dfs = [cnv_df[cnv_df['depth_per_kb'] > min_depth] for cnv_df in cnv_dfs]
+	assert mut_samples == cnv_samples
+
+	all_genes = []
+	for mut_df in mut_dfs:
+		genes = mut_df.Hugo_Symbol.unique().tolist()
+		all_genes = list(set(all_genes + genes))
+	for cnv_df in cnv_dfs:
+		genes = cnv_df.Hugo_Symbol.unique().tolist()
+		all_genes = list(set(all_genes + genes))
+
+	all_genes = sorted(all_genes)
+	
+	mut_mat = pd.DataFrame(columns=mut_samples, index=all_genes)
+	cnv_mat = pd.DataFrame(columns=cnv_samples, index=all_genes)
+
+	for i, mut_df in enumerate(mut_dfs):
+		for gene in mut_df.Hugo_Symbol.unique().tolist():
+			gene_df = mut_df[mut_df['Hugo_Symbol'] == gene]
+			variant_types = gene_df.Variant_Classification.unique().tolist()
+			if 'Nonsense_Mutation' in variant_types or 'Frame_Shift_Ins' in variant_types or 'Frame_Shift_Del' in variant_types:
+				mut_mat.loc[gene, mut_samples[i]] = 1 # nonsense/frameshift = 1
+			else:
+				mut_mat.loc[gene, mut_samples[i]] = 2 # missense = 2
+	mut_mat.fillna(value=0, inplace=True)
+
+	for i, cnv_df in enumerate(cnv_dfs):
+		for gene in cnv_df.Hugo_Symbol.unique().tolist():
+			variant_types = cnv_df[cnv_df['Hugo_Symbol'] == gene]['class'].unique().tolist()
+			# variant_types = gene_df['class'].unique().tolist()
+			# if 'Nonsense_Mutation' in variant_types or 'Frame_Shift_Ins' in variant_types or 'Frame_Shift_Del' in variant_types:
+			if len(variant_types) == 1:
+				if variant_types[0] == 'amp':
+					cnv_mat.loc[gene, cnv_samples[i]] = 3 # amplication = 3
+				elif variant_types[0] == 'del':
+					cnv_mat.loc[gene, cnv_samples[i]] = 4 # deletion = 4
+				else:
+					print('found a wt straggler')
+			else:
+				# print(cnv_df[cnv_df['Hugo_Symbol'] == gene])
+				print('%s, %s: uh ohhhhhhh' % (cnv_samples[i], gene))
+			# else:
+			# 	cnv_mat.loc[gene, cnv_samples[i]] = 'del'
+	cnv_mat.fillna(value=0, inplace=True)
+	# print(cnv_mat.head())
+	# print(cnv_mat.shape)
+
+	mut_mat.to_csv(os.path.join(out_dir, 'mut_mat.tsv'), header=True, index=True, sep='\t')
+	cnv_mat.to_csv(os.path.join(out_dir, 'cnv_mat.tsv'), header=True, index=True, sep='\t')
