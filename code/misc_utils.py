@@ -198,7 +198,7 @@ def format_pindel(pindel_files, sample_dict, project_dir, all_samples_output, mi
 	all_pindels.to_csv(all_samples_output, sep='\t', header=True, index=False)
 
 
-def create_mut_mats(mafs, cnvs, pindel, mut_mat, cnv_mat, mut_counts):
+def create_mut_mats(mafs, cnvs, pindel, mut_mat, cnv_mat, mut_counts_file):
 	mut_samples = []
 	mut_counts = []
 	mut_dfs = []
@@ -230,10 +230,14 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat, cnv_mat, mut_counts):
 		mut_df = mut_df[mut_df.apply(filter_mut_types, axis=1, mut_types=mut_types)]
 		mut_dfs.append(mut_df)
 		mut_samples.append(sample)
-	with open(mut_counts, 'w') as f:
+	with open(mut_counts_file, 'w') as f:
 		f.write('\t'.join(mut_samples))
 		f.write('\n')
 		f.write('\t'.join([str(x) for x in mut_counts]))
+
+	for file in pindel:
+		sample = file.split('/')[-1].split('.')[0]
+		pindel_df = 
 
 	cnv_samples = []
 	cnv_dfs = []

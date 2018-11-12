@@ -414,7 +414,6 @@ class filter_pindel(luigi.Task):
 
 		misc_utils.filter_pindel(pindel_files=[input_file.path for input_file in self.input()], sample_dict=sample_dict, project_dir=self.project_dir, all_samples_output=self.output()[-1].path, min_reads=self.cfg['pindel_min_reads'], min_qual=self.cfg['pindel_min_qual'], max_inv_length=self.cfg['pindel_max_inv_length'])
 
-
 		while not pipeline_utils.sub_thread_count(global_vars.thread_file, 1):
 			time.sleep(1.2)
 
@@ -455,15 +454,18 @@ class annotate_pindel(luigi.Task):
 
 		for i, input_file in enumerate(self.input()[:-1]):
 			cmd = 'sort-bed %s' % input_file.path
-			print(cmd)
+			# print(cmd)
 			p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+
+			cmd = ['bedtools', 'intersect', '-a', '"stdin"', '-b', self.cfg['exons_bed'], '-wa', '-u', '-sorted']
+			p2 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p1.stdout, shell=True)
 
 			cmd = ["bedmap", "--echo", "--echo-map-id-uniq", "--delim", r"'\t'", "-", self.cfg['genmap']]
 			cmd = " ".join(cmd)
-			print(cmd)
-			p2 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p1.stdout, shell=True)
+			# print(cmd)
+			p3 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p2.stdout, shell=True)
 
-			outs, err = p2.communicate()
+			outs, err = p3.communicate()
 			with open(self.output()[i].path, 'wb') as f:
 				f.write(str.encode('#gffTags\n'))
 				f.write(outs)

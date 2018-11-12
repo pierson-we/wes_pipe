@@ -302,6 +302,7 @@ class cases(luigi.Task):
 	pindel_min_qual = luigi.IntParameter()
 	pindel_max_inv_length = luigi.IntParameter()
 	genmap = luigi.Parameter()
+	exons_bed = luigi.Parameter()
 
 	def requires(self):
 		cfg = {
@@ -335,6 +336,7 @@ class cases(luigi.Task):
 			'pindel_min_qual': self.pindel_min_qual,
 			'pindel_max_inv_length': self.pindel_max_inv_length,
 			'genmap': self.genmap,
+			'exons_bed': self.exons_bed,
 			'tmp_dir': os.path.join(self.project_dir, 'tmp')
 		}
 		pipeline_utils.confirm_path(cfg['tmp_dir'])
