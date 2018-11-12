@@ -239,22 +239,23 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 	mut_pindel_samples = []
 	for file in pindel:
 		sample = file.split('/')[-1].split('.')[0]
-		pindel_df = pd.read_csv(file, skiprows=1, header=None, sep='\t', names=['chr', 'start', 'end', 'gffTag', 'genes'])
-		# print(pindel_df.head())
-		def parse_pindel(row, new_rows):
-			mut_type = row['gffTag'].split(';')[0].split('=')[1]
-			length = mut_type = row['gffTag'].split(';')[1].split('=')[1]
-			genes = str(row.genes).split(';')
-			if int(length) > 3 and int(length) % 3 != 0 and len(genes) > 0:
-				for gene in genes:
-					new_rows.append({'Hugo_Symbol': gene, 'Variant_Classification': mut_type, 'FILTER': 'PASS', 'dbSNP_RS': ''})
-		pindel_data = []
-		pindel_df.apply(parse_pindel, axis=1, new_rows=pindel_data)
-		parsed_pindel_df = pd.DataFrame(pindel_data, columns=['Hugo_Symbol', 'Variant_Classification', 'FILTER', 'dbSNP_RS'])
-		mut_df = mut_dfs[mut_samples.index(sample)]
-		mut_pindel_df = pd.concat([mut_df, parsed_pindel_df], ignore_index=True)
-		mut_pindel_dfs.append(mut_pindel_df)
-		mut_pindel_samples.append(sample)
+		if sample in mut_samples:
+			pindel_df = pd.read_csv(file, skiprows=1, header=None, sep='\t', names=['chr', 'start', 'end', 'gffTag', 'genes'])
+			# print(pindel_df.head())
+			def parse_pindel(row, new_rows):
+				mut_type = row['gffTag'].split(';')[0].split('=')[1]
+				length = mut_type = row['gffTag'].split(';')[1].split('=')[1]
+				genes = str(row.genes).split(';')
+				if int(length) > 3 and int(length) % 3 != 0 and len(genes) > 0:
+					for gene in genes:
+						new_rows.append({'Hugo_Symbol': gene, 'Variant_Classification': mut_type, 'FILTER': 'PASS', 'dbSNP_RS': ''})
+			pindel_data = []
+			pindel_df.apply(parse_pindel, axis=1, new_rows=pindel_data)
+			parsed_pindel_df = pd.DataFrame(pindel_data, columns=['Hugo_Symbol', 'Variant_Classification', 'FILTER', 'dbSNP_RS'])
+			mut_df = mut_dfs[mut_samples.index(sample)]
+			mut_pindel_df = pd.concat([mut_df, parsed_pindel_df], ignore_index=True)
+			mut_pindel_dfs.append(mut_pindel_df)
+			mut_pindel_samples.append(sample)
 
 	cnv_samples = []
 	cnv_dfs = []
