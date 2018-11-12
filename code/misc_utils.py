@@ -251,6 +251,7 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 					if int(length) > 3 and int(length) % 3 != 0:
 						for gene in genes:
 							new_rows.append({'Hugo_Symbol': gene, 'Variant_Classification': mut_type, 'FILTER': 'PASS', 'dbSNP_RS': ''})
+							print('SV', gene)
 					elif int(length) < 3:
 						if mut_type == 'D':
 							mut_type = 'Frame_Shift_Del'
@@ -258,6 +259,7 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 							mut_type = 'Frame_Shift_Ins'
 						for gene in genes:
 							new_rows.append({'Hugo_Symbol': gene, 'Variant_Classification': mut_type, 'FILTER': 'PASS', 'dbSNP_RS': ''})
+							print('indel', gene)
 
 			pindel_data = []
 			pindel_df.apply(parse_pindel, axis=1, new_rows=pindel_data)
