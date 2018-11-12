@@ -461,7 +461,7 @@ class annotate_pindel(luigi.Task):
 			cmd = ["bedmap", "--echo", "--echo-map-id-uniq", "--delim", r"'\t'", "-", self.cfg['genmap']]
 			cmd = " ".join(cmd)
 			print(cmd)
-			p2 = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+			p2 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p1.stdout, shell=True)
 
 			outs, err = p2.communicate()
 			with open(self.output()[i].path, 'wb') as f:
