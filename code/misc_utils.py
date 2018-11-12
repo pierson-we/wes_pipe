@@ -43,11 +43,12 @@ def format_pindel(pindel_files, sample_dict, project_dir, all_samples_output, mi
 			sample_reads = [row[34+7*x] for x in range(0, sample_count)]
 			for i, reads in enumerate(sample_reads):
 				if reads >= min_reads:
+					info = ['type=%s' % row[2], 'length=%s' % row[3], 'reads=%s' % reads]
 					pindel_dict[samples[i]].append({
 					'chr': row[8],
 					'start': row[10],
 					'end': row[11],
-					'gffTag': row[2] + '_' + str(reads)
+					'gffTag': ';'.join(info)
 					})
 		
 		pindel_df_raw = pd.read_csv(file, sep='\s+', header=None)
