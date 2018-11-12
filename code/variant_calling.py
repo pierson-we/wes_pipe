@@ -414,6 +414,58 @@ class filter_pindel(luigi.Task):
 
 		misc_utils.filter_pindel(pindel_files=[input_file.path for input_file in self.input()], sample_dict=sample_dict, project_dir=self.project_dir, all_samples_output=self.output()[-1].path, min_reads=self.cfg['pindel_min_reads'], min_qual=self.cfg['pindel_min_qual'], max_inv_length=self.cfg['pindel_max_inv_length'])
 
+
+		while not pipeline_utils.sub_thread_count(global_vars.thread_file, 1):
+			time.sleep(1.2)
+
+class annotate_pindel(luigi.Task):
+	max_threads = luigi.IntParameter()
+	project_dir = luigi.Parameter()
+
+	# case = luigi.Parameter()
+	# tumor = luigi.Parameter()
+	# matched_n = luigi.Parameter()
+	# vcf_path = luigi.Parameter()
+	case_dict = luigi.DictParameter()
+
+	# library_bed = luigi.Parameter()
+	# fasta_file = luigi.Parameter()
+
+	cfg = luigi.DictParameter()
+
+	def requires(self):
+		return filter_pindel(case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)
+
+	def output(self):
+		outputs = []
+		for input_file in self.input()[:-1]:
+			output_file = input_file.path.split('.bed')[0] + '_final.bed'
+			outputs.append(luigi.LocalTarget(output_file))
+		return outputs
+
+	def run(self):
+		for output in self.output():
+			pipeline_utils.confirm_path(output.path)
+
+		wait_time = random.uniform(0,3)
+		time.sleep(wait_time)
+		sys.stdout.flush()
+		while not pipeline_utils.add_thread_count(global_vars.thread_file, 1):
+			time.sleep(1.2)
+
+		for i, input_file in enumerate(self.input()):
+			cmd = 'sort-bed %s' % output.path
+			p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+
+			cmd = ["bedmap", "--echo", "--echo-map-id-uniq", "--delim", r"'\t'", "-", self.cfg['genmap']]
+			cmd = ' '.join(cmd)
+			p2 = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+
+			outs, err = p2.communicate()
+			with open(self.output()[i].path, 'wb') as f:
+				f.write('#gffTags\n')
+				f.write(outs)
+
 		while not pipeline_utils.sub_thread_count(global_vars.thread_file, 1):
 			time.sleep(1.2)
 

@@ -301,6 +301,7 @@ class cases(luigi.Task):
 	pindel_min_reads = luigi.IntParameter()
 	pindel_min_qual = luigi.IntParameter()
 	pindel_max_inv_length = luigi.IntParameter()
+	genmap = luigi.Parameter()
 
 	def requires(self):
 		cfg = {
@@ -333,6 +334,7 @@ class cases(luigi.Task):
 			'pindel_min_reads': self.pindel_min_reads,
 			'pindel_min_qual': self.pindel_min_qual,
 			'pindel_max_inv_length': self.pindel_max_inv_length,
+			'genmap': self.genmap,
 			'tmp_dir': os.path.join(self.project_dir, 'tmp')
 		}
 		pipeline_utils.confirm_path(cfg['tmp_dir'])
@@ -341,7 +343,7 @@ class cases(luigi.Task):
 		return [create_mut_mats(max_threads=self.sample_threads, project_dir=self.project_dir, cfg=cfg, case_dict=self.sample_dict)] + \
 		[germline.filter_germline(project_dir=self.project_dir, max_threads=self.sample_threads, cfg=cfg, case_dict=self.sample_dict)] + \
 		[variant_calling.msisensor(max_threads=self.sample_threads, project_dir=self.project_dir, case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], cfg=cfg, vcf_path=os.path.join(self.project_dir, 'output', case, 'variants')) for case in self.sample_dict] + \
-		[variant_calling.filter_pindel(project_dir=self.project_dir, max_threads=self.sample_threads, cfg=cfg, case_dict=self.sample_dict)]
+		[variant_calling.annotate_pindel(project_dir=self.project_dir, max_threads=self.sample_threads, cfg=cfg, case_dict=self.sample_dict)]
 		# [msi(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict, cfg=cfg, vcf_path=os.path.join(self.project_dir, 'output', case, 'variants')) for case in self.sample_dict]
 
 		# [variant_analysis.vep(case=case, tumor=self.sample_dict[case]['T'], matched_n=self.sample_dict[case]['N'], project_dir=self.project_dir, max_threads=self.sample_threads, case_dict=self.sample_dict, cfg=cfg) for case in self.sample_dict] + \

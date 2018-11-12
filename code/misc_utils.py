@@ -95,6 +95,7 @@ def filter_pindel(pindel_files, sample_dict, project_dir, all_samples_output, mi
 	all_pindels.to_csv(all_samples_output, sep='\t', header=True, index=False)
 
 
+
 	# 	def parse(row, pindel_dict):
 	# 		sample_count = int(row[28])
 	# 		samples = [row[32+7*x] for x in range(0, sample_count)]
