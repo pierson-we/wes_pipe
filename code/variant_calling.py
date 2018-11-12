@@ -453,7 +453,7 @@ class annotate_pindel(luigi.Task):
 		while not pipeline_utils.add_thread_count(global_vars.thread_file, 1):
 			time.sleep(1.2)
 
-		for i, input_file in enumerate(self.input()):
+		for i, input_file in enumerate(self.input()[:-1]):
 			cmd = 'sort-bed %s' % input_file.path
 			print(cmd)
 			p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
