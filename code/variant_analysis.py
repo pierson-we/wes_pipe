@@ -256,7 +256,7 @@ class create_mut_mats(luigi.Task):
 	def requires(self):
 		return [combine_mafs(max_threads=self.max_threads, project_dir=self.project_dir, cfg=self.cfg, case_dict=self.case_dict), 
 		combine_cnvs(max_threads=self.max_threads, project_dir=self.project_dir, cfg=self.cfg, case_dict=self.case_dict),
-		variant_calling.annotate_pindel(project_dir=self.project_dir, max_threads=self.sample_threads, cfg=cfg, case_dict=self.sample_dict)]
+		variant_calling.annotate_pindel(project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg, case_dict=self.case_dict)]
 
 	def output(self):
 		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'mut_mat.tsv')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'cnv_mat.tsv')), luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'mut_counts.tsv'))]
