@@ -457,7 +457,7 @@ class annotate_pindel(luigi.Task):
 			# print(cmd)
 			p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
 
-			cmd = ['bedtools', 'intersect', '-wa', '-u', '-sorted', '-a', '"stdin"', '-b', self.cfg['exons_bed'], '-wa', '-u', '-sorted']
+			cmd = ['bedtools', 'intersect', '-wa', '-u', '-sorted', '-a', '"stdin"', '-b', self.cfg['exons_bed']]
 			p2 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p1.stdout, shell=True)
 
 			cmd = ["bedmap", "--echo", "--echo-map-id-uniq", "--delim", r"'\t'", "-", self.cfg['genmap']]
