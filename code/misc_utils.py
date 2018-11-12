@@ -84,15 +84,50 @@ def filter_pindel(pindel_files, sample_dict, project_dir, all_samples_output, mi
 						'end': summary_line[10],
 						'gffTag': ';'.join(info)
 						})
+
+	def create_pon(row, pon):
+		variant_type = row.gffTag.split(';')[0].split('=')[-1]
+		variant_length = row.gffTag.split(';')[1].split('=')[-1]
+		variant_id = '_'.join([row.chr, row.start, row.end, variant_type, variant_length])
+		if variant_id not in pon:
+			pon.append(variant_id)
+
+	def filter_pon(row, pon):
+		variant_type = row.gffTag.split(';')[0].split('=')[-1]
+		variant_length = row.gffTag.split(';')[1].split('=')[-1]
+		variant_id = '_'.join([row.chr, row.start, row.end, variant_type, variant_length])
+		if variant_id in pon:
+			return False
+		else:
+			return True
+
+	pon = []
+
 	for sample in sample_dict:
-		sample_df = pd.DataFrame(data=pindel_dict[sample], columns=['chr', 'start', 'end', 'gffTag'])
-		with open(sample_dict[sample], 'w') as f:
-			f.write('#gffTags\n')
-			f.write(sample_df.to_csv(sep='\t', header=False, index=False))
-		sample_df['sample'] = sample
-		pindel_dfs.append(sample_df)
+		if '_N' in sample:
+			sample_df = pd.DataFrame(data=pindel_dict[sample], columns=['chr', 'start', 'end', 'gffTag'])
+			with open(sample_dict[sample], 'w') as f:
+				f.write('#gffTags\n')
+				f.write(sample_df.to_csv(sep='\t', header=False, index=False))
+			sample_df['sample'] = sample
+			pindel_dfs.append(sample_df)
+			sample_df.apply(create_pon, axis=1, pon=pon)
+
+	for sample in sample_dict:
+		if '_T' in sample:
+			sample_df = pd.DataFrame(data=pindel_dict[sample], columns=['chr', 'start', 'end', 'gffTag'])
+			sample_df = sample_df[sample_df.apply(filter_pon, axis=1, pon=pon)]
+			with open(sample_dict[sample], 'w') as f:
+				f.write('#gffTags\n')
+				f.write(sample_df.to_csv(sep='\t', header=False, index=False))
+			sample_df['sample'] = sample
+			pindel_dfs.append(sample_df)
+			sample_df.apply(create_pon, axis=1, pon=pon)
+
 	all_pindels = pd.concat(pindel_dfs, ignore_index=True)
 	all_pindels.to_csv(all_samples_output, sep='\t', header=True, index=False)
+
+
 
 
 
