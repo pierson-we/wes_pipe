@@ -454,7 +454,7 @@ class annotate_pindel(luigi.Task):
 			time.sleep(1.2)
 
 		for i, input_file in enumerate(self.input()):
-			cmd = 'sort-bed %s' % output.path
+			cmd = 'sort-bed %s' % input_file.path
 			p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
 
 			cmd = ["bedmap", "--echo", "--echo-map-id-uniq", "--delim", r"'\t'", "-", self.cfg['genmap']]
