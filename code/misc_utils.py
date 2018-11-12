@@ -32,7 +32,7 @@ def combine_cnvs(cnvs, samples, output):
 	all_cnvs = pd.concat(cnv_dfs, ignore_index=True)
 	all_cnvs.to_csv(output, sep='\t', header=True, index=False)
 
-def format_pindel(pindel_files, sample_dict, project_dir, all_samples_output):
+def format_pindel(pindel_files, sample_dict, project_dir, all_samples_output, min_reads):
 	pindel_dfs = []
 	pindel_dict = {sample: [] for sample in sample_dict}
 	for file in pindel_files:
@@ -42,7 +42,7 @@ def format_pindel(pindel_files, sample_dict, project_dir, all_samples_output):
 			samples = [row[32+7*x] for x in range(0, sample_count)]
 			sample_reads = [row[34+7*x] for x in range(0, sample_count)]
 			for i, reads in enumerate(sample_reads):
-				if reads > 0:
+				if reads >= min_reads:
 					pindel_dict[samples[i]].append({
 					'chr': row[8],
 					'start': row[10],
