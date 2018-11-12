@@ -266,8 +266,8 @@ class create_mut_mats(luigi.Task):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 		mafs = [input_file.path for input_file in self.input()[0][1:]]
-		cnvs = [input_files[-1].path for input_files in self.input()[0][1:]]
-		pindel = [input_file.path for input_file in self.input()[0]]
+		cnvs = [input_files[-1].path for input_files in self.input()[1][1:]]
+		pindel = [input_file.path for input_file in self.input()[2]]
 		misc_utils.create_mut_mats(mafs=mafs, cnvs=cnvs, pindel=pindel, mut_mat=self.output()[0].path, cnv_mat=self.output()[1].path, mut_counts_file=self.output()[2].path)
 
 class cases(luigi.Task):
