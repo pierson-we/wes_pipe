@@ -359,7 +359,7 @@ class pindel(luigi.Task):
 		+ [bam_processing.index_bam(sample=case_name + '_T', fastq_file=self.case_dict[case_name]['T'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg) for case_name in self.case_dict]
 
 	def output(self):
-		pindel_files = ['_D', '_SI', '_TD'] # '_INV', '_LI', '_BP',
+		pindel_files = ['_D', '_SI', '_TD', '_INV'] #, '_LI', '_BP',
 		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'pindel', 'pindel_all_samples' + ext)) for ext in pindel_files]
 
 	def run(self):
@@ -378,6 +378,46 @@ class pindel(luigi.Task):
 		os.remove('___pindel_bams___.txt')
 
 class filter_pindel(luigi.Task):
+	max_threads = luigi.IntParameter()
+	project_dir = luigi.Parameter()
+
+	# case = luigi.Parameter()
+	# tumor = luigi.Parameter()
+	# matched_n = luigi.Parameter()
+	# vcf_path = luigi.Parameter()
+	case_dict = luigi.DictParameter()
+
+	# library_bed = luigi.Parameter()
+	# fasta_file = luigi.Parameter()
+
+	cfg = luigi.DictParameter()
+
+	def requires(self):
+		return pindel(case_dict=self.case_dict, project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg)
+
+	def output(self):
+		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', case_name, 'variants', case_name + '_T.pindel.bed')) for case_name in self.case_dict] + \
+		[luigi.LocalTarget(os.path.join(self.project_dir, 'output', case_name, 'variants', case_name + '_N.pindel.bed')) for case_name in self.case_dict if self.case_dict[case_name]['N'] != ''] + \
+		[luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'all_samples_pindel.tsv'))]
+
+	def run(self):
+		for output in self.output():
+			pipeline_utils.confirm_path(output.path)
+
+		wait_time = random.uniform(0,3)
+		time.sleep(wait_time)
+		sys.stdout.flush()
+		while not pipeline_utils.add_thread_count(global_vars.thread_file, 1):
+			time.sleep(1.2)
+
+		sample_dict = {output.path.split('/')[-1].split('.pindel.bed')[0]: output.path for output in self.output()[:-1]}
+
+		misc_utils.filter_pindel(pindel_files=[input_file.path for input_file in self.input()], sample_dict=sample_dict, project_dir=self.project_dir, all_samples_output=self.output()[-1].path, min_reads=self.cfg['pindel_min_reads'], min_qual=self.cfg['pindel_min_qual'], max_inv_length=self.cfg['pindel_max_inv_length'])
+
+		while not pipeline_utils.sub_thread_count(global_vars.thread_file, 1):
+			time.sleep(1.2)
+
+class filter_pindel_old(luigi.Task):
 	max_threads = luigi.IntParameter()
 	project_dir = luigi.Parameter()
 
