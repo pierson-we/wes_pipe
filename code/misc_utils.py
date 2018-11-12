@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import pandas as pd
 import numpy as np
+import os
 
 def combine_mafs(mafs, output):
 	mut_dfs = []
@@ -293,7 +294,7 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 		cnv_dfs.append(cnv_df)
 		cnv_samples.append(sample)
 	all_cnvs = pd.concat(cnv_dfs, ignore_index=True)
-	all_cnvs.to_csv(os.path.join(out_dir, 'all_cnvs.tsv'), sep='\t', header=True, index=False)
+	# all_cnvs.to_csv(os.path.join(out_dir, 'all_cnvs.tsv'), sep='\t', header=True, index=False)
 	min_depth = np.percentile(all_cnvs.depth_per_kb, 25)
 	# print('min depth/kb: %s' % min_depth)
 	cnv_dfs = [cnv_df[cnv_df['depth_per_kb'] > min_depth] for cnv_df in cnv_dfs]
