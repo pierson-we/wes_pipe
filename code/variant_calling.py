@@ -359,7 +359,7 @@ class pindel(luigi.Task):
 		+ [bam_processing.index_bam(sample=case_name + '_T', fastq_file=self.case_dict[case_name]['T'], project_dir=self.project_dir, max_threads=self.max_threads, cfg=self.cfg) for case_name in self.case_dict]
 
 	def output(self):
-		pindel_files = ['_D', '_SI', '_INV', '_TD'] # '_LI', '_BP',
+		pindel_files = ['_D', '_SI', '_TD'] # '_INV', '_LI', '_BP',
 		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'pindel', 'pindel_all_samples' + ext)) for ext in pindel_files]
 
 	def run(self):
