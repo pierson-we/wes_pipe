@@ -237,7 +237,7 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat, cnv_mat, mut_counts_file):
 
 	for file in pindel:
 		sample = file.split('/')[-1].split('.')[0]
-		pindel_df = 
+		# pindel_df = 
 
 	cnv_samples = []
 	cnv_dfs = []
