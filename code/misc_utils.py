@@ -50,7 +50,7 @@ def format_pindel(pindel_files, sample_dict, project_dir, all_samples_output):
 					'gffTag': row[2] + '_' + str(reads)
 					})
 		
-		pindel_df_raw = pd.read_csv(file, sep='\t', header=None)
+		pindel_df_raw = pd.read_csv(file, sep=None, header=None)
 		pindel_df_raw.columns = [i for i in range(1, pindel_df_raw.shape[1]+1)]
 		print(pindel_df_raw.head().to_csv())
 		pindel_df_raw.apply(parse, axis=1, pindel_dict=pindel_dict)
