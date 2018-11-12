@@ -443,7 +443,7 @@ class parse_pindel(luigi.Task):
 	def output(self):
 		return [luigi.LocalTarget(os.path.join(self.project_dir, 'output', case_name, 'variants', case_name + '_T.pindel.bed')) for case_name in self.case_dict] + \
 		[luigi.LocalTarget(os.path.join(self.project_dir, 'output', case_name, 'variants', case_name + '_N.pindel.bed')) for case_name in self.case_dict if self.case_dict[case_name]['N'] != ''] + \
-		[luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'pindel_all_samples.tsv'))]
+		[luigi.LocalTarget(os.path.join(self.project_dir, 'output', 'all_samples', 'all_samples_pindel.tsv'))]
 
 	def run(self):
 		for output in self.output():

@@ -44,7 +44,7 @@ def format_pindel(pindel_files, sample_dict, project_dir, all_samples_output):
 			for i, reads in enumerate(sample_reads):
 				if reads > 0:
 					pindel_dict[samples[i]].append({
-					'chr': 'chr' + str(row[8]),
+					'chr': row[8],
 					'start': row[10],
 					'end': row[11],
 					'gffTag': row[2] + '_' + str(reads)
