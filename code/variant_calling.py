@@ -457,7 +457,7 @@ class parse_pindel(luigi.Task):
 
 		sample_dict = {output.path.split('/')[-1].split('.pindel.bed')[0]: output.path for output in self.output()[:-1]}
 
-		misc_utils.format_pindel(pindel_files=[input_file.path for input_file in self.input()], sample_dict=sample_dict, project_dir=self.project_dir, all_samples_output=self.output()[-1].path, self.cfg('pindel_min_reads'))
+		misc_utils.format_pindel(pindel_files=[input_file.path for input_file in self.input()], sample_dict=sample_dict, project_dir=self.project_dir, all_samples_output=self.output()[-1].path, min_reads=self.cfg('pindel_min_reads'))
 
 		while not pipeline_utils.sub_thread_count(global_vars.thread_file, 1):
 			time.sleep(1.2)
