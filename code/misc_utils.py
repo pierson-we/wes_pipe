@@ -244,8 +244,8 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 		def parse_pindel(row, new_rows):
 			mut_type = row['gffTag'].split(';')[0].split('=')[1]
 			length = mut_type = row['gffTag'].split(';')[1].split('=')[1]
-			genes = row.genes.split(';')
-			if int(length) > 3 and int(length) % 3 != 0:
+			genes = str(row.genes).split(';')
+			if int(length) > 3 and int(length) % 3 != 0 and len(genes) > 0:
 				for gene in genes:
 					new_rows.append({'Hugo_Symbol': gene, 'Variant_Classification': mut_type, 'FILTER': 'PASS', 'dbSNP_RS': ''})
 		pindel_data = []
