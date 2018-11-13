@@ -252,10 +252,10 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 				length = row['gffTag'].split(';')[1].split('=')[1]
 				genes = str(row.genes).split(';')
 				if len(genes) > 0:
-					if int(length) > 3: # and int(length) % 3 != 0:
-						for gene in genes:
-							new_rows.append({'Hugo_Symbol': gene, 'Variant_Classification': mut_type, 'FILTER': 'PASS', 'dbSNP_RS': ''})
-							# print('SV', gene)
+					if int(length) > 3:
+						if (int(length) % 3 == 0 and int(length) > 30) or int(length) % 3 != 0:
+							for gene in genes:
+								new_rows.append({'Hugo_Symbol': gene, 'Variant_Classification': mut_type, 'FILTER': 'PASS', 'dbSNP_RS': ''})
 					elif int(length) < 3:
 						if mut_type == 'D':
 							mut_type = 'Frame_Shift_Del'
