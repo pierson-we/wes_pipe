@@ -332,8 +332,12 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 		for gene in mut_df.Hugo_Symbol.unique().tolist():
 			gene_df = mut_df[mut_df['Hugo_Symbol'] == gene]
 			variant_types = gene_df.Variant_Classification.unique().tolist()
-			if 'D' in variant_types or 'INS' in variant_types or 'INV' in variant_types or 'TD' in variant_types:
-				mut_mat.loc[gene, mut_pindel_samples[i]] = 5 # SV = 5
+			if 'D' in variant_types or 'INS' in variant_types:
+				mut_mat.loc[gene, mut_pindel_samples[i]] = 5 # indel = 5
+			elif 'INV' in variant_types:
+				mut_mat.loc[gene, mut_pindel_samples[i]] = 6 # inversion = 6
+			elif'TD' in variant_types:
+				mut_mat.loc[gene, mut_pindel_samples[i]] = 7 # SV = 7
 			elif 'Nonsense_Mutation' in variant_types or 'Frame_Shift_Ins' in variant_types or 'Frame_Shift_Del' in variant_types:
 				mut_mat.loc[gene, mut_pindel_samples[i]] = 1 # nonsense/frameshift = 1
 			else:
