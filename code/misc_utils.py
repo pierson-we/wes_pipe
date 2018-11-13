@@ -71,14 +71,19 @@ def filter_pindel(pindel_files, sample_dict, project_dir, all_samples_output, mi
 				while '' in read_line:
 					del read_line[read_line.index('')]
 				read_qual = int(read_line[3])
+				read_strand = read_line[1]
 				if read_qual >= min_qual:
 					sample = read_line[4]
 					if not sample in variant_dict:
-						variant_dict[sample] = []
-					variant_dict[sample].append(read_qual)
+						variant_dict[sample] = [[], 0, 0]
+					variant_dict[sample][0].append(read_qual)
+					if read_strand == '+':
+						variant_dict[sample][1] += 1
+					elif read_strand == '-':
+						variant_dict[sample][2] += 1
 			for sample in variant_dict:
-				if len(variant_dict[sample]) >= min_reads:
-					info = ['type=%s' % mut_type, 'length=%s' % summary_line[2], 'reads=%s' % len(variant_dict[sample]), 'avg_qual=%s' % np.mean(variant_dict[sample])]
+				if len(variant_dict[sample][0]) >= min_reads:
+					info = ['type=%s' % mut_type, 'length=%s' % summary_line[2], 'reads=%s' % len(variant_dict[sample][0]), 'avg_qual=%s' % np.mean(variant_dict[sample][0]), 'pos_strand=%s' %variant_dict[sample][1], 'neg_strand=%s' %variant_dict[sample][2]]
 					pindel_dict[sample].append({
 						'chr': summary_line[7],
 						'start': summary_line[9],
