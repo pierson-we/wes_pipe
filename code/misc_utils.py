@@ -252,7 +252,7 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 				length = row['gffTag'].split(';')[1].split('=')[1]
 				genes = str(row.genes).split(';')
 				if len(genes) > 0:
-					if int(length) > 3 and int(length) % 3 != 0:
+					if int(length) > 3: # and int(length) % 3 != 0:
 						for gene in genes:
 							new_rows.append({'Hugo_Symbol': gene, 'Variant_Classification': mut_type, 'FILTER': 'PASS', 'dbSNP_RS': ''})
 							# print('SV', gene)
@@ -337,7 +337,7 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 			elif 'INV' in variant_types:
 				mut_mat.loc[gene, mut_pindel_samples[i]] = 6 # inversion = 6
 			elif'TD' in variant_types:
-				mut_mat.loc[gene, mut_pindel_samples[i]] = 7 # SV = 7
+				mut_mat.loc[gene, mut_pindel_samples[i]] = 7 # tandem duplication = 7
 			elif 'Nonsense_Mutation' in variant_types or 'Frame_Shift_Ins' in variant_types or 'Frame_Shift_Del' in variant_types:
 				mut_mat.loc[gene, mut_pindel_samples[i]] = 1 # nonsense/frameshift = 1
 			else:
