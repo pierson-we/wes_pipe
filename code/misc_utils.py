@@ -83,7 +83,13 @@ def filter_pindel(pindel_files, sample_dict, project_dir, all_samples_output, mi
 						variant_dict[sample][2] += 1
 			for sample in variant_dict:
 				if len(variant_dict[sample][0]) >= min_reads:
-					info = ['type=%s' % mut_type, 'length=%s' % summary_line[2], 'reads=%s' % len(variant_dict[sample][0]), 'avg_qual=%s' % np.mean(variant_dict[sample][0]), 'pos_strand=%s' %variant_dict[sample][1], 'neg_strand=%s' %variant_dict[sample][2]]
+					pos_strand = variant_dict[sample][1]
+					neg_strand = variant_dict[sample][2]
+					if pos_strand > neg_strand:
+						strand_bias = float(neg_strand)/pos_strand
+					else:
+						strand_bias = float(pos_strand)/neg_strand
+					info = ['type=%s' % mut_type, 'length=%s' % summary_line[2], 'reads=%s' % len(variant_dict[sample][0]), 'avg_qual=%s' % np.mean(variant_dict[sample][0]), 'strand_bias=%s' % strand_bias]
 					pindel_dict[sample].append({
 						'chr': summary_line[7],
 						'start': summary_line[9],
@@ -250,6 +256,7 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 			def parse_pindel(row, new_rows):
 				mut_type = row['gffTag'].split(';')[0].split('=')[1]
 				length = row['gffTag'].split(';')[1].split('=')[1]
+				strand_bias = row['gffTag'].split(';')[4].split('=')[1]
 				genes = str(row.genes).split(';')
 				if len(genes) > 0:
 					if int(length) > 3:
