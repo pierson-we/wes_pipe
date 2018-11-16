@@ -248,7 +248,9 @@ class refine_cnv(luigi.Task):
 				def assign_class(row):
 					if row.cn > 2:
 						return 'amp'
-					elif row.cn < 2:
+					elif row.cn == 1:
+						return 'loh'
+					elif row.cn < 1:
 						return 'del'
 					else:
 						return 'wt'

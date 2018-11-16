@@ -340,11 +340,11 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 			gene_df = mut_df[mut_df['Hugo_Symbol'] == gene]
 			variant_types = gene_df.Variant_Classification.unique().tolist()
 			if 'D' in variant_types or 'INS' in variant_types:
-				mut_mat.loc[gene, mut_pindel_samples[i]] = 5 # indel = 5
+				mut_mat.loc[gene, mut_pindel_samples[i]] = 3 # indel = 3
 			elif 'INV' in variant_types:
-				mut_mat.loc[gene, mut_pindel_samples[i]] = 6 # inversion = 6
+				mut_mat.loc[gene, mut_pindel_samples[i]] = 4 # inversion = 4
 			elif'TD' in variant_types:
-				mut_mat.loc[gene, mut_pindel_samples[i]] = 7 # tandem duplication = 7
+				mut_mat.loc[gene, mut_pindel_samples[i]] = 5 # tandem duplication = 5
 			elif 'Nonsense_Mutation' in variant_types or 'Frame_Shift_Ins' in variant_types or 'Frame_Shift_Del' in variant_types:
 				mut_mat.loc[gene, mut_pindel_samples[i]] = 1 # nonsense/frameshift = 1
 			else:
@@ -357,10 +357,12 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 			# variant_types = gene_df['class'].unique().tolist()
 			# if 'Nonsense_Mutation' in variant_types or 'Frame_Shift_Ins' in variant_types or 'Frame_Shift_Del' in variant_types:
 			if len(variant_types) == 1:
-				if variant_types[0] == 'amp':
-					cnv_mat.loc[gene, cnv_samples[i]] = 3 # amplication = 3
+				if variant_types[0] == 'loh':
+					cnv_mat.loc[gene, cnv_samples[i]] = 6 # loh = 6
+				elif variant_types[0] == 'amp':
+					cnv_mat.loc[gene, cnv_samples[i]] = 7 # amplication = 7
 				elif variant_types[0] == 'del':
-					cnv_mat.loc[gene, cnv_samples[i]] = 4 # deletion = 4
+					cnv_mat.loc[gene, cnv_samples[i]] = 8 # deletion = 8
 				else:
 					print('found a wt straggler')
 			else:
