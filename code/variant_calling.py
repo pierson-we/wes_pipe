@@ -372,7 +372,7 @@ class pindel(luigi.Task):
 					f.write('%s %s %s\n' % (input_bam[0].path, self.cfg['insert_size'], case + '_N'))
 				else:
 					f.write('%s %s %s\n' % (input_bam[0].path, self.cfg['insert_size'], case + '_T'))
-		cmd = ['./packages/pindel/pindel', '-f', self.cfg['fasta_file'], '-i', '___pindel_bams___.txt', '-T', self.max_threads, '-c', 'ALL', '-o', os.path.join(self.project_dir, 'pindel', 'pindel_all_samples')]
+		cmd = ['./packages/pindel/pindel', '-f', self.cfg['fasta_file'], '-i', '___pindel_bams___.txt', '-T', self.max_threads, '-c', 'ALL', '-o', os.path.join(self.project_dir, 'output', 'pindel', 'pindel_all_samples')]
 		pipeline_utils.command_call(cmd, self.output(), threads_needed=self.max_threads)
 
 		os.remove('___pindel_bams___.txt')
