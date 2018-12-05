@@ -29,7 +29,8 @@ class somatic_vcf_intersection(luigi.Task):
 
 	def requires(self):
 		return [variant_calling.filter_mutect(project_dir=self.project_dir, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n, max_threads=self.max_threads, case_dict=self.case_dict, cfg=self.cfg),
-		variant_calling.sort_vardict(project_dir=self.project_dir, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n, max_threads=self.max_threads, cfg=self.cfg)] 
+		variant_calling.sort_vardict(project_dir=self.project_dir, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n, max_threads=self.max_threads, cfg=self.cfg),
+		variant_calling.freebayes(project_dir=self.project_dir, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n, max_threads=self.max_threads, cfg=self.cfg)] 
 
 	def output(self):
 		return [luigi.LocalTarget(os.path.join(self.vcf_path, '%s_T_intersect.vcf' % self.case)), luigi.LocalTarget(os.path.join(self.vcf_path, '%s_T_union.vcf' % self.case))]
@@ -37,7 +38,7 @@ class somatic_vcf_intersection(luigi.Task):
 	def run(self):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
-		cmd = ['java', '-Xmx2g', '-jar', self.cfg['gatk3_location'], '-T', 'CombineVariants', '-R', self.cfg['fasta_file'], '--variant:mutect', self.input()[0].path, '--variant:vardict', self.input()[1].path, '-o', self.output()[1].path, '-genotypeMergeOptions', 'PRIORITIZE', '-priority', 'mutect,vardict', '--minimumN', '2']
+		cmd = ['java', '-Xmx2g', '-jar', self.cfg['gatk3_location'], '-T', 'CombineVariants', '-R', self.cfg['fasta_file'], '--variant:mutect', self.input()[0].path, '--variant:vardict', self.input()[1].path, '--variant:freebayes', self.input()[2].path, '-o', self.output()[1].path, '-genotypeMergeOptions', 'PRIORITIZE', '-priority', 'mutect,vardict,freebayes', '--minimumN', '2']
 		pipeline_utils.command_call(cmd, self.output())
 
 		cmd = [self.cfg['gatk4_location'], '--java-options', '"-Xmx2g -Xms2g -XX:+UseSerialGC -Djava.io.tmpdir=%s"' % self.cfg['tmp_dir'], 'SelectVariants', '-R', self.cfg['fasta_file'], '-V', self.output()[1].path, '-O', self.output()[0].path, '-select', """'set == "Intersection";'"""]
