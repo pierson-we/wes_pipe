@@ -252,10 +252,10 @@ class freebayes(luigi.Task):
 		while not pipeline_utils.add_thread_count(global_vars.thread_file, 1):
 			time.sleep(1)
 
-		cmd = ['./packages/freebayes/bin/freebayes', '-f', self.cfg['fasta_file'], , self.max_threads, '-f', self.cfg['fasta_file'], '-t', self.cfg['library_bed'], self.input()[0].path]
+		cmd = [self.cfg['freebayes_location'], '-f', self.cfg['fasta_file'], , self.max_threads, '-f', self.cfg['fasta_file'], '-t', self.cfg['library_bed'], self.input()[0].path]
 		p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
 		# outs, err = p.communicate()
-		cmd = ['./packages/freebayes/vcflib/bin/vcffilter', '-f', '"QUAL > 20"']
+		cmd = [self.cfg['vcffilter_location'], '-f', '"QUAL > 20"']
 		p2 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p1.stdout, shell=True)
 		# outs, err = p.communicate()
 		outs, err = p2.communicate()
@@ -265,7 +265,7 @@ class freebayes(luigi.Task):
 		while not pipeline_utils.sub_thread_count(global_vars.thread_file, 1):
 			time.sleep(1)
 
-		cmd = ['./packages/freebayes/bin/freebayes', '-f', self.cfg['fasta_file'], , self.max_threads, '-f', self.cfg['fasta_file'], '-t', self.cfg['library_bed'], '-v', self.output().path, self.input()[0].path]
+		#cmd = ['./packages/freebayes/bin/freebayes', '-f', self.cfg['fasta_file'], , self.max_threads, '-f', self.cfg['fasta_file'], '-t', self.cfg['library_bed'], '-v', self.output().path, self.input()[0].path]
 		pipeline_utils.command_call(cmd, [self.output()])
 
 class vardict(luigi.Task):

@@ -299,6 +299,8 @@ class cases(luigi.Task):
 	fastqc_location = luigi.Parameter()
 	trim_location = luigi.Parameter()
 	insert_size = luigi.Parameter()
+	freebayes_location = luigi.Parameter()
+	vcffilter_location = luigi.Parameter()
 	cnvkit_location = luigi.Parameter()
 	refFlat = luigi.Parameter()
 	cnvkit_seg_method = luigi.Parameter()
@@ -333,6 +335,8 @@ class cases(luigi.Task):
 			'fastqc_location': self.fastqc_location,
 			'trim_location': self.trim_location,
 			'insert_size': self.insert_size,
+			'freebayes_location': self.freebayes_location,
+			'vcffilter_location': self.vcffilter_location,
 			'cnvkit_location': self.cnvkit_location,
 			'refFlat': self.refFlat,
 			'cnvkit_seg_method': self.cnvkit_seg_method,
