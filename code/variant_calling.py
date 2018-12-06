@@ -252,7 +252,7 @@ class freebayes(luigi.Task):
 		while not pipeline_utils.add_thread_count(global_vars.thread_file, 1):
 			time.sleep(1)
 
-		cmd = [self.cfg['freebayes_location'], '-f', self.cfg['fasta_file'], self.max_threads, '-f', self.cfg['fasta_file'], '-t', self.cfg['library_bed'], self.input()[0].path]
+		cmd = [self.cfg['freebayes_location'], '-f', self.cfg['fasta_file'], str(self.max_threads), '-f', self.cfg['fasta_file'], '-t', self.cfg['library_bed'], self.input()[0].path]
 		p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
 		# outs, err = p.communicate()
 		cmd = [self.cfg['vcffilter_location'], '-f', '"QUAL > 20"']
