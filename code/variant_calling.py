@@ -256,7 +256,7 @@ class freebayes(luigi.Task):
 		p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
 		# outs, err = p.communicate()
 		cmd = [self.cfg['vcffilter_location'], '-f', '"QUAL > 20"']
-		p2 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=p1.stdout, shell=True)
+		p2 = subprocess.Popen(' '.join(cmd), stdout=subprocess.PIPE, stdin=p1.stdout, shell=True)
 		# outs, err = p.communicate()
 		outs, err = p2.communicate()
 		with open(self.output().path, 'wb') as f:
