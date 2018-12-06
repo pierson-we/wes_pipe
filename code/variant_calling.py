@@ -259,8 +259,11 @@ class freebayes(luigi.Task):
 		# outs, err = p.communicate()
 		cmd = [self.cfg['vcffilter_location'], '-f', '"QUAL > 20"']
 		p2 = subprocess.Popen(' '.join(cmd), stdout=subprocess.PIPE, stdin=p1.stdout, shell=True)
+
+		cmd = ['vcf-sort']
+		p3 = subprocess.Popen(' '.join(cmd), stdout=subprocess.PIPE, stdin=p2.stdout, shell=True)
 		# outs, err = p.communicate()
-		outs, err = p2.communicate()
+		outs, err = p3.communicate()
 		with open(self.output().path, 'wb') as f:
 			f.write(outs)
 
