@@ -253,6 +253,7 @@ class freebayes(luigi.Task):
 			time.sleep(1)
 
 		cmd = [self.cfg['freebayes_location'], '-f', self.cfg['fasta_file'], str(self.max_threads), '-f', self.cfg['fasta_file'], '-t', self.cfg['library_bed'], self.input()[0].path]
+		print(' '.join(cmd))
 		p1 = subprocess.Popen(' '.join(cmd), stdout=subprocess.PIPE, shell=True)
 		# outs, err = p.communicate()
 		cmd = [self.cfg['vcffilter_location'], '-f', '"QUAL > 20"']
