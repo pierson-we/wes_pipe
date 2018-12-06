@@ -225,7 +225,7 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 		mut_df = pd.read_csv(file, sep='\t', header=count, usecols=['Hugo_Symbol', 'Variant_Classification', 'FILTER', 'dbSNP_RS'])
 		mut_df = mut_df[mut_df['FILTER'] == 'PASS']
 		mut_counts.append(mut_df.shape[0])
-		mut_types = ['Missense_Mutation', 'Nonsense_Mutation', 'Frame_Shift_Ins', 'Frame_Shift_Ins', 'Splice_Site']
+		mut_types = ['Missense_Mutation', 'Nonsense_Mutation', 'Frame_Shift_Ins', 'Frame_Shift_Ins', 'Splice_Site', 'Splice_Region', 'Nonstop_Mutation', 'Translation_Start_Site']
 		def filter_mut_types(row, mut_types):
 			if row.Variant_Classification in mut_types:
 				# if row.Variant_Classification == 'Missense_Mutation':
@@ -345,10 +345,12 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 				mut_mat.loc[gene, mut_pindel_samples[i]] = 4 # inversion = 4
 			elif'TD' in variant_types:
 				mut_mat.loc[gene, mut_pindel_samples[i]] = 5 # tandem duplication = 5
-			elif 'Nonsense_Mutation' in variant_types or 'Frame_Shift_Ins' in variant_types or 'Frame_Shift_Del' in variant_types or 'Splice_Site' in variant_types:
+			elif 'Nonsense_Mutation' in variant_types or 'Frame_Shift_Ins' in variant_types or 'Frame_Shift_Del' in variant_types:
 				mut_mat.loc[gene, mut_pindel_samples[i]] = 1 # nonsense/frameshift/truncating = 1
-			else:
+			elif 'Missense_Mutation' in variant_types:
 				mut_mat.loc[gene, mut_samples[i]] = 2 # missense = 2
+			else:
+				mut_mat.loc[gene, mut_samples[i]] = 9 # other abberation = 9
 	mut_mat.fillna(value=0, inplace=True)
 
 	for i, cnv_df in enumerate(cnv_dfs):
