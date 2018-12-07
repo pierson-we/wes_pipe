@@ -270,8 +270,28 @@ class freebayes(luigi.Task):
 		while not pipeline_utils.sub_thread_count(global_vars.thread_file, 1):
 			time.sleep(1)
 
-		#cmd = ['./packages/freebayes/bin/freebayes', '-f', self.cfg['fasta_file'], , self.max_threads, '-f', self.cfg['fasta_file'], '-t', self.cfg['library_bed'], '-v', self.output().path, self.input()[0].path]
-		# pipeline_utils.command_call(cmd, [self.output()])
+class sort_freebayes(luigi.Task):
+	max_threads = luigi.IntParameter()
+	project_dir = luigi.Parameter()
+
+	case = luigi.Parameter()
+	tumor = luigi.Parameter()
+	matched_n = luigi.Parameter()
+	vcf_path = luigi.Parameter()
+
+	cfg = luigi.DictParameter()
+
+	def requires(self):
+		return [freebayes(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=self.vcf_path, cfg=self.cfg),
+		bam_processing.picard_index(cfg=self.cfg)]
+
+	def output(self):
+		return luigi.LocalTarget(os.path.join(self.vcf_path, self.case + '_freebayes_sorted' + '.vcf'))
+	
+	def run(self):
+		pipeline_utils.confirm_path(self.output().path)
+		cmd = ['java', '-jar', self.cfg['picard_location'], 'SortVcf', 'I=%s' % self.input()[0].path, 'O=%s' % self.output().path, 'SEQUENCE_DICTIONARY=%s' % self.input()[1].path]
+		pipeline_utils.command_call(cmd, [self.output()], threads_needed=self.max_threads)
 
 class vardict(luigi.Task):
 	max_threads = luigi.IntParameter()
