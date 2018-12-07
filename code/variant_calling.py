@@ -157,11 +157,12 @@ class sort_mutect(luigi.Task):
 	tumor = luigi.Parameter()
 	matched_n = luigi.Parameter()
 	vcf_path = luigi.Parameter()
+	case_dict = luigi.DictParameter()
 
 	cfg = luigi.DictParameter()
 
 	def requires(self):
-		return [filter_mutect(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=self.vcf_path, cfg=self.cfg),
+		return [filter_mutect(max_threads=self.max_threads, project_dir=self.project_dir, case=self.case, tumor=self.tumor, matched_n=self.matched_n, vcf_path=self.vcf_path, case_dict=self.case_dict, cfg=self.cfg),
 		bam_processing.picard_index(cfg=self.cfg)]
 
 	def output(self):
