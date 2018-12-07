@@ -28,7 +28,7 @@ class somatic_vcf_intersection(luigi.Task):
 	cfg = luigi.DictParameter()
 
 	def requires(self):
-		return [variant_calling.filter_mutect(project_dir=self.project_dir, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n, max_threads=self.max_threads, case_dict=self.case_dict, cfg=self.cfg),
+		return [variant_calling.sort_mutect(project_dir=self.project_dir, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n, max_threads=self.max_threads, case_dict=self.case_dict, cfg=self.cfg),
 		variant_calling.sort_vardict(project_dir=self.project_dir, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n, max_threads=self.max_threads, cfg=self.cfg),
 		variant_calling.sort_freebayes(project_dir=self.project_dir, vcf_path=self.vcf_path, case=self.case, tumor=self.tumor, matched_n=self.matched_n, max_threads=self.max_threads, cfg=self.cfg)] 
 
