@@ -160,13 +160,13 @@ class refine_cnv(luigi.Task):
 		for output in self.output():
 			pipeline_utils.confirm_path(output.path)
 
-		cmd = 'python3 %s segment %s -m %s --drop-low-coverage -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.cfg['cnvkit_seg_method'], self.output()[0].path)
-		cmd = cmd.split(' ')
-		pipeline_utils.command_call(cmd, self.output())
+		# cmd = 'python3 %s segment %s -m %s --drop-low-coverage -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.cfg['cnvkit_seg_method'], self.output()[0].path)
+		# cmd = cmd.split(' ')
+		# pipeline_utils.command_call(cmd, self.output())
 
-		cmd = 'python3 %s segmetrics %s -s %s --ci --std --mean -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[0].path, self.output()[1].path)
-		cmd = cmd.split(' ')
-		pipeline_utils.command_call(cmd, self.output())
+		# cmd = 'python3 %s segmetrics %s -s %s --ci --std --mean -o %s' % (self.cfg['cnvkit_location'], self.input().path, self.output()[0].path, self.output()[1].path)
+		# cmd = cmd.split(' ')
+		# pipeline_utils.command_call(cmd, self.output())
 
 		cmd = 'python3 %s call %s -i %s_T -m threshold --filter ci --sample-sex female -t=-1.1,-0.4,0.3,0.7 -o %s' % (self.cfg['cnvkit_location'], self.output()[1].path, self.case, self.output()[2].path)
 		cmd = cmd.split(' ')
