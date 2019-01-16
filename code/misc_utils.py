@@ -302,6 +302,7 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 			cnv_df = pd.read_csv(file, sep='\t', header=0, usecols=['Hugo_Symbol', 'class', 'depth', 'chromosome', 'start', 'end', 'weight', 'log2']) #, 'ci_lo', 'ci_hi'])
 			cnv_df = cnv_df[cnv_df['class'] != 'wt']
 			# cnv_df = cnv_df[cnv_df['depth'] >= 100]
+			cnv_df = cnv_df[cnv_df['chromosome'] != 'chrY']
 			cnv_df = cnv_df[cnv_df['chromosome'] != 'Y']
 			# cnv_df = cnv_df[cnv_df.apply(filter_ci, axis=1)]
 			cnv_df['sample'] = sample
@@ -350,7 +351,7 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 			elif 'Missense_Mutation' in variant_types:
 				mut_mat.loc[gene, mut_samples[i]] = 2 # missense = 2
 			else:
-				mut_mat.loc[gene, mut_samples[i]] = 9 # other abberation = 9
+				mut_mat.loc[gene, mut_samples[i]] = 9 # other mutation = 9
 	mut_mat.fillna(value=0, inplace=True)
 
 	for i, cnv_df in enumerate(cnv_dfs):
@@ -369,7 +370,7 @@ def create_mut_mats(mafs, cnvs, pindel, mut_mat_file, cnv_mat_file, mut_counts_f
 					print('found a wt straggler')
 			else:
 				# print(cnv_df[cnv_df['Hugo_Symbol'] == gene])
-				print('%s, %s: uh ohhhhhhh' % (cnv_samples[i], gene))
+				print('%s, %s: ambiguous CN (%s)' % (cnv_samples[i], gene, ','.join(variant_types)))
 			# else:
 			# 	cnv_mat.loc[gene, cnv_samples[i]] = 'del'
 	cnv_mat.fillna(value=0, inplace=True)

@@ -168,7 +168,7 @@ class refine_cnv(luigi.Task):
 		cmd = cmd.split(' ')
 		pipeline_utils.command_call(cmd, self.output())
 
-		cmd = 'python3 %s call %s -i %s_T -m threshold --filter ci --sample-sex female -o %s' % (self.cfg['cnvkit_location'], self.output()[1].path, self.case, self.output()[2].path)
+		cmd = 'python3 %s call %s -i %s_T -m threshold --filter ci --sample-sex female -t=-1.1,-0.4,0.3,0.7 -o %s' % (self.cfg['cnvkit_location'], self.output()[1].path, self.case, self.output()[2].path)
 		cmd = cmd.split(' ')
 		pipeline_utils.command_call(cmd, self.output())
 
