@@ -245,7 +245,11 @@ class combine_cnvs(luigi.Task):
 
 	def run(self):
 		pipeline_utils.confirm_path(self.output()[0].path)
-		misc_utils.combine_cnvs([cnv_input[-1].path for cnv_input in self.input()], [case for case in self.case_dict], self.output()[0].path)
+		cnv_files = [cnv_input[-1].path for cnv_input in self.input()]
+		samples = [case for case in self.case_dict]
+
+		cnv_files = [os.path.join(self.project_dir, 'output', 'cnvkit', 'theta', '%s_T.segment-1.cns') for sample in samples]
+		misc_utils.combine_cnvs(cnv_files, samples, self.output()[0].path)
 
 class create_mut_mats(luigi.Task):
 	max_threads = luigi.IntParameter()
